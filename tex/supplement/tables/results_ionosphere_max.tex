@@ -1,0 +1,69 @@
+\begin{table}[H]
+    \centering
+    \tiny
+    \caption{Maximization-metric results for ionosphere.}%
+    \label{tab:results-ionosphere-max}
+    \adjustbox{max width=\linewidth}{%
+\begin{tabular}{llccccccc}
+\toprule
+ & Strategy & Argmax & DirichletCalibrationArgmax & Empirical & EmpiricalCV & IsotonicArgmax & PlattScalingArgmax & TemperatureScalingArgmax \\
+Model & Obj. &  &  &  &  &  &  &  \\
+\midrule
+\multirow[t]{5}{*}{CatBoost} & F0.5 & \textbf{0.934 ± 0.008} & \textbf{0.939 ± 0.008} & \textbf{0.923 ± 0.010} & \textbf{0.935 ± 0.008} & \textbf{0.940 ± 0.007} & \textbf{0.936 ± 0.007} & \textbf{0.931 ± 0.009} \\
+ & F1 & \textbf{0.948 ± 0.006} & \textbf{0.936 ± 0.009} & \textbf{0.946 ± 0.007} & \textbf{0.937 ± 0.011} & \textbf{0.942 ± 0.008} & \textbf{0.945 ± 0.008} & \textbf{0.945 ± 0.008} \\
+ & F2 & \textbf{0.963 ± 0.007} & 0.934 ± 0.014 & \textbf{0.959 ± 0.007} & \textbf{0.956 ± 0.012} & \textbf{0.945 ± 0.012} & \textbf{0.956 ± 0.010} & \textbf{0.959 ± 0.009} \\
+ & GMean & \textbf{0.910 ± 0.011} & \textbf{0.911 ± 0.011} & \textbf{0.898 ± 0.014} & \textbf{0.904 ± 0.014} & \textbf{0.914 ± 0.011} & \textbf{0.911 ± 0.011} & \textbf{0.906 ± 0.013} \\
+ & MCC & \textbf{0.850 ± 0.017} & \textbf{0.826 ± 0.023} & \textbf{0.807 ± 0.028} & \textbf{0.821 ± 0.028} & \textbf{0.839 ± 0.021} & \textbf{0.844 ± 0.021} & \textbf{0.840 ± 0.023} \\
+\cline{1-9}
+\multirow[t]{5}{*}{ExtraTrees} & F0.5 & \textbf{0.941 ± 0.010} & \textbf{0.946 ± 0.009} & \textbf{0.946 ± 0.007} & \textbf{0.951 ± 0.008} & \textbf{0.943 ± 0.009} & \textbf{0.945 ± 0.010} & \textbf{0.940 ± 0.010} \\
+ & F1 & \textbf{0.952 ± 0.008} & \textbf{0.949 ± 0.009} & \textbf{0.955 ± 0.007} & \textbf{0.944 ± 0.010} & \textbf{0.950 ± 0.008} & \textbf{0.953 ± 0.009} & \textbf{0.951 ± 0.008} \\
+ & F2 & \textbf{0.964 ± 0.008} & \textbf{0.952 ± 0.010} & \textbf{0.965 ± 0.006} & \textbf{0.954 ± 0.011} & \textbf{0.956 ± 0.009} & \textbf{0.961 ± 0.009} & \textbf{0.963 ± 0.009} \\
+ & GMean & \textbf{0.920 ± 0.014} & \textbf{0.924 ± 0.013} & \textbf{0.918 ± 0.009} & \textbf{0.912 ± 0.014} & \textbf{0.921 ± 0.013} & \textbf{0.924 ± 0.014} & \textbf{0.917 ± 0.014} \\
+ & MCC & \textbf{0.862 ± 0.023} & \textbf{0.856 ± 0.024} & \textbf{0.847 ± 0.018} & \textbf{0.832 ± 0.027} & \textbf{0.856 ± 0.023} & \textbf{0.864 ± 0.025} & \textbf{0.859 ± 0.024} \\
+\cline{1-9}
+\multirow[t]{5}{*}{GaussianNB} & F0.5 & 0.885 ± 0.006 & 0.891 ± 0.006 & 0.888 ± 0.006 & \textbf{0.911 ± 0.007} & 0.894 ± 0.006 & 0.887 ± 0.006 & 0.885 ± 0.007 \\
+ & F1 & \textbf{0.910 ± 0.006} & \textbf{0.911 ± 0.006} & \textbf{0.909 ± 0.006} & \textbf{0.912 ± 0.006} & \textbf{0.912 ± 0.006} & \textbf{0.911 ± 0.006} & \textbf{0.910 ± 0.006} \\
+ & F2 & \textbf{0.936 ± 0.008} & \textbf{0.933 ± 0.008} & \textbf{0.937 ± 0.007} & \textbf{0.942 ± 0.005} & \textbf{0.930 ± 0.008} & \textbf{0.936 ± 0.008} & \textbf{0.936 ± 0.008} \\
+ & GMean & 0.837 ± 0.009 & 0.846 ± 0.009 & 0.840 ± 0.009 & \textbf{0.871 ± 0.009} & 0.851 ± 0.010 & 0.840 ± 0.010 & 0.837 ± 0.010 \\
+ & MCC & \textbf{0.730 ± 0.018} & \textbf{0.736 ± 0.017} & \textbf{0.730 ± 0.018} & \textbf{0.744 ± 0.020} & \textbf{0.739 ± 0.020} & \textbf{0.732 ± 0.019} & \textbf{0.729 ± 0.019} \\
+\cline{1-9}
+\multirow[t]{5}{*}{LGBM()} & F0.5 & \textbf{0.936 ± 0.007} & \textbf{0.930 ± 0.008} & 0.917 ± 0.013 & \textbf{0.937 ± 0.006} & \textbf{0.924 ± 0.009} & \textbf{0.935 ± 0.006} & \textbf{0.935 ± 0.006} \\
+ & F1 & \textbf{0.949 ± 0.005} & 0.930 ± 0.008 & 0.932 ± 0.008 & \textbf{0.946 ± 0.007} & 0.928 ± 0.012 & \textbf{0.944 ± 0.005} & \textbf{0.944 ± 0.005} \\
+ & F2 & \textbf{0.962 ± 0.007} & 0.932 ± 0.011 & \textbf{0.959 ± 0.005} & \textbf{0.967 ± 0.005} & 0.933 ± 0.019 & 0.954 ± 0.006 & 0.954 ± 0.005 \\
+ & GMean & \textbf{0.913 ± 0.009} & \textbf{0.899 ± 0.011} & 0.870 ± 0.019 & \textbf{0.915 ± 0.010} & 0.892 ± 0.013 & \textbf{0.911 ± 0.009} & \textbf{0.911 ± 0.008} \\
+ & MCC & \textbf{0.853 ± 0.015} & 0.805 ± 0.020 & 0.788 ± 0.025 & \textbf{0.839 ± 0.022} & 0.803 ± 0.026 & \textbf{0.839 ± 0.016} & \textbf{0.839 ± 0.014} \\
+\cline{1-9}
+\multirow[t]{5}{*}{LogisticRegression()} & F0.5 & \textbf{0.889 ± 0.008} & \textbf{0.877 ± 0.009} & \textbf{0.872 ± 0.012} & \textbf{0.884 ± 0.011} & \textbf{0.879 ± 0.007} & \textbf{0.875 ± 0.006} & \textbf{0.883 ± 0.007} \\
+ & F1 & \textbf{0.911 ± 0.006} & 0.880 ± 0.016 & 0.887 ± 0.011 & \textbf{0.906 ± 0.006} & 0.884 ± 0.013 & \textbf{0.909 ± 0.005} & \textbf{0.908 ± 0.006} \\
+ & F2 & 0.934 ± 0.005 & 0.886 ± 0.025 & \textbf{0.939 ± 0.013} & \textbf{0.952 ± 0.004} & 0.893 ± 0.025 & \textbf{0.945 ± 0.006} & 0.934 ± 0.007 \\
+ & GMean & \textbf{0.842 ± 0.012} & \textbf{0.821 ± 0.014} & \textbf{0.813 ± 0.021} & \textbf{0.835 ± 0.015} & \textbf{0.821 ± 0.012} & 0.819 ± 0.011 & \textbf{0.834 ± 0.012} \\
+ & MCC & \textbf{0.731 ± 0.019} & 0.675 ± 0.029 & 0.683 ± 0.023 & \textbf{0.718 ± 0.017} & 0.687 ± 0.023 & \textbf{0.723 ± 0.015} & \textbf{0.722 ± 0.020} \\
+\cline{1-9}
+\multirow[t]{5}{*}{RandomForest} & F0.5 & \textbf{0.932 ± 0.009} & \textbf{0.937 ± 0.010} & \textbf{0.930 ± 0.009} & \textbf{0.930 ± 0.010} & \textbf{0.934 ± 0.009} & \textbf{0.937 ± 0.009} & \textbf{0.936 ± 0.010} \\
+ & F1 & \textbf{0.933 ± 0.010} & \textbf{0.936 ± 0.010} & \textbf{0.941 ± 0.009} & \textbf{0.931 ± 0.012} & \textbf{0.938 ± 0.010} & \textbf{0.939 ± 0.010} & \textbf{0.939 ± 0.010} \\
+ & F2 & 0.935 ± 0.014 & 0.935 ± 0.013 & \textbf{0.964 ± 0.005} & \textbf{0.959 ± 0.010} & 0.944 ± 0.013 & 0.942 ± 0.012 & 0.943 ± 0.012 \\
+ & GMean & \textbf{0.903 ± 0.013} & \textbf{0.908 ± 0.014} & \textbf{0.895 ± 0.011} & \textbf{0.895 ± 0.017} & \textbf{0.906 ± 0.013} & \textbf{0.910 ± 0.013} & \textbf{0.909 ± 0.014} \\
+ & MCC & \textbf{0.815 ± 0.024} & \textbf{0.821 ± 0.026} & \textbf{0.829 ± 0.022} & \textbf{0.803 ± 0.030} & \textbf{0.827 ± 0.025} & \textbf{0.829 ± 0.025} & \textbf{0.830 ± 0.025} \\
+\cline{1-9}
+\multirow[t]{5}{*}{TabM} & F0.5 & \textbf{0.954 ± 0.008} & \textbf{0.946 ± 0.007} & \textbf{0.944 ± 0.010} & \textbf{0.945 ± 0.009} & \textbf{0.947 ± 0.009} & \textbf{0.950 ± 0.008} & \textbf{0.950 ± 0.008} \\
+ & F1 & \textbf{0.958 ± 0.008} & 0.942 ± 0.004 & \textbf{0.955 ± 0.006} & \textbf{0.950 ± 0.010} & \textbf{0.949 ± 0.008} & \textbf{0.956 ± 0.007} & \textbf{0.956 ± 0.007} \\
+ & F2 & \textbf{0.962 ± 0.011} & 0.939 ± 0.009 & \textbf{0.965 ± 0.007} & \textbf{0.968 ± 0.009} & \textbf{0.952 ± 0.010} & \textbf{0.963 ± 0.009} & \textbf{0.963 ± 0.009} \\
+ & GMean & \textbf{0.935 ± 0.011} & \textbf{0.919 ± 0.007} & \textbf{0.928 ± 0.010} & \textbf{0.920 ± 0.012} & \textbf{0.923 ± 0.012} & \textbf{0.930 ± 0.011} & \textbf{0.930 ± 0.011} \\
+ & MCC & \textbf{0.882 ± 0.021} & 0.841 ± 0.012 & \textbf{0.870 ± 0.019} & \textbf{0.860 ± 0.027} & \textbf{0.858 ± 0.021} & \textbf{0.875 ± 0.020} & \textbf{0.875 ± 0.020} \\
+\cline{1-9}
+\multirow[t]{5}{*}{TabPFN} & F0.5 & \textbf{0.953 ± 0.008} & \textbf{0.948 ± 0.009} & \textbf{0.949 ± 0.007} & \textbf{0.952 ± 0.007} & \textbf{0.942 ± 0.008} & \textbf{0.948 ± 0.009} & \textbf{0.951 ± 0.008} \\
+ & F1 & \textbf{0.954 ± 0.008} & \textbf{0.951 ± 0.008} & \textbf{0.950 ± 0.005} & \textbf{0.950 ± 0.008} & \textbf{0.949 ± 0.007} & \textbf{0.953 ± 0.008} & \textbf{0.955 ± 0.008} \\
+ & F2 & 0.955 ± 0.011 & 0.955 ± 0.011 & 0.965 ± 0.007 & \textbf{0.976 ± 0.003} & 0.957 ± 0.010 & 0.957 ± 0.010 & 0.958 ± 0.010 \\
+ & GMean & \textbf{0.933 ± 0.012} & \textbf{0.926 ± 0.012} & \textbf{0.929 ± 0.011} & \textbf{0.932 ± 0.013} & \textbf{0.920 ± 0.011} & \textbf{0.927 ± 0.012} & \textbf{0.931 ± 0.012} \\
+ & MCC & \textbf{0.873 ± 0.023} & \textbf{0.864 ± 0.023} & \textbf{0.866 ± 0.014} & \textbf{0.852 ± 0.022} & \textbf{0.857 ± 0.020} & \textbf{0.866 ± 0.023} & \textbf{0.872 ± 0.023} \\
+\cline{1-9}
+\multirow[t]{5}{*}{XGBoost} & F0.5 & \textbf{0.938 ± 0.009} & \textbf{0.929 ± 0.009} & \textbf{0.933 ± 0.007} & \textbf{0.933 ± 0.007} & \textbf{0.924 ± 0.009} & \textbf{0.930 ± 0.008} & \textbf{0.932 ± 0.007} \\
+ & F1 & \textbf{0.940 ± 0.010} & \textbf{0.930 ± 0.012} & \textbf{0.923 ± 0.012} & \textbf{0.935 ± 0.011} & \textbf{0.924 ± 0.013} & \textbf{0.935 ± 0.010} & \textbf{0.937 ± 0.008} \\
+ & F2 & \textbf{0.943 ± 0.013} & 0.931 ± 0.017 & \textbf{0.941 ± 0.015} & \textbf{0.959 ± 0.010} & 0.925 ± 0.019 & \textbf{0.940 ± 0.014} & \textbf{0.943 ± 0.010} \\
+ & GMean & \textbf{0.911 ± 0.013} & \textbf{0.898 ± 0.014} & \textbf{0.887 ± 0.017} & \textbf{0.901 ± 0.014} & \textbf{0.891 ± 0.015} & \textbf{0.902 ± 0.012} & \textbf{0.904 ± 0.010} \\
+ & MCC & \textbf{0.833 ± 0.026} & \textbf{0.808 ± 0.029} & \textbf{0.788 ± 0.030} & \textbf{0.816 ± 0.029} & \textbf{0.795 ± 0.031} & \textbf{0.817 ± 0.026} & \textbf{0.822 ± 0.019} \\
+\cline{1-9}
+\bottomrule
+\end{tabular}
+    }
+\end{table}

@@ -1,0 +1,85 @@
+[project]
+name = "threshold_opt"
+version = "0.1.0"
+description = "Threshold optimization for binary and multiclass classification"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Carlo Lemos", email = "vitaliset@users.noreply.github.com" }]
+keywords = [
+    "threshold-optimization",
+    "threshold",
+    "classification",
+    "binary",
+    "multiclass",
+    "cost-sensitive",
+    "decision-making",
+    "calibration",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    # Lower bounds: numpy>=1.26 for Python 3.11 wheels and the array API
+    # changes used by the calibration code; scipy>=1.11 for the numpy 1.26
+    # ABI; scikit-learn>=1.6 for sklearn.frozen.FrozenEstimator (used in
+    # binary_strategies._CalibratedDefaultThreshold and friends).
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.6",
+    "joblib>=1.3",
+]
+
+# TODO(vitaliset): Add project.urls with repo and issue links.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/threshold_opt"]
+
+[tool.pytest.ini_options]
+testpaths = ["src", "experiments"]
+python_files = ["*_test.py"]
+
+[dependency-groups]
+experiments = [
+    "pandas",
+    "pyarrow",          # pandas parquet backend
+    "lightgbm",
+    "xgboost",
+    "catboost",
+    "tabpfn",
+    "tabicl",           # TabICLv2 tabular foundation model
+    "pytabkit",         # RealMLP_TD_Classifier
+    "tabm",             # TabM deep tabular model (ICLR 2025)
+    "imbalanced-learn", # geometric_mean_score
+    "tqdm",
+]
+dev = [
+    "pytest",
+    "matplotlib",
+    "seaborn",
+    "ipykernel>=7.2.0",
+    "jinja2",
+    "ruff",
+    "pre-commit>=4.5.1",
+]
+
+[tool.uv]
+default-groups = ["dev", "experiments"]
+
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "RUF"]
+ignore = [
+    "E731",   # lambda assignment fine in research code
+    "E741",   # allow short math names (l, I, O)
+    # ruff format conflict rules
+    "W191", "E111", "E114", "E117",
+]

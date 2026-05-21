@@ -1,0 +1,29 @@
+\begin{table}[H]
+  \centering
+  \caption{Summary of binary classification datasets used in the experiments. Superscripts denote OpenML dataset IDs. Numerical and Categorical are the counts of raw numerical and categorical input features; Encoded is the model input dimensionality after one-hot encoding of the categorical features. The imbalance ratio (IR) is the size of the majority class divided by that of the minority class.}%
+  \label{tab:dataset-summary-binary}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrl}
+\toprule
+ &  & \multicolumn{3}{c}{Features} &  \\
+\cmidrule(lr){3-5}
+Dataset & Samples & Numerical & Categorical & Encoded & IR \\
+\midrule
+sonar\textsuperscript{\tiny 40}~\citep{gorman1988sonar} & 208 & 60 & 0 & 60 & 1.1 \\
+ionosphere\textsuperscript{\tiny 59}~\citep{sigillito1989ionosphere} & 351 & 34 & 0 & 34 & 1.8 \\
+wdbc\textsuperscript{\tiny 1510}~\citep{street1993wdbc} & 569 & 30 & 0 & 30 & 1.7 \\
+pima\_diabetes\textsuperscript{\tiny 37}~\citep{smith1988diabetes} & 768 & 8 & 0 & 8 & 1.9 \\
+german\_credit\textsuperscript{\tiny 31}~\citep{hofmann1994germancredit} & 1000 & 7 & 13 & 61 & 2.3 \\
+pc3\textsuperscript{\tiny 1050}~\citep{sayyadshirabad2005promise} & 1563 & 37 & 0 & 37 & 8.8 \\
+ozone\textsuperscript{\tiny 1487}~\citep{zhang2008ozone} & 2534 & 72 & 0 & 72 & 14.8 \\
+madelon\textsuperscript{\tiny 1485}~\citep{guyon2004madelon} & 2600 & 500 & 0 & 500 & 1.0 \\
+spambase\textsuperscript{\tiny 44}~\citep{hopkins1999spambase} & 4601 & 57 & 0 & 57 & 1.5 \\
+phoneme\textsuperscript{\tiny 1489}~\citep{elena1993phoneme} & 5404 & 5 & 0 & 5 & 2.4 \\
+jm1\textsuperscript{\tiny 1053}~\citep{sayyadshirabad2005promise} & 10885 & 21 & 0 & 21 & 4.2 \\
+mammography\textsuperscript{\tiny 310}~\citep{woods1993mammography} & 11183 & 6 & 0 & 6 & 42.0 \\
+bank\_marketing\textsuperscript{\tiny 1461}~\citep{moro2011bank} & 45211 & 7 & 9 & 51 & 7.5 \\
+adult\textsuperscript{\tiny 1590}~\citep{kohavi1996adult} & 48842 & 6 & 8 & 105 & 3.2 \\
+\bottomrule
+\end{tabular}
+  }
+\end{table}

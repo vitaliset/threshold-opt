@@ -1,0 +1,307 @@
+% IME-USP master's dissertation, built on the official department template
+% (imegoodies + imelooks): https://gitlab.com/ccsl-usp/modelo-latex
+%
+% The template support files (*.sty, plainnat-ime.*, logos/, latexmkrc,
+% texlogsieve) are vendored into this directory so the build is
+% self-contained. Chapter sources live under content/; tables and figures
+% are \input from tables/ and figures/.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PREAMBLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% twoside = different odd/even page layout. The LAST babel language is the
+% document default, so "english" last => English body. A Portuguese resumo and
+% palavras-chave are still mandatory for IME deposit (see content/abstract.tex).
+\documentclass[a4paper,12pt,twoside,brazilian,english]{book}
+
+% Numeric, citation-order, range-compressed citations. biblatex is loaded by
+% imelooks, so sorting=none must be passed before that happens; the numeric
+% style itself is selected via imelooks' bibstyle key below.
+\PassOptionsToPackage{sorting=none}{biblatex}
+
+\usepackage{imegoodies}
+% [thesis] activates the cover/title-page machinery and loads biblatex.
+%   bibstyle=numeric-comp -> numeric compressed citation labels
+%   noraggedbib           -> justified (not ragged) reference list
+%   nofonts               -> skip imelooks' Libertinus/SourceCodePro and use
+%                            the default Computer Modern
+\usepackage[thesis,bibstyle=numeric-comp,noraggedbib,nofonts]{imelooks}
+
+% imelooks uses "Thesis" generically in English for both master's and
+% doctoral works (imelooks.sty:2529-2532). Restore the Brazilian/UK split
+% where the master's-level work is a "Dissertation" and only the doctoral
+% work is a "Thesis", matching the Portuguese tese/dissertacao distinction
+% the template already produces at the same locale. \workname feeds the
+% cover (\@coverThesisText) and the provisional/final frontmatter notes,
+% so overriding it propagates through every English label.
+\addto\captionsenglish{%
+  \renewcommand\workname{%
+    \iftoggle{@tcc}
+      {Capstone Project Report}
+      {\iftoggle{@qualificacao}
+        {Qualifying Exam}
+        {\iftoggle{@doutorado}
+          {Thesis}
+          {Dissertation}%
+        }%
+      }%
+  }%
+}
+
+% ---- Packages not provided by imegoodies/imelooks ----
+\usepackage{bm}
+\usepackage{standalone}      % figures/*.tex are standalone documents
+\usepackage{float}           % [H] float placement
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% tikz and pgfplots are loaded by imegoodies, but the compat level and the
+% libraries the figures rely on are not set there:
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{shapes, arrows.meta, positioning, backgrounds, fit, calc, patterns}
+\usepgfplotslibrary{fillbetween, groupplots}
+
+% imelooks sets secnumdepth=2; restore numbering down to level 3.
+\setcounter{secnumdepth}{3}
+
+% Match the body's slightly looser leading inside multi-line figure/table
+% captions. font+= appends to imelooks' caption setup (font=small etc.)
+% instead of replacing it. Keep this factor in sync with \setstretch below.
+\captionsetup{font+={stretch=1.1}}
+
+% Theorem environments (imegoodies loads amsthm/thmtools but defines none).
+\theoremstyle{plain}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{assumption}[theorem]{Assumption}
+
+% The shared `theorem` counter resets every section, but the auto-generated
+% \theH<env> hidden counters that hyperref uses for PDF anchors omit the
+% chapter and section. Anchors like proposition.1 then recur across sections,
+% pdfTeX drops the duplicates ("destination with the same identifier ...
+% duplicate ignored"), and those links misjump. Pin every theorem-like \theH
+% to the globally unique printed number: \thetheorem (chapter.section.n) for
+% the shared counter, \thedefinition for definition's own global counter.
+\def\theHtheorem{\thetheorem}
+\def\theHlemma{\thetheorem}
+\def\theHproposition{\thetheorem}
+\def\theHcorollary{\thetheorem}
+\def\theHexample{\thetheorem}
+\def\theHremark{\thetheorem}
+\def\theHassumption{\thetheorem}
+\def\theHdefinition{\thedefinition}
+
+% Inline draft annotations.
+\newcommand{\cc}[1]{{\color{Blue}[Carlo: #1]}}
+
+% Figure search path (English dirs only; figures/ holds the TikZ + PNG sources).
+\graphicspath{{figures/},{logos/},{fig/},{img/},{images/}}
+
+% Language-switch shortcuts: \en \br \texten{...} \textbr{...}
+\babeltags{br = brazilian, en = english}
+
+% Bibliography database.
+\addbibresource{references.bib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% METADATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% imelooks convention: \title is the title in the document's MAIN language
+% (here English, since \documentclass lists ...,brazilian,english) and
+% \translatedtitle is the OTHER language (Portuguese). It drives the cover,
+% the abstract self-reference and the PDF metadata. The Portuguese title is
+% mandatory for the IME deposit and is still TODO.
+
+\title{Argmax is not enough: empirical threshold and partition optimization for binary and multiclass classification}
+\translatedtitle{O argmax não é suficiente: otimização empírica de limiar e partição para classificação binária e multiclasse}
+
+\author[masc]{Carlo Domenico Longo de Lemos}
+
+% "Prof.\ Dr." uses a control space after each abbreviation dot for correct
+% interword (not end-of-sentence) spacing; keep the backslash-spaces.
+\orientador[masc]{Prof.\ Dr.\ Renato Vicente}
+
+% No co-advisor.
+
+% Comissao julgadora de mestrado (Regimento USP, Resolucao 7493 de 2018,
+% artigo 88 e artigo 89 paragrafo 4): tres examinadores com doutorado. O
+% orientador e um deles e preside. A maioria deve ser externa ao Programa,
+% ou seja os outros dois sao externos ao Programa de Probabilidade e
+% Estatistica, e pelo menos um deve ser externo ao IME-USP. Nao definida
+% ainda (versao para defesa); confirme a composicao com a CPG do Programa.
+\banca{
+  TODO preencher orientador (presidente), IME-USP,
+  TODO preencher examinador externo ao Programa,
+  TODO preencher examinador externo ao Programa e ao IME-USP,
+}
+
+% Pre-defense version: the "definitiva"/"quali" flags stay commented out.
+\tipotese{
+  mestrado,
+  % definitiva, % final (corrected) version, after the defense
+  % quali,       % qualification text
+  programa={Probabilidade e Estatística},
+}
+
+\defesa{
+  local={São Paulo},
+  % chktex 8: imelooks requires the ISO date AAAA-MM-DD; the W8 (hyphen
+  % between digits) is a false positive. The day is a placeholder until
+  % the defense is scheduled (only May 2026 is meaningful for now).
+  data=2026-05-01, % chktex 8
+}
+
+% USP digital deposit expects a license; CC-BY is the IME default and the
+% most permissive. Revisit the variant at final-deposit time if needed.
+\direitos{CC-BY}
+
+% Generate at https://fc.ime.usp.br/ ("Gerar Codigo LaTeX") and paste here
+% before depositing the final version:
+\fichacatalografica{% Este codigo depende das packages calc, setspace e ragged2e
+% (ja incluidas no modelo LaTeX do IME-USP)
+\begingroup\centering\singlespacing\small
+\hyphenrules{nohyphenation}\hbadness=10000
+Ficha catalográfica elaborada com dados inseridos pelo(a) autor(a)\\
+Biblioteca Carlos Benjamin de Lyra\\
+Instituto de Matemática, Estatística e Ciência da Computação\\
+Universidade de São Paulo\par
+\vspace{2\baselineskip}\hrule\vspace{.8\baselineskip}
+\RaggedRightRightskip 0pt plus 30pt minus 0pt\relax
+\RaggedRightParfillskip 20pt plus 40pt minus 10pt\relax
+\ttfamily\hspace{2em}\begin{minipage}[t]{125mm}
+\RaggedRight\sloppy\setlength{\parindent}{\widthof{123}}
+
+\noindent Lemos, Carlo Domenico Longo de
+
+Argmax is not enough: empirical threshold and partition optimization for binary and multiclass classification / Carlo Domenico Longo de Lemos; orientador, Renato Vicente. - São Paulo, 2026. % chktex 8
+
+148 p.: il. % chktex 12
+
+\vspace{1\baselineskip}
+
+
+\vspace{1\baselineskip}
+
+
+Dissertação (Mestrado) - Programa de Pós-Graduação em Probabilidade e Estatística / Instituto de Matemática, Estatística e Ciência da Computação / Universidade de São Paulo. % chktex 8
+
+Bibliografia
+
+Versão original
+
+\vspace{1\baselineskip}
+
+
+\vspace{1\baselineskip}
+
+
+1. Classification. 2. Decision theory. 3. Cost-sensitive learning. 4. Statistical learning theory. 5. Threshold optimization. I. Vicente, Renato. II. Título. % chktex 13
+
+\end{minipage}\par
+\vspace{1\baselineskip}\hrule\vspace{.5\baselineskip}\rmfamily
+Bibliotecárias do Serviço de Informação e Biblioteca\\
+Carlos Benjamin de Lyra do IME-USP, responsáveis pela\\
+estrutura de catalogação da publicação de acordo com a AACR2:\\
+Maria Lúcia Ribeiro CRB-8/2766; Stela do Nascimento Madruga CRB 8/7534.
+\par\endgroup}
+
+% \apoio{...} % texto de agradecimento CAPES/FAPESP, se houver bolsa
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%% COVER AND FRONT MATTER %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\frontmatter
+
+\pagestyle{plain}
+
+\onehalfspacing  % 1.5 spacing on the cover and front matter
+
+\maketitle       % cover + title page (generated from the metadata above)
+
+% Optional dedication page (uncomment and fill if desired):
+% \begin{dedicatoria}
+% ...
+% \end{dedicatoria}
+
+% Restart page numbering so the (optional) dedication is not counted.
+\pagenumbering{roman}
+
+% Optional acknowledgements (\chapter* keeps it out of the ToC):
+% \chapter*{Acknowledgements}
+% \epigrafe{...}{...}
+% ...
+
+\input{content/abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%% LISTS OF FIGURES/TABLES + ToC %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cleardoublepage
+\listoffigures
+\listoftables
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CHAPTERS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mainmatter
+
+\pagestyle{mainmatter}
+
+% Slightly more leading than single spacing for readability (well below the
+% 1.5 of the front matter). Tune the factor: 1.05 = very subtle, 1.15 = a
+% touch more.
+\setstretch{1.1}
+
+% Notation table, before Chapter 1 (\chapter*, not counted/numbered).
+\input{content/notation}
+
+% The introduction has no chapter number, so the running heads have none either.
+\pagestyle{unnumberedchapter}
+\input{content/00-introduction}
+\pagestyle{mainmatter}
+
+\input{content/01-theoretical-framework}
+\input{content/02-binary-classification}
+\input{content/03-binary-experiments}
+\input{content/04-multiclass-classification}
+\input{content/05-partition-optimization}
+\input{content/06-voronoi-tessellations}
+\input{content/07-multiclass-experiments}
+\input{content/08-sensitivity-misspecification}
+\input{content/09-conclusion}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% APPENDICES %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cleardoublepage
+
+\pagestyle{appendix}
+
+\appendix
+
+\addappheadtotoc
+
+\input{content/appendix-a-supplementary-proofs}\par
+\input{content/appendix-b-kl-invariance}\par
+\input{content/appendix-c-complexity}\par
+\input{content/appendix-d-compute}\par
+\input{content/appendix-e-ai-disclosure}\par
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BIBLIOGRAPHY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\backmatter
+
+\pagestyle{backmatter}
+
+% Extra space in the ToC before the references.
+\addtocontents{toc}{\vspace{2\baselineskip plus .5\baselineskip minus .5\baselineskip}}
+
+\printbibliography[
+  title=\refname\label{sec:bib},
+  heading=bibintoc,
+]
+
+\end{document}

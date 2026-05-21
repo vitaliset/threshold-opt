@@ -1,0 +1,117 @@
+%!TeX root=../carlo_master.tex
+\chapter{Experimental analysis: binary classification}\label{sec:binary_experiments}
+
+This chapter evaluates the decision strategies of Chapter~\ref{sec:binary} on fourteen datasets, ten base classifiers, and ten objectives (five cost matrices and five non-decomposable maximization metrics; see Section~\ref{sec:binary_objectives}). The cost-blind plug-in rule is suboptimal in nearly every regime considered, and two routes recover competitive performance: post-hoc calibration composed with the analytical Elkan threshold, and cross-validated empirical optimization of the threshold (EmpiricalCV). EmpiricalCV wins or ties the per-row best strategy on $87\%$ of cost cells and $99.9\%$ of maximization-metric cells. Post-hoc calibration composed with the analytical rule is the highest-rate strategy among the non-tuning options on miscalibrated non-neural estimators under decomposable cost objectives.
+
+\section{Experimental setup}
+
+We use a standardized protocol that holds the data partition, preprocessing, and base estimator fixed across decision strategies for a given dataset.
+
+\subsection{Datasets}
+The benchmark draws fourteen binary datasets from OpenML \citep{vanschoren2014openml}, selected along four axes. First, size spread: the three sample-size tiers (small with $N < 10^3$; medium, $10^3 \leq N < 10^4$; large, $N \geq 10^4$) vary the budget available to the strategies that consume a held-out partition (calibrator fits and the empirical threshold search), so the comparison is exercised from tens of positives in the validation split up to tens of thousands. Second, imbalance diversity: prevalence ratios span $1.0$ (\textit{madelon}) to $42.0$ (\textit{mammography}), with coverage at every order of magnitude in between, so the cost-asymmetric objectives can be exercised under both near-balanced and high-skew regimes. Third, overlap with prior cost-sensitive learning benchmarks: \textit{sonar}, \textit{pima\_diabetes}, and \textit{german\_credit} appear in \citet{sheng2006thresholding}, and \textit{adult} is used in \citet{elkan2001foundations}, so part of the pool is directly comparable to earlier results. Fourth, task difficulty: the pool spans easy problems on which the base classifiers reach near-ceiling discrimination and harder ones on which every estimator in the benchmark remains well below ceiling, so the decision strategies are evaluated on top of probability estimates of widely varying quality. Table~\ref{tab:dataset-summary-binary} lists the per-dataset sample sizes, feature counts, and class prevalences.
+
+\input{tables/dataset_summary_binary.tex}
+
+Preprocessing is applied via a \texttt{scikit-learn} \citep{pedregosa2011scikit} \texttt{ColumnTransformer} fitted once on the full dataset prior to splitting: numerical features are median-imputed and standardized; categorical features are most-frequent-imputed and one-hot encoded. Fitting the transformer on the full dataset, rather than refitting it inside each split, introduces a small amount of information leakage from the test partition into the imputation, standardization, and one-hot category statistics. This is a deliberate simplification: the same fitted transformer is reused across all strategies and splits for a given dataset, so any leakage affects all decision strategies equally and does not bias the comparison this benchmark is designed to support.
+
+\subsection{Estimator architectures}
+Ten base classifiers span a range of inductive biases and calibration profiles. The short label in parentheses after each full name is the form used as the column header in the result tables and figures of this chapter and the companion supplement:
+\begin{itemize}
+    \item Logistic Regression (LogReg) \citep[Ch.~4.4]{hastie2009elements}: parametric linear baseline; smooth monotonic probabilities.
+    \item Gaussian Naive Bayes (GaussNB) \citep[Ch.~6.6.3]{hastie2009elements}: generative historical baseline with class-conditional Gaussian features and feature independence.
+    \item LightGBM (LGBM) \citep{ke2017lightgbm}, XGBoost (XGB) \citep{chen2016xgboost}, CatBoost \citep{prokhorenkova2018catboost}: gradient-boosted trees, the standard top-performing family on tabular benchmarks in prediction quality and training and inference speed; typically discriminative but overconfident.
+    \item Random Forest (RF) \citep{breiman2001random}, Extra Trees (ET) \citep{geurts2006extratrees}: bagged ensembles; averaging smooths the probability outputs and produces calibration profiles distinct from boosted trees.
+    \item TabM \citep{gorishniy2025tabm}: deep tabular architecture; an MLP ensemble over shared representations.
+    \item TabPFN \citep{hollmann2025accurate}, TabICL \citep{qu2025tabicl}: transformer-based in-context predictors for tabular data, evaluated only on datasets within their supported regime ($\le 10{,}000$ samples and $\le 2{,}000$ features for TabPFN\@; $\le 10{,}000$ samples and $\le 500$ features for TabICLv2, matching its tested envelope) and skipped on larger datasets.
+\end{itemize}
+All classifiers use default hyperparameters. The benchmark sweeps the base estimator architecture as one factor in the design but does not tune hyperparameters within each architecture, since the contribution under study is the analysis of decision strategy on top of a given estimator.
+
+\subsection{Objectives}\label{sec:binary_objectives}
+The objective set covers ten targets: five cost matrices and five maximization metrics. The cost matrices are
+\begin{itemize}
+    \item Symmetric: $0/1$ loss ($C_{ij} = 0$ if $i = j$, else $1$).
+    \item Asymmetric $10\times$ / Asymmetric $100\times$: $C_{10} = 1$ and $C_{01} \in \{10, 100\}$ on the off-diagonals (with $C_{00} = C_{11} = 0$), so a false positive costs ten or one hundred false negatives.
+    \item Non-Zero Diagonal: a matrix $C = \bigl[\begin{smallmatrix} 0.8 & 2.0 \\ 1.0 & 0.5 \end{smallmatrix}\bigr]$ with non-zero entries on the diagonal as well as the off-diagonal, so even correct predictions carry baseline loss; mixes asymmetric error costs with non-uniform correct-prediction costs.
+    \item Balanced Error: the prior-weighted cost matrix $C_{00} = C_{11} = 0$, $C_{01} = 1/(2\pi_0)$, $C_{10} = 1/(2\pi_1)$, where $\pi_y = \mathbb{P}(Y = y)$ is the marginal class prior; misclassifying a class-$y$ example carries weight $1/(2\pi_y)$, so the rare class is over-weighted in inverse proportion to its frequency.
+\end{itemize}
+The five maximization metrics are $F_1$, $F_{0.5}$, $F_2$ (\texttt{sklearn.metrics.fbeta\_score}), MCC (\texttt{sklearn.metrics.matthews\_corrcoef}), and G-Mean (the geometric mean of per-class true-positive rates, \texttt{imblearn.metrics.geometric\_mean\_score}). These five are \emph{non-decomposable} performance measures in the sense of \citet{narasimhan2015optimizing}: each is a non-linear function of the confusion-matrix counts $(\mathrm{TP}, \mathrm{FP}, \mathrm{FN}, \mathrm{TN})$ as a whole and cannot be written as a per-sample average of a fixed loss $\tfrac{1}{n}\sum_i C_{y_i, \hat y_i}$ for any cost matrix $C$; consequently no fixed prior-weighted plug-in threshold of the calibrated $\hat p$ is Bayes-optimal across distributions, and the empirical-tuning family is the only one that targets these objectives directly.
+
+\subsection{Decision strategies}
+For each (dataset, model, objective) triple we evaluate twelve strategies that map the probability estimate $\hat{p}(x)$ to a discrete class. The strategies fall into three families: uncalibrated baselines that do not consume any held-out data, calibrate-then-decide pipelines that fit a probability transformation on a validation split before applying a closed-form threshold, and direct decision optimization that selects the threshold by minimizing empirical risk.
+
+\paragraph{Uncalibrated baselines.} Two strategies apply a fixed threshold without consuming any held-out data: Argmax ($\tau{=}0.5$) is the cost-blind argmax rule, and Analytical ($\tau{=}p^*$) is the \citet{elkan2001foundations} threshold from Eq.~\ref{eq:elkan_threshold} applied directly to uncalibrated outputs.
+
+\paragraph{Calibrate-then-decide.} A post-hoc calibrator is fitted to the raw probabilities on the validation set, then the analytical threshold $p^*$ or the default $\tau{=}0.5$ is applied to the recalibrated scores. Four calibrators paired with two threshold choices yield eight strategies:
+\begin{itemize}
+    \item Isotonic Regression (non-parametric, monotone) $\times$ \{Argmax, Analytical\}.
+    \item Platt Scaling (sigmoid fit on the classifier's raw score $s(x)$, taken as the \texttt{decision\_function} output when the estimator exposes one, following scikit-learn's convention, and the raw probability $\hat p(x)$ otherwise) $\times$ \{Argmax, Analytical\}.
+    \item Temperature Scaling (single-parameter logit rescaling) $\times$ \{Argmax, Analytical\}.
+    \item Dirichlet Calibration \citep{kull2019beyond} $\times$ \{Argmax, Analytical\}.
+\end{itemize}
+
+\paragraph{Direct decision optimization.}
+\begin{itemize}
+    \item Empirical ($\tau_{\mathrm{emp}}$): exact grid search over a uniform grid of $G = 301$ thresholds on $[0,1]$, evaluated on the held-out validation set, following the algorithm of Section~\ref{sec:threshold_grid_search}.
+    \item EmpiricalCV\@: same grid search, but the threshold is selected by $5$-fold stratified cross-validation on the full training set, eliminating the dedicated validation split, following Section~\ref{sec:cv_threshold}.
+\end{itemize}
+
+\subsection{Evaluation protocol}
+Each dataset is split stratified $80/20$ into a training pool (\emph{train-full}) and a held-out \emph{test set}. The training pool is further split into a $70\%$ \emph{training split} and a $10\%$ \emph{validation split} relative to the full dataset.
+
+The data budget consumed by each strategy depends on whether tuning requires a held-out signal. Argmax and Analytical use no tuning and fit the base estimator on the full $80\%$ train-full pool. The calibrate-then-decide pipelines and Empirical fit the estimator on the $70\%$ training split and tune the decision layer (calibrator parameters or threshold) on the $10\%$ validation split. EmpiricalCV fits and tunes jointly via $5$-fold stratified cross-validation over the full $80\%$ pool, matching the estimator's data budget to that of Argmax and Analytical.
+
+The reported metric is the objective value (average cost or target metric) computed on the held-out test set, averaged over $5$ independent seeds that resample the data partition; each base estimator's own \texttt{random\_state} is held fixed across seeds, so the reported variance reflects partition resampling alone.
+
+\section{Results and discussion}
+
+Table~\ref{tab:model-auc-binary} reports the held-out test ROC AUC of each base estimator, computed on the positive class and averaged over the ten seeds.
+
+\input{tables/model_auc_binary.tex}
+
+Across the (dataset, model, objective) triples in the campaign, EmpiricalCV wins or ties the per-row best strategy on $87\%$ of cost cells and $99.9\%$ of maximization-metric cells.
+
+Per-dataset means $\pm\,1$ standard error (SE) over the ten seeds for every (model, objective, strategy) combination are reported in the companion supplement (\texttt{tex/supplement/supplement.pdf} in the source repository), with cells whose mean$\,\pm\,$SE interval overlaps the best strategy's bolded. The aggregates cover all ten base classifiers.
+
+\subsection{Calibration quality and the analytical rule}
+
+The plug-in Analytical threshold matches direct search when the cost matrix is symmetric and separates from it as the asymmetry grows. Pooled across the ten estimators, Analytical, Empirical, and EmpiricalCV agree to within sampling error on the Symmetric and Non-Zero Diagonal matrices. On Asymmetric $10\times$ and Asymmetric $100\times$ the analytical rule trails the empirical strategies, with the per-row win-or-tie rate of EmpiricalCV larger than Analytical's on those two matrices.
+
+The bare analytical threshold stays close to the per-row best on the three deep tabular models (TabM, TabPFN, TabICL) but trails on the seven non-neural classifiers. As the cost ratio $C_{01}/C_{10}$ departs from $1$ (Section~\ref{sec:analytical_threshold}), the Bayes-optimal threshold moves away from the bulk of the score distribution, so any systematic miscalibration of $\hat{p}(x)$ translates into a larger decision-level penalty; the deep tabular probabilities are calibrated well enough that the Elkan threshold of Eq.~\ref{eq:elkan_threshold} remains close to optimal without post-hoc adjustment, while the non-neural defaults are not. The per-classifier breakdown of Figure~\ref{fig:win-counts-binary-cost} shows the same pattern at the win-or-tie level.
+
+Figure~\ref{fig:ci-mammography-non-zero_diagonal_cost} shows a representative cell, \textit{mammography} with TabICL under Non-Zero Diagonal: EmpiricalCV and Analytical share the lead within sampling error, the calibrate-then-Analytical pipelines form a middle band, and the cost-blind strategies trail.
+
+\input{figures/ci_plots/mammography_non-zero_diagonal_cost.tex}
+
+\subsection{Validation label budget across empirical strategies}
+
+The two empirical strategies differ only in the data used to choose the threshold, and that difference governs their behaviour.
+
+Empirical tunes on the $10\%$ validation partition. Its cost win-or-tie rate is $42\%$, the lowest among the non-cost-blind strategies and below the bare analytical rule's $69\%$. The parametric calibrate-then-analytical pipelines (Platt, Temperature, Dirichlet) sit between, with win-or-tie rates of $65$, $73$, and $70\%$.
+
+EmpiricalCV selects the threshold by five-fold cross-validation over the full $80\%$ pool, roughly seven times the label budget of the validation split. Its cost win-or-tie rate is $87\%$, the highest in the suite. On the Asymmetric $100\times$ objective, where heavy class skew makes single-split tuning least reliable, the pooled mean-loss gap between Empirical and EmpiricalCV is widest on small datasets ($+1.90$ on $n < 10^3$ data), narrowing on medium ($+0.32$) and large ($+0.11$) data. This pattern is consistent with the validation-budget reading but does not isolate it from other dataset-size confounds.
+
+Within the non-tuning strategies under decomposable cost objectives, the parametric calibrate-then-analytical pipelines (Platt, Temperature, Dirichlet) achieve the next-highest win-or-tie rates after EmpiricalCV\@. On individual (dataset, model) cells the parametric calibrators can match or beat EmpiricalCV\@; the per-cell numbers vary and are reported in the companion supplement.
+
+\subsection{Non-decomposable objectives}
+
+The five maximization metrics ($F_1$, $F_{0.5}$, $F_2$, MCC, and G-Mean) have no closed-form optimal threshold, so the empirical family is the only one that targets them directly.
+
+Pooled across maximization metrics, EmpiricalCV wins or ties $99.9\%$ of cells, Empirical $73\%$, and Argmax $45\%$. Calibrate-then-Argmax strategies sit near Argmax ($28$ to $38\%$): a monotone calibrator does not move the $\arg\max$ of a symmetric-threshold decision.
+
+Figure~\ref{fig:ci-adult-mcc} shows a representative cell, \textit{adult} with TabM on MCC\@: the empirical strategies lead, Argmax is close behind, and the calibrate-then-Argmax strategies sit a few points lower.
+
+\input{figures/ci_plots/adult_mcc.tex}
+
+Figures~\ref{fig:win-counts-binary-cost} and~\ref{fig:win-counts-binary-max} give the per-strategy win and tie rates under the $\pm 1$ SE overlap rule, broken out by base classifier and by dataset size and imbalance bucket; the figure captions document the reading convention and the bootstrap half-width.
+
+\input{figures/win_counts/win_counts_binary_cost.tex}
+
+\input{figures/win_counts/win_counts_binary_max.tex}
+
+\section{Summary of binary analysis}
+
+The binary campaign shows an interaction between cost asymmetry and estimator calibration.
+
+When the base estimator is well calibrated, as for the three deep tabular models here, the bare Analytical threshold is near-optimal under the decomposable cost objectives and consumes no held-out data.
+
+When the estimator is miscalibrated, the analytical rule is far from optimal under heavy asymmetry, and the route back to competitive loss depends on the data budget available for tuning. A single $10\%$ validation split is too small to tune the threshold reliably under heavy asymmetry, so Empirical is in aggregate no better than the analytical plug-in. Cross-validation over the full pool makes EmpiricalCV the most reliable strategy across the campaign. For miscalibrated non-neural estimators specifically, post-hoc parametric calibration composed with the analytical rule is the lowest-loss option when the objective admits a closed-form optimum under calibrated probabilities.

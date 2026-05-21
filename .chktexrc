@@ -1,0 +1,13 @@
+# ChkTeX configuration for this LaTeX project
+# See `chktex --help` or the ChkTeX manual for details.
+
+# Suppress warnings:
+#  1  - Command terminated with space (common with macros like \onehalfspacing)
+#  3  - Enclose previous parenthesis with {} (false positives with \left/\right)
+# 27  - Could not execute LaTeX command (input files resolved at build time)
+# 35  - Should use \min/\max (false positive on subscript names like C_{max})
+# 36  - Mathmode on at end of line (common in multi-line equations)
+# 44  - User regex style opinions (vertical rules, \hline in tables)
+CmdLine {
+    -n1 -n3 -n27 -n35 -n36 -n44
+}

@@ -1,0 +1,30 @@
+%!TeX root=../carlo_master.tex
+\chapter{K-invariance of the misspecification budget}\label{app:kl_invariance}
+
+The sweep parameters of Sections~\ref{sec:misspec_sensitivity_variance} and~\ref{sec:misspec_sensitivity_meanshift} are stated to be ``K-independent'', meaning that the per-$K$ curves can be overlaid on a common horizontal axis without an extra rescaling. The strongest sense in which this holds is that the KL divergence between the reference and perturbed distributions depends only on the sweep parameter and not on the number of classes. This appendix records the elementary computation for each construction.
+
+\section{Variance scaling}
+
+For the variance-scaling family of Section~\ref{sec:misspec_sensitivity_variance}, both members share uniform priors $\pi_k = 1/K$ and isotropic Gaussian class-conditionals on $\mathbb{R}^d$ with $d = 2$: the reference is $p_1(\cdot \mid Y{=}k) = \mathcal{N}(\mathbf{m}_k, \sigma^2 \mathbf{I})$ and the perturbed member is $p_\lambda(\cdot \mid Y{=}k) = \mathcal{N}(\mathbf{m}_k, \lambda\sigma^2 \mathbf{I})$. The general multivariate-Gaussian formula reads
+\begin{equation}\label{eq:kl_gaussian_general}
+    D_{\mathrm{KL}}\bigl(\mathcal{N}(\boldsymbol{\mu}_0, \Sigma_0) \,\big\|\, \mathcal{N}(\boldsymbol{\mu}_1, \Sigma_1)\bigr) = \tfrac{1}{2}\Bigl[\mathrm{tr}(\Sigma_1^{-1}\Sigma_0) - d + \log\tfrac{\det \Sigma_1}{\det \Sigma_0} + (\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)^\top \Sigma_1^{-1}(\boldsymbol{\mu}_1 - \boldsymbol{\mu}_0)\Bigr].
+\end{equation}
+Specialising to $\boldsymbol{\mu}_0 = \boldsymbol{\mu}_1 = \mathbf{m}_k$, $\Sigma_0 = \sigma^2 \mathbf{I}$, and $\Sigma_1 = \lambda\sigma^2 \mathbf{I}$ collapses the four terms in order: $\mathrm{tr}((\lambda\sigma^2)^{-1}\sigma^2 \mathbf{I}) = d/\lambda$, the dimension contributes $-d$, the log-determinant ratio is $\log(\lambda\sigma^2/\sigma^2)^d = d\log\lambda$, and the quadratic mean-difference term vanishes. Combining the three surviving terms gives
+\begin{equation}\label{eq:kl_variance_perclass}
+    D_{\mathrm{KL}}\bigl(p_1(\cdot \mid Y{=}k) \,\big\|\, p_\lambda(\cdot \mid Y{=}k)\bigr) = \tfrac{1}{2}\bigl(d/\lambda - d + d\log\lambda\bigr) = \frac{d}{2}\left(\log \lambda + \frac{1}{\lambda} - 1\right).
+\end{equation}
+The right-hand side depends on $\lambda$ and on the ambient dimension $d = 2$, but not on $K$. By the chain rule of relative entropy, $D_{\mathrm{KL}}(\mathbb{P}_1 \,\|\, \mathbb{P}_\lambda)$ equals the KL between the $Y$-marginals plus the $\pi$-weighted average of the per-class KLs on $X \mid Y$; the marginal term vanishes because the two distributions share the uniform $Y$-marginal, and the per-class summand is constant in $k$, so
+\begin{equation}\label{eq:kl_variance_joint}
+    D_{\mathrm{KL}}(\mathbb{P}_1 \,\|\, \mathbb{P}_\lambda) = \sum_{k=0}^{K-1} \pi_k\, D_{\mathrm{KL}}\bigl(p_1(\cdot \mid Y{=}k) \,\big\|\, p_\lambda(\cdot \mid Y{=}k)\bigr) = \frac{d}{2}\left(\log \lambda + \frac{1}{\lambda} - 1\right).
+\end{equation}
+Fixing $\lambda$ therefore fixes the per-class and joint KL budgets at the same value for every $K$, so the per-$K$ curves of Figure~\ref{fig:misspec-sensitivity-variance} are comparable along the horizontal axis without renormalisation.
+
+\section{Random per-class mean shifts}
+
+The mean-shift family of Section~\ref{sec:misspec_sensitivity_meanshift} replaces each class mean $\mathbf{m}_k$ by $\mathbf{m}_k + \xi\,\mathbf{v}_k$ in $\mathbb{R}^{K-1}$, with the per-class covariance fixed at $\sigma^2 \mathbf{I}$. The ambient dimension now scales with $K$, but specialising Eq.~\eqref{eq:kl_gaussian_general} to $\Sigma_0 = \Sigma_1 = \sigma^2 \mathbf{I}$ kills the trace and log-determinant contributions ($\mathrm{tr}((\sigma^2)^{-1}\sigma^2 \mathbf{I}) - d = 0$, $\log(\det \sigma^2 \mathbf{I}/\det \sigma^2 \mathbf{I}) = 0$) and leaves only the quadratic mean-difference term, so the per-class KL reduces to the squared Euclidean distance between the means relative to $\sigma^2$:
+\begin{equation}\label{eq:kl_meanshift_perclass}
+    D_{\mathrm{KL}}\bigl(p_0(\cdot \mid Y{=}k) \,\big\|\, p_\xi(\cdot \mid Y{=}k)\bigr) = \frac{(\xi\,\mathbf{v}_k)^\top (\sigma^2 \mathbf{I})^{-1} (\xi\,\mathbf{v}_k)}{2} = \frac{\|\xi\,\mathbf{v}_k\|^2}{2\sigma^2} = \frac{\xi^2}{2\sigma^2},
+\end{equation}
+using $\|\mathbf{v}_k\| = 1$ in the last step. The right-hand side depends on $\xi/\sigma$ alone and is constant in $k$, so the same chain-rule argument as in Eq.~\eqref{eq:kl_variance_joint} (shared uniform $Y$-marginal, per-class summand independent of $k$) gives a joint KL of $\xi^2/(2\sigma^2)$. The horizontal axis $\xi/\sigma$ of Figure~\ref{fig:misspec-sensitivity-meanshift} is therefore a K-independent misspecification budget, exactly as $\lambda$ is in the variance case.
+
+The same calculation applied to the reference family $\mathbb{P}_0$ alone explains the $R_{\mathrm{circ}}(K) = \sqrt{2(K-1)/K}\,\sigma$ rescaling of Section~\ref{sec:misspec_sensitivity_meanshift}: for any pair $j \neq k$ of equal-covariance class-conditional Gaussians of $\mathbb{P}_0$ the same specialisation of Eq.~\eqref{eq:kl_gaussian_general} gives $D_{\mathrm{KL}}(p_0(\cdot \mid Y{=}j) \,\|\, p_0(\cdot \mid Y{=}k)) = \|\mathbf{m}_j - \mathbf{m}_k\|^2/(2\sigma^2)$. The choice of $R_{\mathrm{circ}}(K)$ that pins the pairwise Euclidean distance at $4\sigma$ for every $K$ therefore pins the pairwise KL at $(4\sigma)^2/(2\sigma^2) = 8$. The reference geometry and the perturbation are then both calibrated to K-independent KL budgets, and only the ambient dimension $K-1$ of the simplex varies with $K$.

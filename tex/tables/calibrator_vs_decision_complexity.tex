@@ -1,0 +1,20 @@
+\begin{table}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{llcc}
+        \toprule
+        Method & Type & Parameters $W$ & Complexity ($d_P$ or $d_{Nat}$) \\
+        \midrule
+        Temperature Scaling & Calibrator & $1$ & $\leq 1$ \\
+        Platt Scaling (OvR) & Calibrator & $2K$ & $\leq 2$ per class \\
+        Dirichlet Calibration & Calibrator & $K^2 + K$ & $\leq K + 1$ per class \\
+        \midrule
+        $\mathcal{H}_{PS}$ (O'Brien/Marchetti) & Decision & $K-1$ & $K-1$ \\
+        $\mathcal{H}_{Sc}$ (Linear scaling / ratio thresholding) & Decision & $K-1$ & $\leq K-1$ \\
+        $\mathcal{H}_{Vor}$ (Voronoi) & Decision & $K(K-1)$ & $\leq K(K-1)$ \\
+        $\mathcal{H}_{Full}$ (Full matrix) & Decision & $K^2$ & $\leq K^2$ \\
+        \bottomrule
+    \end{tabular}%
+    }
+    \caption{Sample complexity comparison of calibration and decision hypothesis classes. The first block lists the three parametric calibrators in increasing parameter count $W$. Calibrator complexity is reported as per-class pseudo-dimension ($d_P$) of the pre-softmax score; for $K \geq 3$ softmax is not a scalar strictly monotone transform, so a single joint $d_P$ is not directly available and the joint capacity is summarized by $W$. Decision complexity is the Natarajan dimension ($d_{Nat}$).}\label{tab:calibrator_vs_decision_complexity}
+\end{table}

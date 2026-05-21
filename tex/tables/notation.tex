@@ -1,0 +1,138 @@
+{\small
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}l p{9cm} l@{}}
+\caption{Notation used throughout this dissertation.}\label{tab:notation}\\
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Defined in} \\
+\midrule
+\endfirsthead
+
+\multicolumn{3}{@{}l}{\textit{Table~\ref{tab:notation} (continued)}}\\
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Defined in} \\
+\midrule
+\endhead
+
+\bottomrule
+\endlastfoot
+
+\multicolumn{3}{@{}l}{\textit{Spaces, random variables, and data}}\\
+\midrule
+$\mathcal{X} \subseteq \mathbb{R}^d$ & Input feature space (Borel) & Sec.~\ref{sec:theory} \\
+$\mathcal{Y} = \{0, \ldots, K{-}1\}$ & Label space & Sec.~\ref{sec:theory} \\
+$K$ & Number of classes & Sec.~\ref{sec:theory} \\
+$\mathbb{P}$ & Data-generating measure on $\mathcal{X} \times \mathcal{Y}$ & Sec.~\ref{sec:theory} \\
+$(X, Y)$ & Random pair, $(X, Y) \sim \mathbb{P}$ & Sec.~\ref{sec:theory} \\
+$x \in \mathcal{X},\, y \in \mathcal{Y}$ & Realizations of $X$ and $Y$ & Sec.~\ref{sec:theory} \\
+$\pi_y = \mathbb{P}(Y{=}y)$ & Class prior & Sec.~\ref{sec:binary_objectives} \\
+$\Delta^{K-1}$ & Probability simplex $\{\mathbf{p} \in \mathbb{R}^K : \mathbf{p} \geq 0,\, \mathbf{1}^\top\mathbf{p} = 1\}$ & Sec.~\ref{sec:inference} \\
+$\mathbf{e}_k$ & $k$-th simplex vertex (one-hot) & Sec.~\ref{sec:analytical_fragility} \\
+$\mathbf{u} = (1/K, \ldots, 1/K)^\top$ & Simplex barycentre & Sec.~\ref{sec:analytical_fragility} \\
+$\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ & Held-out validation set; training sample of the decision stage & Sec.~\ref{sec:decision_learning} \\
+$\mathcal{D}_{train}$ & Training set & Sec.~\ref{sec:binary} \\
+$m,\, n,\, N$ & Validation, evaluation, total sample sizes & Sec.~\ref{sec:decision_learning} \\
+$F$ & Number of cross-validation folds & Sec.~\ref{sec:binary} \\
+$\mathcal{T},\, G$ & Threshold grid and its cardinality & Sec.~\ref{sec:binary} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Probability estimators}}\\
+\midrule
+$\boldsymbol{\eta}(x) \in \Delta^{K-1}$ & True conditional class probability vector & Sec.~\ref{sec:inference} \\
+$\eta_k(x) = \mathbb{P}(Y{=}k \mid X{=}x)$ & Component of $\boldsymbol{\eta}(x)$ & Sec.~\ref{sec:inference} \\
+$\hat{\mathbf{p}} \colon \mathcal{X} \to \Delta^{K-1}$ & Probability estimator (function and, via $\hat{\mathbf{p}}(x)$, its output) & Sec.~\ref{sec:inference} \\
+$\hat p(x),\, \eta(x)$ & Binary scalar reductions $\hat p_1(x),\, \eta_1(x)$ & Sec.~\ref{sec:inference} \\
+$\mathbf{p}$ & Generic free variable in $\Delta^{K-1}$ & Sec.~\ref{sec:inference} \\
+$p_k$,\; $\boldsymbol{\mu}_j[k]$ & $k$-th component of a vector: subscript for a plain vector ($p_k$ is the $k$-th entry of $\mathbf{p}$); bracket for a class-indexed vector ($\boldsymbol{\mu}_j[k]$), whose subscript is reserved for the class index & Sec.~\ref{sec:inference} \\
+$\boldsymbol{\epsilon}(x) = \hat{\mathbf{p}}(x) - \boldsymbol{\eta}(x)$ & Estimation error & Sec.~\ref{sec:analytical_fragility} \\
+$\Psi \colon \Delta^{K-1} \to \Delta^{K-1}$ & Systematic estimator distortion, $\hat{\mathbf{p}} \approx \Psi(\boldsymbol{\eta})$ & Sec.~\ref{sec:analytical_fragility} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Costs and risk}}\\
+\midrule
+$\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$ & Cost matrix; $C_{ij}$ is the cost of predicting $j$ when truth is $i$ & Sec.~\ref{sec:theory} \\
+$C_{max}$ & Maximum entry of $\mathbf{C}$ & Sec.~\ref{sec:theory} \\
+$\mathbf{c}_i$ & $i$-th column of $\mathbf{C}$; cost vector for predicting class $i$ & Sec.~\ref{sec:theory} \\
+$\mathcal{R}(\hat y \mid x) = \mathbf{c}_{\hat y}^\top \boldsymbol{\eta}(x)$ & Conditional risk of action $\hat y$ at $x$ & Eq.~\eqref{eq:expected_risk} ff. \\
+$\mathcal{L}_i(\mathbf{p}) = \mathbf{c}_i^\top \mathbf{p}$ & Conditional-risk linear functional; equals $\mathcal{R}(i \mid x)$ when $\mathbf{p} = \boldsymbol{\eta}(x)$ & Sec.~\ref{sec:multiclass} \\
+$\mathbf{r}(x) = \mathbf{C}^\top \boldsymbol{\eta}(x)$ & Vector of conditional risks over all actions & Sec.~\ref{sec:theory} \\
+$R(h) = \mathbb{E}_{\mathbb{P}}[C_{Y, h(X)}]$ & Expected risk of classifier $h$ & Eq.~\eqref{eq:expected_risk} \\
+$R^*$ & Bayes risk, $\inf_{h \in \mathcal{H}_{all}} R(h)$ & Sec.~\ref{sec:theory} \\
+$\hat R(\cdot)$ & Empirical risk on $\mathcal{V}$; decision-stage ERM objective & Sec.~\ref{sec:binary} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Classifiers, decision rules, and decision regions}}\\
+\midrule
+$h \colon \mathcal{X} \to \mathcal{Y}$ & Classifier; $h = \delta \circ \hat{\mathbf{p}}$ & Sec.~\ref{sec:theory} \\
+$h^*$ & Bayes-optimal classifier & Eq.~\eqref{eq:bayes_optimal} \\
+$\hat h$ & Plug-in classifier on $\hat{\mathbf{p}}$ & Eq.~\eqref{argmin_risk} \\
+$\delta \colon \Delta^{K-1} \to \mathcal{Y}$ & Decision rule & Sec.~\ref{sec:theory} \\
+$\delta^*$ & Bayes-optimal decision rule, $\delta^*(\mathbf{p}) = \arg\min_{\hat y \in \mathcal{Y}} [\mathbf{C}^\top \mathbf{p}]_{\hat y}$ & Eq.~\eqref{eq:bayes_optimal_delta} \\
+$\delta_\tau(\hat p) = \mathbb{I}(\hat p \geq \tau)$ & Binary threshold rule & Sec.~\ref{sec:binary} \\
+$\delta_{\mathbf{A}}(\mathbf{p}) = \arg\min_{i \in \mathcal{Y}}\, \mathbf{a}_i^\top \mathbf{p}$ & Partition rule induced by partition matrix $\mathbf{A}$ & Eq.~\eqref{eq:obrien_rule} \\
+$\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ & Decision region for class $i$ under rule $\delta$; superscript dropped when $\delta$ is unambiguous from context & Sec.~\ref{sec:theory} \\
+$\mathcal{P}_i^*$ & Bayes-optimal decision region, shorthand for $\mathcal{P}_i^{\delta^*}$ & Sec.~\ref{sec:theory} \\
+$\mathcal{B}_{ij}$ & Separating hyperplane (decision boundary) between $\mathcal{P}_i^*$ and $\mathcal{P}_j^*$ & Thm.~\ref{thm:rigid_partition} \\
+$\mathbf{n}_{ij} = \mathbf{c}_i - \mathbf{c}_j$ & Boundary normal under cost matrix $\mathbf{C}$ & Thm.~\ref{thm:rigid_partition} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Hypothesis classes}}\\
+\midrule
+$B^A$ & Set of all functions $f \colon A \to B$ (function space) & Def.~\ref{def:vc_dimension} \\
+$\mathcal{H}_{all}$ & All measurable $h \colon \mathcal{X} \to \mathcal{Y}$ & Sec.~\ref{sec:theory} \\
+$\mathcal{H}_{dec}$ & Candidate decision rules $\delta$ (context-dependent) & Sec.~\ref{sec:decision_learning} \\
+$\mathcal{H}_{thresh}$ & Binary threshold indicators on $[0,1]$ & Lem.~\ref{lem:vc_thresh} \\
+$\mathcal{H}_{PS}$ & Parallel-shift partition class (O'Brien's parallel shifts $\equiv$ multidimensional thresholding), $K{-}1$ free parameters & Sec.~\ref{sec:multidim_thresholding} \\
+$\mathcal{H}_{Sc}$ & Column-scaling partition class (linear scaling $\equiv$ probability-ratio thresholding), $K{-}1$ free parameters & Sec.~\ref{sec:prob_ratio_thresholding} \\
+$\mathcal{H}_{Vor}$ & Voronoi partition class, unconstrained prototypes ($\boldsymbol{\mu}_k \in \mathbb{R}^K$), $K^2$ free parameters & Sec.~\ref{sec:voronoi_tessellation} \\
+$\mathcal{H}_{Vor}^{\Delta}$ & Simplex-restricted Voronoi class ($\boldsymbol{\mu}_k \in \Delta^{K-1}$), $K(K{-}1)$ free parameters & Sec.~\ref{sec:voronoi_tessellation} \\
+$\mathcal{H}_{Vor}^{\mathrm{DLC}}$ & Voronoi subclass satisfying the Dominant Label Constraint ($\subseteq \mathcal{H}_{Vor}^{\Delta}$) & Def.~\ref{def:dlc} \\
+$\mathcal{H}_{Full}$ & Unconstrained $K\times K$ partition matrices & Sec.~\ref{sec:partition_optimization} \\
+$\mathcal{H}_{temp},\, \mathcal{H}_{platt},\, \mathcal{H}_{dir}$ & Temperature, Platt, and Dirichlet calibrator classes & Prop.~\ref{prop:calibrator_complexity} \\
+$\mathcal{M}_\uparrow$ & Monotone non-decreasing maps (isotonic regression) & Eq.~\eqref{eq:isotonic} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Decision-stage parameters}}\\
+\midrule
+$\tau \in [0,1]$ & Binary threshold parameter & Sec.~\ref{sec:binary} \\
+$p^*$ & Elkan analytical threshold & Eq.~\eqref{eq:elkan_threshold} \\
+$\tau_{emp},\, \hat\tau$ & Empirical optimal threshold (single-split, grid-selected) & Sec.~\ref{sec:binary} \\
+$\boldsymbol{\tau} \in \mathbb{R}_{>0}^K$ & Per-class threshold vector & Eq.~\eqref{eq:threshold_ratio} \\
+$\mathrm{ord}$ & Class evaluation order (a permutation of $\mathcal{Y}$) for sequential selection & Sec.~\ref{sec:sequential_selection} \\
+$\boldsymbol{\alpha}$ & Affine bias vector for parallel-shift partitions & Sec.~\ref{sec:partition_optimization} \\
+$\boldsymbol{\beta}$ & Linear scaling factors for column rebalancing & Sec.~\ref{sec:partition_optimization} \\
+$\mathbf{A} \in \mathbb{R}^{K \times K}$,\, $\mathbf{a}_i$ & Learnable partition matrix and its $i$-th column & Eq.~\eqref{eq:obrien_rule} \\
+$\boldsymbol{\mu}_k \in \mathbb{R}^K$ & Voronoi prototype (anchor) for class $k$; $\in \Delta^{K-1}$ for the simplex-restricted class & Sec.~\ref{sec:voronoi_tessellation} \\
+$\mathcal{M} = \{\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1}\}$ & Prototype configuration & Sec.~\ref{sec:voronoi_tessellation} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Calibration, complexity, and operators}}\\
+\midrule
+$g$ & Post-hoc calibrator $[0,1] \to [0,1]$ or $\Delta^{K-1} \to \Delta^{K-1}$ & Sec.~\ref{sec:calibration} \\
+$T$ & Temperature parameter & Eq.~\eqref{eq:temperature_scaling} \\
+$(a, b)$ & Platt scaling parameters & Eq.~\eqref{eq:platt_scaling} \\
+$(\mathbf{W}, \mathbf{b})$ & Dirichlet calibration parameters & Eq.~\eqref{eq:dirichlet_calibration} \\
+$z(\hat p) = \log\!\frac{\hat p}{1 - \hat p}$ & Logit & Eq.~\eqref{eq:temperature_scaling} \\
+$\sigma$ & Logistic sigmoid & Eq.~\eqref{eq:temperature_scaling} \\
+$d_{VC}$ & Vapnik--Chervonenkis dimension & Def.~\ref{def:vc_dimension} \\ % chktex 8
+$d_P$ & Pseudo-dimension (real-valued analogue of $d_{VC}$) & Def.~\ref{def:pseudo_dimension} \\
+$d_{Nat}$ & Natarajan dimension (multiclass analogue of $d_{VC}$) & Def.~\ref{def:natarajan_dimension} \\
+$W$ & Real-valued parameter count of a class & Sec.~\ref{sec:calibration} \\
+$c$ & Universal constant absorbing logarithmic factors in uniform-convergence bounds & Eq.~\eqref{eq:clean_gen_bound} \\
+$\Phi_k$ & Fixed per-class feature map of a linear-score class & Lem.~\ref{lem:linear_embedding} \\
+$g_k$ & Fixed, parameter-free per-class score offset (distinct from the calibrator $g$) & Lem.~\ref{lem:linear_embedding} \\
+$\widetilde{W}$ & Lifted parameter count of a coupled score class ($\geq W$) & Lem.~\ref{lem:linear_embedding} \\
+$\mathbb{I}(\cdot)$ & Indicator function & Sec.~\ref{sec:binary} \\
+$\arg\min,\, \arg\max$ & Lexicographic tie-breaking on ties & Sec.~\ref{sec:theory} \\
+$\|\cdot\|_1,\, \|\cdot\|_\infty,\, \|\cdot\|_2$ & $L^1$, $L^\infty$, Euclidean norms & Prop.~\ref{prop:excess_risk_bound} \\
+$\mathrm{Dir}(\boldsymbol{\alpha}),\, \mathcal{N}(\boldsymbol{\mu}, \Sigma)$ & Dirichlet (concentration $\boldsymbol{\alpha} \in \mathbb{R}^K_{>0}$) and Gaussian distributions & Sec.~\ref{sec:voronoi_samplers} \\
+\addlinespace
+\multicolumn{3}{@{}l}{\textit{Misspecification-sensitivity analysis (Sec.~\ref{sec:misspec_sensitivity_K})}}\\
+\midrule
+$\mathbb{P}_\theta$ & Misspecification family; reference is the identity member ($\lambda{=}1$ variance, $\xi{=}0$ shift) & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$\boldsymbol{\eta}_{\mathrm{ref}},\, \boldsymbol{\eta}_\theta$ & Conditional class probabilities of the reference and perturbed members & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$\mathbf{m}_k \in \mathbb{R}^d$ & Feature-space class-conditional Gaussian mean & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$\sigma > 0$ & Class-conditional Gaussian scale (distinct from the logistic sigmoid above; local to the misspecification family) & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$\lambda \geq 1$ & Variance multiplier ($\mathbb{P}_\lambda$ covariance $\lambda\sigma^2\mathbf{I}$) & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$R_{\mathrm{circ}}(K)$ & Circumradius of the equidistant class-mean configuration & Sec.~\ref{sec:misspec_sensitivity_meanshift} \\
+$\xi$ & Per-class Euclidean mean-shift magnitude & Sec.~\ref{sec:misspec_sensitivity_meanshift} \\
+$D_{\mathrm{KL}}(\mathbb{Q}\,\|\,\mathbb{Q}')$ & Kullback--Leibler divergence between distributions $\mathbb{Q}$ and $\mathbb{Q}'$ on a common space & App.~\ref{app:kl_invariance} \\ % chktex 8
+$V = \{\mathbf{v} \in \mathbb{R}^K : \mathbf{1}^\top\mathbf{v} = 0\}$ & Tangent space of admissible probability-vector perturbations & Lem.~\ref{lem:dimensional_dilution} \\
+$\boldsymbol{\epsilon}$ & Perturbation in $V$ of radius $r$; cf.\ estimation error $\boldsymbol{\epsilon}(x)$ above & Lem.~\ref{lem:dimensional_dilution} \\
+$\phi_\delta(\mathbf{p}) = \mathcal{L}_{\delta(\mathbf{p})}(\mathbf{p})$ & Per-sample expected cost of rule $\delta$ at $\mathbf{p}$ & Eq.~\eqref{eq:per_sample_cost_functional} \\
+$\mathcal{R}(\delta;\, \boldsymbol{\eta})$ & Integrated cost-sensitive risk along $X \mapsto \boldsymbol{\eta}(X)$ & Sec.~\ref{sec:misspec_sensitivity_lemma} \\
+\end{longtable}
+}

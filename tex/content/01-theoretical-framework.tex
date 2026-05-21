@@ -1,0 +1,222 @@
+%!TeX root=../carlo_master.tex
+\chapter{Theoretical framework}\label{sec:theory}
+
+Under the expected-risk framework, classification separates into an \textit{inference} stage, which estimates conditional class probabilities, and a \textit{decision} stage, which selects the action of minimum expected cost. This chapter formalizes the two stages, derives the analytical decision rule for calibrated estimates, and bounds the excess risk incurred when that rule is applied to miscalibrated ones.
+
+\section{Problem formulation}
+
+We consider a standard multiclass classification setting. Let $\mathcal{X} \subseteq \mathbb{R}^d$ be the input feature space equipped with the Borel $\sigma$-algebra $\Sigma_{\mathcal{X}}$, and let $\mathcal{Y} = \{0, 1, \dots, K-1\}$ be the discrete output space equipped with the discrete $\sigma$-algebra $\Sigma_{\mathcal{Y}}$.
+
+We assume the existence of an unknown data-generating probability measure $\mathbb{P}$ defined on the product space $(\mathcal{X} \times \mathcal{Y}, \Sigma_{\mathcal{X}} \otimes \Sigma_{\mathcal{Y}})$. We denote by $(X, Y)$ a random pair with distribution $\mathbb{P}$, written $(X, Y) \sim \mathbb{P}$, and write $x \in \mathcal{X}$ and $y \in \mathcal{Y}$ for realizations of $X$ and $Y$, respectively.
+
+A classifier (or hypothesis) is defined as a measurable function $h: \mathcal{X} \to \mathcal{Y}$ that maps input vectors to class labels. Let $\mathcal{H}_{all}$ denote the set of all such measurable functions. The performance of a classifier is evaluated via a cost matrix $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$, where the entry $C_{ij}$ represents the non-negative, finite penalty incurred for predicting class $j$ (i.e., $h(x)=j$) when the true state of nature is $i$ (i.e., $y=i$). We assume the cost function is bounded, satisfying
+\begin{equation}
+    0 \leq C_{ij} \leq C_{max} < \infty, \quad \forall i,j \in \mathcal{Y}.
+\end{equation}
+
+Throughout this work we further assume the cost matrix $\mathbf{C}$ is fixed and independent of the input $x$.
+
+The objective is to minimize the Expected Risk $R(h)$, defined as the expected cost with respect to the measure $\mathbb{P}$,
+\begin{equation}\label{eq:expected_risk}
+    R(h) := \mathbb{E}_{\mathbb{P}} [C_{Y, h(X)}] = \int_{\mathcal{X} \times \mathcal{Y}} C_{y, h(x)} \, d\mathbb{P}(x, y).
+\end{equation}
+
+The Bayes Risk ($R^*$), determined solely by the aleatoric uncertainty of $\mathbb{P}$, is the infimum of the risk over all measurable functions,
+\begin{equation}\label{eq:bayes_risk_def}
+    R^* := \inf_{h \in \mathcal{H}_{all}} R(h).
+\end{equation}
+
+Direct minimization of Eq.~(\ref{eq:expected_risk}) is intractable. The distribution $\mathbb{P}$ is unknown, so in practice we observe only a finite sample $\mathcal{S} = \{(x_i, y_i)\}_{i=1}^N$ drawn i.i.d.\ from $\mathbb{P}$, from which the classifier must be constructed; moreover, empirical risk minimization over $\mathcal{H}_{all}$ with a discrete cost loss is computationally hard in general. We therefore decompose the hypothesis $h$ into a \textit{probability estimator} $\hat{\mathbf{p}}$ and a \textit{decision rule} $\delta$, so that $h(x) = \delta(\hat{\mathbf{p}}(x))$ (Figure~\ref{fig:pipeline}).
+
+\begin{figure}[H]
+    \centering
+    \input{figures/pipeline_diagram.tex} 
+    \caption{The decomposition of the classification pipeline.}\label{fig:pipeline}
+\end{figure}
+
+\begin{enumerate}
+    \item Inference Stage: An estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$ maps the input to the $(K-1)$-probability simplex, approximating the conditional distribution of $Y$ given $X$.
+    \item Decision Stage: A decision rule $\delta: \Delta^{K-1} \to \mathcal{Y}$ maps the estimated probability vector to a discrete class label to satisfy a risk-minimization objective.
+\end{enumerate}
+
+The decomposition is sound when $\hat{\mathbf{p}}$ converges to the true conditional class probabilities. In finite-sample regimes or under model misspecification, $\hat{\mathbf{p}}$ deviates from $\boldsymbol{\eta}$ and the standard decision rules become suboptimal. The resulting excess risk (the gap between the decomposed classifier's risk and the Bayes Risk) is analyzed in Section~\ref{sec:excess_risk_miscalibration}.
+
+\section{Inference: conditional probability estimation}\label{sec:inference}
+
+Let $\Delta^{K-1} = \{ \mathbf{p} \in \mathbb{R}^K \mid \mathbf{p} \geq 0, \mathbf{1}^\top \mathbf{p} = 1 \}$ denote the standard $(K-1)$-simplex; throughout the dissertation, the unhatted symbol $\mathbf{p}$ stands for a generic element of $\Delta^{K-1}$ (e.g., the argument of a decision rule $\delta(\mathbf{p})$), distinct from the specific estimator output $\hat{\mathbf{p}}(x)$ introduced below. The \textit{conditional class probability} vector $\boldsymbol{\eta}: \mathcal{X} \to \Delta^{K-1}$ collects the per-class probabilities at $x$, with $k$-th entry
+\begin{equation}
+    \eta_k(x) := \mathbb{P}(Y=k \mid X=x), \quad k \in \mathcal{Y}.
+\end{equation}
+The inference stage uses the sample $\mathcal{S}$ to construct a measurable estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$ that approximates $\boldsymbol{\eta}$.
+
+Since $\mathcal{S}$ contains only realized labels $y_i$ and not their generating probabilities $\boldsymbol{\eta}(x_i)$, $\hat{\mathbf{p}}$ is fit by minimizing a surrogate loss whose population minimizer recovers $\boldsymbol{\eta}$. The standard choices are the Logarithmic Loss (negative log-likelihood, equivalent to the Kullback-Leibler (KL) divergence between the empirical distribution and the model) and the Brier Score (squared error on the simplex); both belong to the family of \textit{strictly proper scoring rules}, whose population minimizer is $\boldsymbol{\eta}$ itself \citep{gneiting2007strictly}. If the hypothesis class $\mathcal{F}$ containing $\hat{\mathbf{p}}$ is sufficiently expressive ($\boldsymbol{\eta} \in \mathcal{F}$) and $N \to \infty$, optimizing these objectives guarantees that $\hat{\mathbf{p}}$ converges to $\boldsymbol{\eta}$ in probability.
+
+\section{Decision: risk minimization}
+
+Given the true conditional class probability vector $\boldsymbol{\eta}(x)$, the decision stage requires a mapping $\delta: \Delta^{K-1} \to \mathcal{Y}$ that selects a discrete action to minimize the expected loss. We define the \textit{Conditional Risk} $\mathcal{R}(\hat{y} \mid x)$ as the expected loss of taking a specific action $\hat{y} \in \mathcal{Y}$ with respect to the aleatoric uncertainty in $Y$,
+\begin{equation}
+    \mathcal{R}(\hat{y} \mid x) := \mathbb{E}_{Y \sim \boldsymbol{\eta}(x)} [C_{Y, \hat{y}}] = \sum_{k=0}^{K-1} C_{k, \hat{y}} \eta_k(x).
+\end{equation}
+
+In vectorized form, let $\mathbf{r}(x) \in \mathbb{R}_{\geq 0}^K$ denote the vector of conditional risks for all $K$ actions. Since the $i$-th column of $\mathbf{C}$ contains the costs of predicting class $i$,
+\begin{equation}
+    \mathbf{r}(x) = \left[ \mathcal{R}(0 \mid x), \dots, \mathcal{R}(K-1 \mid x) \right]^\top = \mathbf{C}^\top \boldsymbol{\eta}(x).
+\end{equation}
+
+The Bayes Optimal Decision Rule $h^*$ is the policy that selects the action minimizing this conditional risk
+\begin{equation}\label{eq:bayes_optimal}
+    h^*(x) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, \mathcal{R}(\hat{y} \mid x),
+\end{equation}
+where ties are broken by selecting the smallest index. The corresponding Bayes Optimal Decision Rule on the simplex side of the decomposition $h = \delta \circ \hat{\mathbf{p}}$ is $\delta^*: \Delta^{K-1} \to \mathcal{Y}$,
+\begin{equation}\label{eq:bayes_optimal_delta}
+    \delta^*(\mathbf{p}) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, [\mathbf{C}^\top \mathbf{p}]_{\hat{y}},
+\end{equation}
+so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes Risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
+
+\begin{proposition}[Bayes risk identity]\label{prop:bayes_risk_identity}
+For the Bayes Optimal Decision Rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}),
+\begin{equation}\label{eq:bayes_risk_identity}
+    R(h^*) = \mathbb{E}_X \left[ \min_{\hat{y} \in \mathcal{Y}} \mathcal{R}(\hat{y} \mid X) \right] = \min_{h \in \mathcal{H}_{all}} \mathbb{E}_X \left[ \mathcal{R}(h(X) \mid X) \right] = R^*.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Every $h \in \mathcal{H}_{all}$ satisfies the pointwise bound $\mathcal{R}(h(x) \mid x) \geq \min_{\hat{y}} \mathcal{R}(\hat{y} \mid x)$, and $h^*$ attains this minimum at every $x$, so monotonicity of the integral gives $R(h^*) = \mathbb{E}_X[\min_{\hat{y}} \mathcal{R}(\hat{y} \mid X)] = R^*$. The measurability of $h^*$ and finiteness of the integral are verified in Appendix~\ref{app:supplementary_proofs}.
+\end{proof}
+
+Geometrically, $\delta^*$ partitions the probability simplex $\Delta^{K-1}$ into $K$ decision regions $\mathcal{P}_0^*, \dots, \mathcal{P}_{K-1}^*$, where $\mathcal{P}_i^* = \{ \mathbf{p} \in \Delta^{K-1} \mid \delta^*(\mathbf{p}) = i \}$. Let $\mathbf{c}_i \in \mathbb{R}_{\geq 0}^K$ denote the $i$-th column of $\mathbf{C}$, i.e., the cost vector for predicting class $i$ across all possible true labels. Since the risk is linear in $\mathbf{p}$ ($\mathcal{R}(i \mid x) = \mathbf{c}_i^\top \boldsymbol{\eta}(x)$ when $\mathbf{p} = \boldsymbol{\eta}(x)$), these regions are convex polytopes defined by the intersection of linear half-spaces
+\begin{equation}
+    \mathcal{P}_i^* = \{ \mathbf{p} \in \Delta^{K-1} \mid (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} \leq 0, \forall j \neq i \}.
+\end{equation}
+The boundaries between these regions are hyperplanes defined by the set of probability vectors where the conditional risks of two or more classes are equal. This geometric structure is analyzed in detail for the binary case in Section~\ref{sec:analytical_threshold} and for the multiclass case in Section~\ref{sec:geometry}.
+
+\section{The plug-in principle}
+
+Since $\boldsymbol{\eta}(x)$ is unknown in practice, we rely on the plug-in principle \citep{devroye1996probabilistic}, substituting the learned estimator $\hat{\mathbf{p}}(x)$ for the true conditional class probabilities. This yields the empirical decision rule $\hat{h}$,
+\begin{equation}\label{argmin_risk}
+    \hat{h}(x) = \underset{i \in \mathcal{Y}}{\mathrm{argmin}} \,\, [\mathbf{C}^\top \hat{\mathbf{p}}(x)]_i.
+\end{equation}
+
+The excess risk of the plug-in classifier can be bounded by the quality of the probability estimator.
+
+\begin{proposition}[Bound on excess risk]\label{prop:excess_risk_bound}
+Let $C_{max} = \max_{i,j} C_{ij}$ be the maximum entry in the cost matrix. The excess risk of the plug-in classifier $\hat{h}$ relative to the Bayes Optimal classifier $h^*$ is bounded by the $L_1$ estimation error
+\begin{equation}
+    R(\hat{h}) - R(h^*) \leq C_{max} \cdot \mathbb{E}_X \left[ \|\hat{\mathbf{p}}(X) - \boldsymbol{\eta}(X)\|_1 \right].
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Let $x$ be an arbitrary fixed input. Let $k^* = h^*(x)$ be the Bayes optimal action and $\hat{k} = \hat{h}(x)$ be the plug-in decision.
+The conditional regret is defined as the difference in true conditional risk between the selected action and the optimal action,
+\begin{equation}
+    \Delta \mathcal{R}(x) = \mathcal{R}(\hat{k} \mid x) - \mathcal{R}(k^* \mid x) = \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}(x) - \mathbf{c}_{k^*}^\top \boldsymbol{\eta}(x).
+\end{equation}
+We add and subtract the \textit{estimated} risks $\mathbf{c}_{\hat{k}}^\top \hat{\mathbf{p}}(x)$ and $\mathbf{c}_{k^*}^\top \hat{\mathbf{p}}(x)$ to the expression,
+\begin{align}
+    \Delta \mathcal{R}(x) &= \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}(x) - \mathbf{c}_{\hat{k}}^\top \hat{\mathbf{p}}(x) + \underbrace{\left( \mathbf{c}_{\hat{k}}^\top \hat{\mathbf{p}}(x) - \mathbf{c}_{k^*}^\top \hat{\mathbf{p}}(x) \right)}_{\leq 0 \text{ by definition of } \hat{k}} + \mathbf{c}_{k^*}^\top \hat{\mathbf{p}}(x) - \mathbf{c}_{k^*}^\top \boldsymbol{\eta}(x) \\
+    &\leq \mathbf{c}_{\hat{k}}^\top (\boldsymbol{\eta}(x) - \hat{\mathbf{p}}(x)) + \mathbf{c}_{k^*}^\top (\hat{\mathbf{p}}(x) - \boldsymbol{\eta}(x)) \\
+    &= (\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*})^\top (\boldsymbol{\eta}(x) - \hat{\mathbf{p}}(x)).
+\end{align}
+Applying Hölder's inequality for the dot product ($\mathbf{a}^\top \mathbf{b} \leq \|\mathbf{a}\|_\infty \|\mathbf{b}\|_1$), we obtain
+\begin{equation}
+    \Delta \mathcal{R}(x) \leq \|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \cdot \|\boldsymbol{\eta}(x) - \hat{\mathbf{p}}(x)\|_1.
+\end{equation}
+The term $\|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty$ represents the maximum absolute difference between the costs of action $\hat{k}$ and action $k^*$ for any ground truth class. Since $0 \leq C_{ij} \leq C_{max}$, this difference is bounded by $C_{max}$. Thus,
+\begin{equation}
+    \Delta \mathcal{R}(x) \leq C_{max} \|\boldsymbol{\eta}(x) - \hat{\mathbf{p}}(x)\|_1.
+\end{equation}
+Taking the expectation over $X$ yields the final result.
+\end{proof}
+
+The bound is linear in the $L_1$ estimation error with proportionality constant $C_{max}$, and both factors are worst-case. Pointwise, the conditional regret $\Delta\mathcal{R}(x)$ vanishes whenever $\hat{\mathbf{p}}(x)$ and $\boldsymbol{\eta}(x)$ lie in the same decision region $\mathcal{P}_i^*$, equivalently whenever the plug-in selects the Bayes-optimal action $\hat{h}(x) = h^*(x)$, so estimation error that does not cross a decision boundary contributes nothing to the excess risk, regardless of $C_{max}$. Sensitivity to estimation error is therefore concentrated near the boundaries between decision regions, where competing conditional risks are nearly equal and small perturbations of $\hat{\mathbf{p}}(x)$ can flip the argmin; the cost incurred when such a flip occurs is bounded by $\|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \leq C_{max}$. When $C_{max} \gg 1$, even minor estimation errors that cross a boundary can produce substantial regret.
+
+\section{Excess risk under probability miscalibration}\label{sec:excess_risk_miscalibration}
+
+The excess risk incurred by the plug-in classifier relative to the Bayes optimal classifier is
+\begin{equation}
+    R(\hat{h}) - R(h^*) = \mathbb{E}_{X} \left[ \mathcal{R}(\hat{h}(X) \mid X) - \mathcal{R}(h^*(X) \mid X) \right].
+\end{equation}
+
+As established in Proposition~\ref{prop:excess_risk_bound}, this gap is bounded by the $L_1$ deviation of the estimator, but this worst-case bound obscures which features of the deviation actually drive the regret.
+
+It is useful to distinguish failures of \textit{discrimination} from failures of \textit{calibration}. Modern classifiers (Deep Neural Networks, Gradient Boosted Machines) are often highly discriminative: they learn a monotonic transformation of the true conditional class probabilities, preserving the class ordering. But they frequently suffer from systematic calibration errors (shifts or scaling of probability values). When $\hat{\mathbf{p}}(x)$ is rank-preserving but miscalibrated, the analytical minimization in Eq.~(\ref{argmin_risk}) operates on a distorted probability landscape, and the boundaries between decision regions $\mathcal{P}_i^*$ shift to suboptimal positions. This suggests that the excess risk can be reduced by optimizing $\delta$ directly to compensate for the miscalibration of $\hat{\mathbf{p}}(x)$.
+
+\section{The decision stage as a learning problem}\label{sec:decision_learning}
+
+The decision stage can be seen as a supervised learning problem in its own right, nested inside the classification pipeline. Fix the estimator $\hat{\mathbf{p}}$, fitted on the sample $\mathcal{S}$, and let $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ be a held-out sample drawn i.i.d.\ from $\mathbb{P}$ and disjoint from $\mathcal{S}$. Writing $Z = \hat{\mathbf{p}}(X)$ for the induced representation on the simplex, the disjointness of $\mathcal{V}$ and $\mathcal{S}$ makes the pairs $(z_i, y_i) = (\hat{\mathbf{p}}(x_i), y_i)$ an i.i.d.\ sample from the joint law of $(Z, Y)$. The decision learner selects a rule $\delta$ from a hypothesis class $\mathcal{H}_{dec}$ of maps $\Delta^{K-1} \to \mathcal{Y}$ by minimizing the empirical risk
+\begin{equation}\label{eq:decision_erm}
+    \hat{R}(\delta) = \frac{1}{m} \sum_{i=1}^m C_{y_i, \delta(z_i)},
+\end{equation}
+whose population counterpart is the expected risk $R(\delta \circ \hat{\mathbf{p}}) = \mathbb{E}[C_{Y, \delta(Z)}]$ of Eq.~(\ref{eq:expected_risk}). Selecting $\delta$ by minimizing Eq.~(\ref{eq:decision_erm}) over $\mathcal{H}_{dec}$ is therefore empirical risk minimization (ERM), with input space $\Delta^{K-1}$, label space $\mathcal{Y}$, and the cost $C_{y, \hat{y}}$ as the loss. The name ``validation set'' is relative to the inference learner; for the decision learner, $\mathcal{V}$ is the training sample.
+
+This viewpoint makes statistical learning theory applicable to the decision layer. When $\mathcal{V}$ is independent of the sample used to fit $\hat{\mathbf{p}}$, one may condition on the estimator and bound the generalization gap $R(\delta)-\hat{R}(\delta)$ in terms of the capacity of $\mathcal{H}_{dec}$ alone. This is the role of the capacity bounds below: the inference model may be highly complex and miscalibrated, but the learned decision rule can still generalize from a relatively small validation sample because it is chosen from a low-complexity class.
+
+\subsection{Generalization guarantees for decision optimization}
+
+The capacity of the decision-stage hypothesis class is denoted by $d_{dec}$. In the binary case, this capacity is measured by the VC dimension (Definition~\ref{def:vc_dimension}); in the multiclass setting, the corresponding capacity notion is introduced in the later multiclass chapters.
+
+\begin{definition}[VC dimension]\label{def:vc_dimension}
+    Let $\mathcal{H} \subseteq \{0,1\}^{\mathcal{X}}$.
+    A set $S = \{x_1, \ldots, x_m\} \subset \mathcal{X}$ is shattered by $\mathcal{H}$
+    if for every labeling $(b_1, \ldots, b_m) \in \{0,1\}^m$, there exists $h \in \mathcal{H}$
+    with $h(x_i) = b_i$ for all $i$.
+    The VC dimension $d_{VC}(\mathcal{H})$ is the cardinality of the largest
+    shattered set.
+\end{definition}
+
+\begin{proposition}[Generalization bound for decision optimization]\label{prop:gen_bound}
+Let the loss function be bounded in $[0, C_{max}]$, and assume the validation sample $\mathcal{V}=\{(x_i,y_i)\}_{i=1}^m$ is drawn i.i.d.\ from $\mathbb{P}$ and independently of the sample used to fit $\hat{\mathbf{p}}$. For any decision rule $\delta \in \mathcal{H}_{dec}$, with probability at least $1-\nu$ over the random draw of the validation sample, the true risk $R(\delta)$ is bounded by the empirical risk $\hat{R}(\delta)$ as
+\begin{equation}\label{eq:generic_decision_gen_bound}
+    R(\delta) \leq \hat{R}(\delta) + C_{max}\,\varepsilon(m,d_{dec},\nu),
+\end{equation}
+where $d_{dec}$ is the relevant capacity of the decision class and $\varepsilon(m,d_{dec},\nu)$ is the corresponding uniform-convergence rate. In the VC-specialized binary case, one may take, up to universal constants,
+\begin{equation}\label{eq:vc_decision_rate}
+    \varepsilon(m,d_{dec},\nu)=\sqrt{\frac{d_{dec}\log\frac{2em}{d_{dec}}+\log\frac{4}{\nu}}{m}},
+\end{equation}
+with $d_{dec}=d_{VC}(\mathcal{H}_{dec})$.
+\end{proposition}
+
+\begin{proof}
+Condition on the fitted estimator $\hat{\mathbf{p}}$, which is fixed with respect to the independent validation sample. Write $Z=\hat{\mathbf{p}}(X)$ and $z_i=\hat{\mathbf{p}}(x_i)$. The decision learner is then an ordinary empirical-risk-minimization problem over the validation pairs $(z_i,y_i)$, with loss
+\begin{equation}\label{eq:decision_loss}
+    \ell_\delta(z,y)=C_{y,\delta(z)}.
+\end{equation}
+Normalize the loss to $[0,1]$ by defining
+\begin{equation}\label{eq:normalized_decision_loss}
+    \tilde{\ell}_\delta(z,y)=\frac{\ell_\delta(z,y)}{C_{max}}=\frac{C_{y,\delta(z)}}{C_{max}}.
+\end{equation}
+Applying a standard uniform-convergence bound to the normalized decision-loss class gives, simultaneously for all $\delta\in\mathcal{H}_{dec}$,
+\begin{equation}\label{eq:normalized_uniform_convergence}
+    \mathbb{E}[\tilde{\ell}_\delta(Z,Y)] \leq \frac{1}{m}\sum_{i=1}^m \tilde{\ell}_\delta(z_i,y_i) + \varepsilon(m,d_{dec},\nu).
+\end{equation}
+In the binary VC-specialized case, this is the VC uniform-convergence bound of \citet[Corollary~3.19]{mohri2018foundations}, applied after the normalization above. Multiplying Eq.~(\ref{eq:normalized_uniform_convergence}) by $C_{max}$ yields
+\begin{equation}
+    R(\delta) \leq \hat{R}(\delta) + C_{max}\,\varepsilon(m,d_{dec},\nu),
+\end{equation}
+which is Eq.~(\ref{eq:generic_decision_gen_bound}).
+\end{proof}
+
+We will use a clean form of this guarantee in the chapters that follow. For a decision class of capacity $d_{dec}$, the bound of Proposition~\ref{prop:gen_bound} reads
+\begin{equation}\label{eq:clean_gen_bound}
+    R(\delta) \leq \hat{R}(\delta) + c\, C_{max} \sqrt{\frac{d_{dec}}{m}},
+\end{equation}
+where $c$ is a universal constant that absorbs the logarithmic factors in $m$, $K$, and $1/\nu$; equivalently, a validation set of size proportional to $d_{dec}/\epsilon^2$ makes the gap at most $\epsilon$. In the binary case $d_{dec}=d_{VC}(\mathcal{H}_{dec})$, while in the multiclass case $d_{dec}$ is given by the multiclass capacity measure introduced later.
+
+\subsection{Hypothesis-class complexity of decision rules}
+
+The bound in Proposition~\ref{prop:gen_bound} is useful precisely because the decision-stage classes considered in this dissertation have low capacity. While the estimator $\hat{\mathbf{p}}$ may belong to a high-complexity class, the decision optimization occurs in a much smaller space.
+
+In the binary regime ($K=2$), the decision rule acts on a scalar probability estimate $z \in [0, 1]$. The standard decision rule is a threshold function $\delta_\tau(z) = \mathbb{I}(z \geq \tau)$ (Lemma~\ref{lem:threshold_optimality} shows this form is Bayes-optimal under reasonable cost conditions).
+
+\begin{lemma}\label{lem:vc_thresh}
+Let $\mathcal{H}_{thresh} = \{ \delta_\tau : [0,1] \to \{0,1\} \mid \tau \in [0,1] \}$ be the class of threshold indicator functions $\delta_\tau(z) = \mathbb{I}(z \geq \tau)$. The VC dimension of this class is $d_{VC}(\mathcal{H}_{thresh}) = 1$.
+\end{lemma}
+
+\begin{proof}
+The class shatters a single point, since varying $\tau$ around it realizes both labels, but no set of two points $z_1 < z_2$, since $\delta_\tau$ cannot label the smaller point positive and the larger negative ($z_1 \geq \tau > z_2$ contradicts $z_1 < z_2$). Hence $d_{VC}(\mathcal{H}_{thresh}) = 1$. Appendix~\ref{app:supplementary_proofs} gives the full argument.
+\end{proof}
+
+In the multiclass setting ($K>2$), the decision rule partitions $\Delta^{K-1}$ into $K$ regions, and the relevant combinatorial complexity depends on the chosen parameterization of $\delta$. Subsequent chapters introduce the specific multiclass partition families and bound their capacity using the appropriate multiclass notions; the resulting bounds are at most quadratic in $K$.
+
+These capacity bounds explain why decision optimization can be statistically feasible: the decision layer is much smaller than the inference model, and its sample complexity scales with $d_{dec}$ rather than with the complexity of $\hat{\mathbf{p}}$. However, low capacity does not guarantee that the empirically selected rule improves on the analytical plug-in rule. Even in the binary case, where the decision class consists only of thresholds and has VC dimension one, choosing the threshold by minimizing validation risk can overfit finite-sample fluctuations. This is especially problematic when many thresholds have nearly indistinguishable true risk, so that the empirical minimizer is selected by noise rather than by a meaningful improvement in expected cost. In such regimes, the learned threshold may perform worse than the default plug-in rule, motivating the use of cross-validation or other model-selection safeguards in the empirical chapters.

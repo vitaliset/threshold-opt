@@ -1,0 +1,34 @@
+%!TeX root=../carlo_master.tex
+%("dica" para o editor: este arquivo e parte de um documento maior)
+
+% Palavras-chave / keywords sao obrigatorias em pt-BR e en, antes do resumo.
+\palavraschave{Classificação, Teoria da decisão, Aprendizado sensível a custo,
+               Otimização de limiar, Calibração de probabilidade,
+               Teoria do aprendizado estatístico,
+               Minimização de risco empírico}
+
+\keywords{Classification, Decision theory, Cost-sensitive learning,
+          Threshold optimization, Probability calibration,
+          Statistical learning theory, Empirical risk minimization}
+
+% Resumo (pt-BR) obrigatorio: paragrafo unico, no maximo 500 palavras,
+% apresentando objetivos, metodos, resultados e conclusoes.
+\resumo{
+A classificação supervisionada pode ser decomposta em uma etapa de inferência, que estima probabilidades condicionais de classe, e uma etapa de decisão, que mapeia essas probabilidades em ações. Sob matrizes de custo assimétricas ou métricas de desempenho não decomponíveis, como $F_\beta$, a regra padrão $\arg\max$ é, em geral, subótima. Além disso, a regra analítica Bayes-ótima, quando existe, requer probabilidades calibradas, que classificadores reais não produzem de forma consistente.
+
+Esta dissertação trata a regra de decisão como um componente aprendível, ajustado em uma partição de validação separada, em vez de ser obtido diretamente da fórmula analítica plug-in. A classe de decisão é pequena (um limiar escalar no caso binário e uma partição do simplex com poucos parâmetros no caso multiclasse, com dimensão polinomial no número de classes $K$). Assim, a otimização direta é, em princípio, aprendível a partir de um orçamento modesto de rótulos. Nos experimentos, entretanto, o ganho obtido só se mostra confiável quando se realiza validação cruzada sobre todo o conjunto de treinamento.
+
+No cenário binário, derivamos o limiar analítico de Elkan, caracterizamos sua fragilidade sob má calibração e comparamos doze estratégias em quatorze conjuntos de dados, dez classificadores-base e dez objetivos.
+
+No cenário multiclasse, organizamos as estratégias de otimização de partições em uma taxonomia unificada, calculamos suas dimensões de Natarajan, introduzimos uma classe de tesselação de Voronoi que contém a classe de deslocamento paralelo e tem risco populacional estritamente menor em uma testemunha construída com perda simétrica, e as comparamos em onze conjuntos de dados, dez classificadores-base e doze objetivos. Uma análise de sensibilidade em $K$ sobre construções sintéticas mostra que a vantagem do ajuste da camada de decisão sobre o plug-in analítico diminui à medida que $K$ cresce, em consonância com o mecanismo candidato de diluição dimensional proposto.
+}
+
+\abstract{
+Supervised classification decomposes into an inference stage that estimates conditional class probabilities and a decision stage that maps them to actions. Under asymmetric cost matrices or non-decomposable performance metrics such as $F_\beta$, the standard $\arg\max$ rule is generally suboptimal, and the analytical Bayes-optimal rule, when it exists, requires calibrated probabilities that real classifiers do not reliably produce.
+
+This dissertation treats the decision rule as a learnable component, fitted on a held-out validation partition rather than read off the analytical plug-in formula. The decision class is small (a scalar threshold in binary, a low-parameter simplex partition in multiclass with dimension polynomial in the number of classes $K$), so direct optimization is in principle learnable from a modest label budget; the realized gain in the experiments, however, is reliable only under cross-validation over the full training pool.
+
+In the binary setting we derive the analytical Elkan threshold, characterize its fragility under miscalibration, and benchmark twelve strategies on fourteen datasets, ten base classifiers, and ten objectives.
+
+In the multiclass setting we organize the partition-optimization strategies into a unified taxonomy, compute their Natarajan dimensions, introduce a Voronoi tessellation class that contains the parallel-shift class and has strictly lower population risk on a constructed symmetric-loss witness, and benchmark them on eleven datasets, ten base classifiers, and twelve objectives. A K-sensitivity analysis on synthetic constructions shows the lead of decision-layer tuning over the analytical plug-in narrowing as $K$ grows, consistent with a dimensional-dilution candidate mechanism proposed.
+}

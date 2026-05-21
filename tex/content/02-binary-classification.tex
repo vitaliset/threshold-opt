@@ -1,0 +1,194 @@
+%!TeX root=../carlo_master.tex
+\chapter{Binary classification ($K=2$)}\label{sec:binary}
+
+This chapter specializes the framework of Chapter~\ref{sec:theory} to $K=2$: we derive the classical Elkan threshold \citep{elkan2001foundations}, analyze its fragility under probability miscalibration, and develop empirical threshold optimization as an alternative.
+
+\section{Problem setup and notation}
+
+Let $\mathcal{Y} = \{0, 1\}$, with class $0$ as ``Negative'' and class $1$ as ``Positive''. Following the decomposition $h(x) = \delta(\hat{\mathbf{p}}(x))$, the inference stage learns $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^1$.
+
+Since $\eta_0(x) + \eta_1(x) = 1$, the estimator output can be reduced to a scalar. We write $\eta(x) := \eta_1(x) = \mathbb{P}(Y{=}1 \mid X{=}x)$ for the true conditional class probability, and $\hat{p}(x) := \hat{p}_1(x)$ for its estimate.
+
+The decision rule $\delta: [0, 1] \to \{0, 1\}$ converts this score into a discrete action. We parameterize it by a threshold $\tau \in [0, 1]$,
+\begin{equation}\label{eq:threshold_rule}
+    \delta_\tau(\hat{p}(x)) = \mathbb{I}(\hat{p}(x) \geq \tau) = \begin{cases}
+        1 & \text{if } \hat{p}(x) \geq \tau \\
+        0 & \text{if } \hat{p}(x) < \tau
+    \end{cases}.
+\end{equation}
+Optimizing $\delta$ thus reduces to finding the threshold $\tau^*$ that minimizes the expected risk for the fixed estimator $\hat{p}$.
+
+\section{Analytical threshold derivation}\label{sec:analytical_threshold}
+
+The $2 \times 2$ Cost Matrix $\mathbf{C}$ has entry $C_{ij}$ for the penalty of predicting class $j$ when the true class is $i$, covering True Negatives ($C_{00}$), False Positives ($C_{01}$), False Negatives ($C_{10}$), and True Positives ($C_{11}$).
+
+\input{tables/cost_matrix.tex}
+
+Following \citet{elkan2001foundations}, we impose \textit{reasonableness conditions}: misclassification must cost strictly more than a correct decision,
+\begin{equation}\label{eq:reasonableness}
+    C_{01} > C_{00} \quad \text{and} \quad C_{10} > C_{11}.
+\end{equation}
+If exactly one of these conditions is violated, one action weakly dominates the other and the optimal policy degenerates to a constant rule that ignores $x$ entirely. If both are violated, the problem is equivalent under label swap to a standard one with reasonable costs.
+
+We first show that under these conditions, the risk-minimizing policy is always a threshold function, justifying the parameterization $\delta_\tau$ introduced in Eq.~\ref{eq:threshold_rule}.
+
+\begin{lemma}[Optimality of threshold policies]\label{lem:threshold_optimality}
+If the cost matrix satisfies the reasonableness conditions (Eq.~\ref{eq:reasonableness}), the Bayes Optimal decision rule $h^*(x)$ is equivalent to a threshold function $\delta_\tau(\eta(x)) = \mathbb{I}(\eta(x) \geq \tau)$ for a unique scalar $\tau \in [0, 1]$.
+\end{lemma}
+
+\begin{proof}
+The risk-minimizing rule predicts class 1 whenever the conditional risk of predicting 1 is at most that of predicting 0, equivalently whenever the differential risk function $g(\eta) = \mathcal{R}(0 \mid \eta) - \mathcal{R}(1 \mid \eta)$ is non-negative; at $g(\eta) = 0$ the two conditional risks are equal, so either action attains the pointwise minimum and the choice between them does not affect the risk. Expanding the risks,
+\begin{align}
+    g(\eta) &= [C_{00}(1-\eta) + C_{10}\eta] - [C_{01}(1-\eta) + C_{11}\eta] \\
+    &= \eta(C_{10} - C_{00} + C_{01} - C_{11}) + (C_{00} - C_{01}) \\
+    &= \eta \underbrace{\left[ (C_{10} - C_{11}) + (C_{01} - C_{00}) \right]}_{m} - \underbrace{(C_{01} - C_{00})}_{c}.
+\end{align}
+This yields a linear function $g(\eta) = m\eta - c$. The reasonableness conditions imply that both term groups in $m$ are strictly positive: $(C_{10} - C_{11}) > 0$ and $(C_{01} - C_{00}) > 0$, so $m > 0$. Similarly, $c = C_{01} - C_{00} > 0$. Since $g(\eta)$ is strictly monotonically increasing with respect to $\eta$, it crosses zero exactly once at the unique root $\tau = c/m$.
+
+It remains to verify that $\tau \in (0, 1)$. Since $c > 0$ and $m > 0$, we have $\tau > 0$. Moreover, $m = c + (C_{10} - C_{11})$ with $(C_{10} - C_{11}) > 0$, so $m > c$, which gives $\tau = c/m < 1$. Thus $\tau \in (0, 1)$ and $g(\eta) \geq 0$ if, and only if, $\eta \geq \tau$. Hence $\mathbb{I}(\eta \geq \tau)$ attains the minimum conditional risk at every $\eta$ and is Bayes-optimal; it may differ from the smallest-index selection of Eq.~(\ref{eq:bayes_optimal}) only on the tie set $\{\eta = \tau\}$, where both actions are risk-minimizers, so both rules attain the Bayes risk $R^*$.
+\end{proof}
+
+The Theoretical Optimal Threshold $p^*$ is the decision boundary where risks are equal ($g(\eta)=0$),
+\begin{equation}\label{eq:elkan_threshold}
+    p^* = \frac{C_{01} - C_{00}}{(C_{01} - C_{00}) + (C_{10} - C_{11})}.
+\end{equation}
+
+Under symmetric costs (0/1 loss, $C_{01}=C_{10}=C$, diagonal zero, with $C=1$ without loss of generality), this reduces to $p^* = 0.5$. The familiar $p > 0.5$ threshold, which many machine learning frameworks use by default, is thus an implicit assumption of symmetric loss.
+
+Under asymmetric costs, the threshold must shift. For example, if a false negative costs ten times more than a false positive ($C_{10}=10, C_{01}=1$), the threshold drops to $p^* \approx 0.09$: the agent must act on weak signals to avoid missing positive instances.
+
+The analytical threshold (Eq.~\ref{eq:elkan_threshold}) is optimal when $\hat{p}(x) = \eta(x)$ almost everywhere. In practice, this does not reliably hold. Modern classifiers are often highly discriminative (preserving the ordinal ranking of the true conditional class probabilities) but systematically miscalibrated: Deep Neural Networks tend toward overconfidence \citep{guo2017calibration}, pushing probability mass toward 0 and 1, while regularized models may exhibit oversmoothing, contracting predictions toward the marginal prior even with decent discriminative performance. When the analytical rule is applied to miscalibrated scores, the realized decision boundary diverges from the intended risk profile. Two complementary strategies address this: \textit{post-hoc calibration}, which corrects the probability estimates before thresholding, and \textit{empirical threshold optimization}, which bypasses the calibration problem entirely by selecting the threshold that directly minimizes empirical risk.
+
+\section{Post-hoc probability calibration}\label{sec:calibration}
+
+The core issue of the plug-in rule is that $\hat{p}(x)$ does not faithfully represent $\eta(x)$. A natural fix is to \textit{recalibrate} the estimator's outputs before applying the analytical rule. We formalize calibration, present the standard diagnostic, and describe four post-hoc methods evaluated in our experiments.
+
+\subsection{Defining and measuring calibration}
+
+\begin{definition}[Perfect calibration]\label{def:calibration}
+An estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ is perfectly calibrated with respect to $\mathbb{P}$ if
+\begin{equation}\label{eq:perfect_calibration}
+    \mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q, \quad \text{for all } q \in [0,1].
+\end{equation}
+\end{definition}
+
+Perfect calibration means that among all instances assigned predicted probability $q$, the true conditional proportion of positives equals $q$ exactly. This is a \textit{marginal} property: it constrains the distribution of $Y$ given the \textit{scalar output} $\hat{p}(X)$, not the full input $X$. It is strictly weaker than pointwise consistency ($\hat{p}(x) = \eta(x)$ almost everywhere) and independent of discriminative power: the trivial estimator $\hat{p}(x) = \bar{y}$ (marginal class frequency) is perfectly calibrated yet carries no information about individual instances \citep{degroot1983comparison}.
+
+The standard finite-sample diagnostic is the Expected Calibration Error (ECE). Given $B$ bins $\{I_b\}_{b=1}^B$ partitioning $[0,1]$,
+\begin{equation}\label{eq:ece}
+    \widehat{\mathrm{ECE}} = \sum_{b=1}^{B} \frac{|I_b|}{n} \left| \bar{y}_b - \bar{p}_b \right|,
+\end{equation}
+where $\bar{y}_b$ and $\bar{p}_b$ denote the average true label and average predicted probability within bin $I_b$, respectively \citep{naeini2015obtaining}.
+
+\subsection{Post-hoc calibration methods}
+
+Post-hoc methods fit a transformation $g: [0,1] \to [0,1]$ on held-out data so that $g(\hat{p}(x))$ is better calibrated than $\hat{p}(x)$. The base estimator is \textit{frozen}: these methods remap outputs without retraining. We describe the four methods used in our experiments, ordered by increasing expressiveness.
+
+\paragraph{Temperature scaling.} The simplest parametric method rescales the logit by a single scalar $T > 0$ \citep{guo2017calibration},
+\begin{equation}\label{eq:temperature_scaling}
+    g_T(\hat{p}) = \sigma\!\left(\frac{z(\hat{p})}{T}\right), \quad z(\hat{p}) = \log \frac{\hat{p}}{1 - \hat{p}},
+\end{equation}
+where $\sigma$ denotes the logistic sigmoid. When $T > 1$, the transformation softens overconfident predictions toward $0.5$; when $T < 1$, it sharpens underconfident ones. The parameter $T$ is fitted by minimizing the negative log-likelihood on held-out data, and the transformation preserves the ranking of instances.
+
+\paragraph{Platt scaling.} This method fits a two-parameter sigmoid on the classifier's raw score $s(x)$ \citep{platt1999probabilistic,niculescuMizil2005predicting},
+\begin{equation}\label{eq:platt_scaling}
+    g_{a,b}(s) = \sigma\!\left(a \cdot s + b\right),
+\end{equation}
+with $(a, b) \in \mathbb{R}^2$ fitted by minimizing the negative log-likelihood. The slope $a$ corrects miscalibrated confidence spread (analogous to temperature) and the intercept $b$ a systematic score bias. Platt scaling can correct any monotonic sigmoid distortion of $s(x)$ but cannot model non-monotonic miscalibration.
+
+\paragraph{Isotonic regression.} A non-parametric method that fits a monotone non-decreasing step function $m: [0,1] \to [0,1]$ \citep{zadrozny2002transforming}. On a calibration set, examples are first sorted by their predicted scores,
+$\hat p(x_{(1)}) \le \cdots \le \hat p(x_{(n)})$, and the method solves the finite-dimensional constrained least-squares problem
+\begin{equation}\label{eq:isotonic}
+    z^* = \underset{0 \le z_1 \le \cdots \le z_n \le 1}{\mathrm{argmin}}
+    \sum_{i=1}^{n} (z_i - y_{(i)})^2,
+\end{equation}
+where $z_i = m(\hat p(x_{(i)}))$ is the calibrated value assigned to the $i$-th sorted score. The solution is obtained efficiently by pooling adjacent blocks whose empirical label averages violate monotonicity, yielding a monotone step function $m^*$. Because $m^*$ is unconstrained in functional form beyond monotonicity, isotonic regression can correct \textit{any} monotonic distortion, not just sigmoid ones, making it strictly more expressive than Platt scaling.
+
+\paragraph{Dirichlet calibration.} The most expressive parametric method in our suite learns an affine transformation in log-probability space \citep{kull2019beyond},
+\begin{equation}\label{eq:dirichlet_calibration}
+    g_{\mathbf{W}, \mathbf{b}}(\hat{\mathbf{p}}) = \mathrm{softmax}\!\left(\mathbf{W} \log \hat{\mathbf{p}} + \mathbf{b}\right),
+\end{equation}
+where $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$. In the binary case ($K=2$), this reduces to three effective parameters after accounting for the softmax normalization, since $z_1 - z_0 = a \cdot \log\hat p - a \cdot \log(1-\hat p) + (b_1 - b_0)$ when $\mathbf{W} = a \mathbf{I}$. Logit-space Platt scaling, $\sigma(a \cdot z(\hat p) + b)$, is therefore recovered when $\mathbf{W}$ is a scalar multiple of the identity (with $b = b_1 - b_0$), and temperature scaling is the further restriction $b_0 = b_1$. The parameters are fitted by minimizing the negative log-likelihood.
+
+\subsection{The calibrate-then-decide framework}
+
+The calibration methods above can be composed with the analytical threshold to form a two-stage decision pipeline: (1)~fit a calibrator $g$ on held-out data, then (2)~apply the cost-derived threshold $p^*$ from Equation~(\ref{eq:elkan_threshold}) to the recalibrated scores $g(\hat{p}(x))$.
+
+\begin{proposition}[Optimality of calibrate-then-decide]\label{prop:calibrate_then_decide}
+Let $g: [0,1] \to [0,1]$ be a post-hoc calibrator and define the composite decision rule $\delta_g(x) = \mathbb{I}(g(\hat{p}(x)) \geq p^*)$. If $g$ achieves perfect calibration in the sense that $g(\hat{p}(x)) = \eta(x)$ for $\mathbb{P}_X$-almost every $x$, then $\delta_g$ coincides with the Bayes-optimal decision rule $h^*$ (Eq.~\ref{eq:bayes_optimal}).
+\end{proposition}
+\begin{proof}
+Immediate from perfect calibration, which gives $\delta_g(x) = \mathbb{I}(\eta(x) \geq p^*)$, and Lemma~\ref{lem:threshold_optimality}; see Appendix~\ref{app:supplementary_proofs}.
+\end{proof}
+
+In practice, perfect calibration is unattainable: the residual error after post-hoc correction, combined with the calibrator's own finite-sample variance, leaves the analytical threshold on recalibrated scores an approximation. The next subsection bypasses calibration entirely and optimizes the threshold against the operational objective.
+
+\section{Empirical threshold optimization}
+
+An alternative is empirical threshold optimization, following foundational work on cost-sensitive thresholding \citep{sheng2006thresholding} and widely used in applied machine learning. Rather than deriving the decision boundary from the cost matrix and probability estimates, which may be flawed, $\tau$ becomes a learnable parameter of $\delta_\tau$, optimized directly against the operational objective on real data.
+
+Let $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ be a held-out validation set drawn i.i.d.\ from $\mathbb{P}$. We define the empirical risk objective $\hat{R}(\tau)$ for a candidate threshold $\tau$ as the average realized cost over the sample,
+\begin{equation}\label{eq:empirical_risk_obj}
+    \hat{R}(\tau) = \frac{1}{m} \sum_{i=1}^m \left[ \mathbb{I}(\hat{p}(x_i) \ge \tau) C_{y_i, 1} + \mathbb{I}(\hat{p}(x_i) < \tau) C_{y_i, 0} \right],
+\end{equation}
+where $C_{y_i, k}$ denotes the cost of predicting class $k$ given the true label $y_i$. The optimal empirical threshold is the scalar that minimizes this discontinuous, piecewise-constant objective,
+\begin{equation}
+    \tau_{emp} = \underset{\tau \in [0, 1]}{\mathrm{argmin}} \,\, \hat{R}(\tau).
+\end{equation}
+
+\subsection{Threshold grid search}\label{sec:threshold_grid_search}
+
+Since $\hat{R}(\tau)$ is piecewise-constant with jumps only at the distinct predicted scores, only finitely many candidate thresholds need to be evaluated \citep{provost2001robust}. In practice we approximate this by evaluating $\hat{R}$ over a uniform grid of $G$ thresholds,
+\begin{equation}
+    \mathcal{T} = \left\{ \frac{g}{G-1} \;\middle|\; g \in \{0, \dots, G-1\} \right\} \subset [0,1],
+\end{equation}
+and returning
+\begin{equation}
+    \hat{\tau} = \underset{\tau \in \mathcal{T}}{\mathrm{argmin}} \; \hat{R}(\tau).
+\end{equation}
+For each candidate $\tau_k \in \mathcal{T}$, the confusion counts are computed simultaneously for all $k$ via broadcasting, so evaluating all $G$ candidates costs $G\,m$ confusion-count updates and is vectorization-friendly.
+
+
+\subsection{Cross-validated threshold optimization}\label{sec:cv_threshold}
+
+To avoid dedicating a fixed portion of the training data to the decision stage, the threshold can be optimized via $F$-fold cross-validation (CV), treating $\tau$ as a hyperparameter. The training data $\mathcal{D}_{train}$ are partitioned into $F$ disjoint folds $\mathcal{D}_1, \dots, \mathcal{D}_F$, and a grid $\mathcal{T} \subset [0, 1]$ of candidate thresholds is fixed.
+
+For each fold $k$, the estimator $\hat{p}_{-k}$ is trained on $\mathcal{D}_{train} \setminus \mathcal{D}_k$ and its predicted probabilities on $\mathcal{D}_k$ are used to evaluate the per-fold empirical risk $\hat{R}_k(\tau)$. Averaging across folds yields the cross-validated risk
+\[ \hat{R}_{CV}(\tau) = \frac{1}{F} \sum_{k=1}^F \hat{R}_k(\tau), \]
+and the selected threshold minimizes this average,
+\[ \tau_{emp} = \underset{\tau \in \mathcal{T}}{\mathrm{argmin}} \,\, \hat{R}_{CV}(\tau). \]
+Averaging across splits reduces sensitivity to any single held-out fold. Once $\tau_{emp}$ is determined, the final estimator $\hat{p}$ is retrained on all of $\mathcal{D}_{train}$.
+
+\section{Capacity of the binary decision and calibration classes}\label{sec:binary_sample_complexity}
+
+Both the empirical threshold and the post-hoc calibrators are fitted on a finite validation set, so their hypothesis-class capacity controls the generalization gap of that fit. This section collects the binary capacity statements, which the experiments of Chapter~\ref{sec:binary_experiments} draw on.
+
+\subsection{Generalization bound for the empirical threshold}
+
+Empirical threshold optimization is the binary instance of the decision-stage learning problem of Section~\ref{sec:decision_learning}: $\mathcal{V}$ is its training sample, $\mathcal{H}_{thresh}$ its hypothesis class, and $\tau_{emp}$ its empirical risk minimizer, so the bound below is its generalization guarantee.
+
+Since the VC dimension of threshold functions is $d_{VC}=1$ (Lemma~\ref{lem:vc_thresh}), the clean form~\eqref{eq:clean_gen_bound} of Proposition~\ref{prop:gen_bound} gives
+\begin{equation}
+    R(\tau_{emp}) \leq \hat{R}(\tau_{emp}) + c\, C_{max} \sqrt{\frac{1}{m}},
+\end{equation}
+with $c$ the universal constant of~\eqref{eq:clean_gen_bound}. Provided $m$ is large enough relative to $C_{max}$, the empirical optimization converges to the optimal operating point for the fixed estimator $\hat{p}$, effectively re-calibrating the decision boundary to account for estimation errors. The proviso is binding in practice: on a small dedicated validation split the $\sqrt{1/m}$ term need not be negligible, and the empirical threshold can fail to improve on the analytical plug-in. The low VC dimension is therefore necessary but not sufficient; the binding constraint is the label budget of the held-out partition, which the cross-validated variant enlarges.
+
+\subsection{Calibrator complexity}
+
+Since calibrators are real-valued functions ($g: [0,1] \to [0,1]$), the relevant complexity measure is the \textit{pseudo-dimension} \citep{pollard1984convergence,haussler1992decision}, a generalization of VC dimension to real-valued function classes.
+
+\begin{definition}[Pseudo-dimension]\label{def:pseudo_dimension}
+    Following \citet[Definition~11.2]{anthony1999neural}, let $\mathcal{G} \subseteq \mathbb{R}^{\mathcal{X}}$ be a class of real-valued functions on $\mathcal{X}$. A set of points $\{x_1, \ldots, x_m\} \subset \mathcal{X}$ is pseudo-shattered by $\mathcal{G}$ if there exist witnesses $r_1, \ldots, r_m \in \mathbb{R}$ such that for every binary labeling $(b_1, \ldots, b_m) \in \{0,1\}^m$, there exists $g \in \mathcal{G}$ satisfying
+    \begin{equation}
+        g(x_i) \geq r_i \iff b_i = 1, \quad \text{for all } i = 1, \ldots, m.
+    \end{equation}
+    The pseudo-dimension $d_P(\mathcal{G})$ is the cardinality of the largest set that can be pseudo-shattered by $\mathcal{G}$.
+\end{definition}
+
+When $\mathcal{G}$ is binary-valued, pseudo-dimension coincides with VC dimension, and a validation set of size proportional to $d_P/\epsilon^2$ (that is, $m \geq c\, d_P/\epsilon^2$) controls the empirical loss \citep[Chapter~11]{anthony1999neural}.
+
+\begin{proposition}[Pseudo-dimension of binary calibrators]\label{prop:calibrator_complexity}
+Let $\mathcal{H}_{temp}$, $\mathcal{H}_{platt}$, and $\mathcal{H}_{dir}$ denote the temperature, Platt, and binary Dirichlet calibrator families defined in Eqs.~\eqref{eq:temperature_scaling},~\eqref{eq:platt_scaling}, and~\eqref{eq:dirichlet_calibration}, with $W = 1$, $2$, and $3$ free parameters respectively. Each is a fixed strictly increasing transform (the sigmoid, or the softmax in the binary reduction) of a score that is affine in its $W$ parameters; pseudo-dimension is invariant under such a transform and is at most the dimension of the affine score family, so by \citet[Theorem~11.4]{anthony1999neural}, $d_P(\mathcal{H}_{temp}) \leq 1$, $d_P(\mathcal{H}_{platt}) \leq 2$, and $d_P(\mathcal{H}_{dir}) \leq 3$.
+\end{proposition}
+
+Isotonic regression over $\mathcal{M}_\uparrow$ is non-parametric and has unbounded pseudo-dimension, so its complexity is not captured by the framework above; control results in other measures are available in the literature \citep{meyer2000degrees, zhang2002risk}.

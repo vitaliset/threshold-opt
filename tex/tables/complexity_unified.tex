@@ -1,0 +1,18 @@
+\begin{table}[H]
+    \centering\small
+    \begin{tabular}{@{}llll@{}}
+        \toprule
+        \textbf{Component} & \textbf{Output} & \textbf{Measure} & \textbf{Where Used} \\
+        \midrule
+        Binary threshold $\delta_\tau$ & $\{0,1\}$ & $d_{VC}$
+            & Lemma~\ref{lem:vc_thresh}, Prop.~\ref{prop:gen_bound} \\
+        Multiclass decision $\delta\colon \Delta^{K-1}\!\to\!\mathcal{Y}$ & $\{0,\ldots,K{-}1\}$ & $d_{Nat}$
+            & Secs.~\ref{sec:partition_optimization},~\ref{sec:voronoi_tessellation} \\
+        Binary calibrator $g\colon [0,1]\!\to\![0,1]$ & $\mathbb{R}$ & $d_P$
+            & Prop.~\ref{prop:calibrator_complexity} \\
+        Multiclass calibrator $g\colon \Delta^{K-1}\!\to\!\Delta^{K-1}$ & $\mathbb{R}^K$ & $d_P$ (per class)
+            & Sec.~\ref{sec:multiclass_calibration} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Mapping from pipeline components to complexity measures.}\label{tab:complexity_unified}
+\end{table}

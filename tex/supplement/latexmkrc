@@ -1,0 +1,18 @@
+# The IME-USP template support files (imegoodies.sty, imelooks.sty,
+# froufrou.sty, evenragged.sty, lstpseudocode.sty) are vendored one
+# directory up (tex/). Make them resolvable when latexmk builds from
+# this subdirectory. No biber here: imelooks is loaded [nobiblatex].
+
+# Prepend the parent directory (tex/) to TEXINPUTS, using an absolute
+# path resolved at rc-read time (make runs `cd tex/supplement && latexmk`,
+# so the CWD here is tex/supplement and '..' is tex/). Recursive '//'
+# lets kpathsea/MiKTeX descend if needed.
+use Cwd;
+my $vendor = Cwd::abs_path('..');
+my $sep = ($^O eq 'MSWin32') ? ';' : ':';
+$ENV{'TEXINPUTS'} = "$vendor//$sep" . ($ENV{'TEXINPUTS'} // '') . $sep;
+
+# Never hang on a missing-file / error prompt; fail fast and loud instead.
+set_tex_cmds('-interaction=nonstopmode -halt-on-error -synctex=1 %O %S');
+$pdf_mode = 1;
+$silent = 1;

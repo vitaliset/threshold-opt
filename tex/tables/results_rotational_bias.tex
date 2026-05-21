@@ -1,0 +1,17 @@
+\begin{table}[H]
+    \centering
+    \small
+    \caption{Strategy performance on the rotational bias scenario ($K{=}3$, correlation $0.8$, imbalanced heteroscedastic).}%
+    \label{tab:results-rotational-bias}
+    \begin{tabular}{lcc}
+    \toprule
+    & Accuracy & Macro-F1 \\
+    \midrule
+    Argmax & 0.852 ± 0.002 & 0.699 ± 0.005 \\
+    ThresholdRatio & 0.852 ± 0.002 & 0.709 ± 0.004 \\
+    MultidimensionalThreshold & 0.852 ± 0.002 & 0.709 ± 0.004 \\
+    VoronoiTuning & \textbf{0.874 ± 0.002} & \textbf{0.735 ± 0.006} \\
+    FullMatrixPartitioning & \textbf{0.872 ± 0.003} & \textbf{0.731 ± 0.007} \\
+    \bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,109 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{shapes, calc, backgrounds, arrows.meta}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily]
+
+    \begin{scope}[xshift=0.0cm, scale=0.5]
+    \coordinate (Top) at (0.000, 5.000);
+    \coordinate (Right) at (4.330, -2.500);
+    \coordinate (Left) at (-4.330, -2.500);
+
+    \coordinate (Int) at (0.962, 1.667);
+
+    \fill[green!15] (0.000, 5.000) -- (2.165, 1.250) -- (0.962, 1.667) -- (-0.722, 3.750) -- cycle;
+    \fill[blue!15] (4.330, -2.500) -- (2.165, -2.500) -- (0.962, 1.667) -- (2.165, 1.250) -- cycle;
+    \fill[red!15] (-4.330, -2.500) -- (-0.722, 3.750) -- (0.962, 1.667) -- (2.165, -2.500) -- cycle;
+
+    \draw[thick, black!50] (Int) -- (2.165, 1.250);
+    \draw[thick, black!50] (Int) -- (-0.722, 3.750);
+    \draw[thick, black!50] (Int) -- (2.165, -2.500);
+
+    \draw[thick] (Top) -- (Right) -- (Left) -- cycle;
+
+    \node[circle, fill=black, inner sep=1.5pt] at (Int) {};
+
+    \node[green!50!black, font=\footnotesize\bfseries] at (0.601, 2.917) {$\mathcal{P}_0$};
+    \node[blue!70!black, font=\footnotesize\bfseries] at (2.406, -0.521) {$\mathcal{P}_1$};
+    \node[red!70!black, font=\footnotesize\bfseries] at (-0.481, 0.104) {$\mathcal{P}_2$};
+
+    \node[above, font=\small] at (Top) {$\mathbf{e}_0$};
+    \node[right, font=\small] at (Right) {$\mathbf{e}_1$};
+    \node[left, font=\small] at (Left) {$\mathbf{e}_2$};
+    \node[font=\small\bfseries, anchor=north, align=center] at (0, -2.750) {(a) $\mathbf{A} = \mathbf{C}$};
+    \end{scope}
+
+    \begin{scope}[xshift=5.5cm, scale=0.5]
+    \coordinate (Top) at (0.000, 5.000);
+    \coordinate (Right) at (4.330, -2.500);
+    \coordinate (Left) at (-4.330, -2.500);
+
+    \coordinate (Int) at (1.395, 0.167);
+
+    \fill[green!15] (0.000, 5.000) -- (3.139, -0.438) -- (1.395, 0.167) -- (-1.046, 3.188) -- cycle;
+    \fill[blue!15] (4.330, -2.500) -- (2.165, -2.500) -- (1.395, 0.167) -- (3.139, -0.438) -- cycle;
+    \fill[red!15] (-4.330, -2.500) -- (-1.046, 3.188) -- (1.395, 0.167) -- (2.165, -2.500) -- cycle;
+
+    \coordinate (OvInt) at (0.962, 1.667);
+    \draw[dashed, gray!60, thin] (OvInt) -- (2.165, 1.250);
+    \draw[dashed, gray!60, thin] (OvInt) -- (-0.722, 3.750);
+    \draw[dashed, gray!60, thin] (OvInt) -- (2.165, -2.500);
+    \node[circle, fill=gray!60, inner sep=0.8pt] at (OvInt) {};
+
+    \draw[thick, black!50] (Int) -- (3.139, -0.438);
+    \draw[thick, black!50] (Int) -- (-1.046, 3.188);
+    \draw[thick, black!50] (Int) -- (2.165, -2.500);
+
+    \draw[thick] (Top) -- (Right) -- (Left) -- cycle;
+
+    \node[circle, fill=black, inner sep=1.5pt] at (Int) {};
+
+    \node[green!50!black, font=\footnotesize\bfseries] at (0.872, 1.979) {$\mathcal{P}_0$};
+    \node[blue!70!black, font=\footnotesize\bfseries] at (2.757, -1.318) {$\mathcal{P}_1$};
+    \node[red!70!black, font=\footnotesize\bfseries] at (-0.454, -0.411) {$\mathcal{P}_2$};
+
+    \node[above, font=\small] at (Top) {$\mathbf{e}_0$};
+    \node[right, font=\small] at (Right) {$\mathbf{e}_1$};
+    \node[left, font=\small] at (Left) {$\mathbf{e}_2$};
+    \node[font=\small\bfseries, anchor=north, align=center] at (0, -2.750) {(b) $\mathbf{A} = \mathbf{C} + \boldsymbol{\alpha}\mathbf{1}^\top$};
+    \end{scope}
+
+    \begin{scope}[xshift=11.0cm, scale=0.5]
+    \coordinate (Top) at (0.000, 5.000);
+    \coordinate (Right) at (4.330, -2.500);
+    \coordinate (Left) at (-4.330, -2.500);
+
+    \coordinate (Int) at (-0.564, 1.092);
+
+    \fill[green!15] (0.000, 5.000) -- (1.753, 1.964) -- (-0.564, 1.092) -- (-1.753, 1.964) -- cycle;
+    \fill[blue!15] (4.330, -2.500) -- (-1.083, -2.500) -- (-0.564, 1.092) -- (1.753, 1.964) -- cycle;
+    \fill[red!15] (-4.330, -2.500) -- (-1.753, 1.964) -- (-0.564, 1.092) -- (-1.083, -2.500) -- cycle;
+
+    \coordinate (OvInt) at (0.962, 1.667);
+    \draw[dashed, gray!60, thin] (OvInt) -- (2.165, 1.250);
+    \draw[dashed, gray!60, thin] (OvInt) -- (-0.722, 3.750);
+    \draw[dashed, gray!60, thin] (OvInt) -- (2.165, -2.500);
+    \node[circle, fill=gray!60, inner sep=0.8pt] at (OvInt) {};
+
+    \draw[thick, black!50] (Int) -- (1.753, 1.964);
+    \draw[thick, black!50] (Int) -- (-1.753, 1.964);
+    \draw[thick, black!50] (Int) -- (-1.083, -2.500);
+
+    \draw[thick] (Top) -- (Right) -- (Left) -- cycle;
+
+    \node[circle, fill=black, inner sep=1.5pt] at (Int) {};
+
+    \node[green!50!black, font=\footnotesize\bfseries] at (-0.141, 2.505) {$\mathcal{P}_0$};
+    \node[blue!70!black, font=\footnotesize\bfseries] at (1.109, -0.486) {$\mathcal{P}_1$};
+    \node[red!70!black, font=\footnotesize\bfseries] at (-1.932, -0.486) {$\mathcal{P}_2$};
+
+    \node[above, font=\small] at (Top) {$\mathbf{e}_0$};
+    \node[right, font=\small] at (Right) {$\mathbf{e}_1$};
+    \node[left, font=\small] at (Left) {$\mathbf{e}_2$};
+    \node[font=\small\bfseries, anchor=north, align=center] at (0, -2.750) {(c) $\mathbf{A} = \mathbf{C}\,\mathrm{diag}(\boldsymbol{\beta})$};
+    \end{scope}
+
+\end{tikzpicture}
+\end{document}

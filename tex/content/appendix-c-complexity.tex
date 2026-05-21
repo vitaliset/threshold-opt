@@ -1,0 +1,74 @@
+%!TeX root=../carlo_master.tex
+\chapter{Complexity measures for hypothesis classes}\label{app:complexity}
+
+Three capacity measures control the uniform convergence arguments in this dissertation, each matched to a different output type. All yield bounds of the clean form~\eqref{eq:clean_gen_bound},
+\begin{equation}
+    R \leq \hat{R} + c\, \sqrt{\frac{d}{m}},
+\end{equation}
+where $d$ is the relevant capacity measure and $c$ is the universal constant introduced after Proposition~\ref{prop:gen_bound}, absorbing the logarithmic factors in $m$, $K$, and $1/\nu$ (with an additional $C_{max}$ factor when the loss is bounded by $C_{max}$). Because the rate has the same form, calibration complexity and decision complexity can be compared on equal footing. These are worst-case uniform-convergence rates: a small $d$ makes the bound tight only once $m \geq c\, d/\epsilon^2$, so the realized benefit of a low-capacity decision layer is governed by the available validation label budget, not by $d$ alone.
+
+The three measures also nest into one another:
+\begin{itemize}
+    \item $d_P$ reduces to $d_{VC}$ when functions are binary-valued.
+    \item $d_{Nat}$ reduces to $d_{VC}$ when $K = 2$.
+    \item For multiclass classifiers induced by real-valued scores
+          ($\delta(\mathbf{p}) = \mathrm{argmin}_{k \in \mathcal{Y}}\, s_k(\mathbf{p})$),
+          the Natarajan dimension is at most the pseudo-dimension of the score-difference
+          family, so $d_{Nat} \leq W$ for a $W$-parameter linear-score class
+          (Lemma~\ref{lem:linear_embedding}).
+\end{itemize}
+
+Table~\ref{tab:complexity_unified} maps each pipeline component to its complexity measure.
+
+\input{tables/complexity_unified.tex}
+
+The decision classes of Chapters~\ref{sec:partition_optimization} and~\ref{sec:voronoi_tessellation} ($\mathcal{H}_{Full}$, $\mathcal{H}_{PS}$, $\mathcal{H}_{Vor}$, $\mathcal{H}_{Vor}^{\Delta}$) are all multiclass rules of the form $\mathbf{p} \mapsto \mathrm{argmin}_{k \in \mathcal{Y}} s_k(\mathbf{p}; w)$ whose per-class scores $s_k$ are controlled by a finite parameter $w$. We give a single embedding argument that bounds the Natarajan dimension (Definition~\ref{def:natarajan_dimension}) of all four, and identify which of the chapter bounds are exact and which hold only up to the constant absorbed by the embedding.
+
+The argument uses the following external result. Fix per-class feature maps $\Phi_k: \Delta^{K-1} \to \mathbb{R}^{W}$ and let $\mathcal{H}_\Phi = \{\, \mathbf{p} \mapsto \mathrm{argmax}_{k \in \mathcal{Y}}\, w^\top \Phi_k(\mathbf{p}) : w \in \mathbb{R}^{W} \,\}$ be the free linear-score class they induce, with $w$ ranging over all of $\mathbb{R}^{W}$. The bound established by \citet[Theorem~7]{danielyshalev2014optimal}, $d_{Nat}(\mathcal{H}_\Phi) \leq W$, is the multiclass counterpart of the $W$-parameter VC bound for binary linear classifiers; negating $w$ exchanges $\mathrm{argmax}$ and $\mathrm{argmin}$ and leaves the bound unchanged.
+
+\begin{lemma}[Subclass monotonicity]\label{lem:nat_monotone}
+    If $\mathcal{H}' \subseteq \mathcal{H}$ then $d_{Nat}(\mathcal{H}') \leq d_{Nat}(\mathcal{H})$.
+\end{lemma}
+\begin{proof}
+    A set N-shattered by $\mathcal{H}'$ with target functions $f_0, f_1$ is N-shattered by $\mathcal{H}$ with the same $f_0, f_1$, since every hypothesis the shattering requires belongs to $\mathcal{H}' \subseteq \mathcal{H}$. The largest N-shattered cardinality therefore cannot decrease when the class is enlarged.
+\end{proof}
+
+\begin{lemma}[Linear-score embedding]\label{lem:linear_embedding}
+    Let $\mathcal{H} = \{\, \mathbf{p} \mapsto \mathrm{argmin}_{k \in \mathcal{Y}} s_k(\mathbf{p}; w) : w \in \mathbb{R}^{W} \,\}$ with
+    \begin{equation}
+        s_k(\mathbf{p}; w) = w^\top \Phi_k(\mathbf{p}) + g_k(\mathbf{p}),
+    \end{equation}
+    where $\Phi_k: \Delta^{K-1} \to \mathbb{R}^{W}$ and $g_k: \Delta^{K-1} \to \mathbb{R}$ are fixed and independent of $w$. Then $d_{Nat}(\mathcal{H}) \leq W$. If instead the per-class scores are affine in a lifted parameter of dimension $\widetilde{W}$, into which the structural parameters of $\mathcal{H}$ map by a fixed (possibly nonlinear) rule, then $\mathcal{H}$ is a subclass of the corresponding free linear-score class and $d_{Nat}(\mathcal{H}) \leq \widetilde{W}$.
+\end{lemma}
+\begin{proof}
+    Let $C = \{\mathbf{p}_1, \ldots, \mathbf{p}_m\} \subseteq \Delta^{K-1}$ be N-shattered by $\mathcal{H}$ (Definition~\ref{def:natarajan_dimension}) with witness functions $f_0, f_1: C \to \mathcal{Y}$, $f_0(\mathbf{p}) \neq f_1(\mathbf{p})$ for all $\mathbf{p} \in C$. For each $\mathbf{p} \in C$ define the difference vector and the fixed scalar offset
+    \begin{equation*}
+        \boldsymbol{\rho}(\mathbf{p}) = \Phi_{f_0(\mathbf{p})}(\mathbf{p}) - \Phi_{f_1(\mathbf{p})}(\mathbf{p}) \in \mathbb{R}^{W}, \qquad
+        h(\mathbf{p}) = g_{f_0(\mathbf{p})}(\mathbf{p}) - g_{f_1(\mathbf{p})}(\mathbf{p}) \in \mathbb{R},
+    \end{equation*}
+    where $h(\mathbf{p})$ does not depend on $w$. Then $s_{f_0(\mathbf{p})}(\mathbf{p}; w) - s_{f_1(\mathbf{p})}(\mathbf{p}; w) = w^\top \boldsymbol{\rho}(\mathbf{p}) + h(\mathbf{p})$. By N-shattering, for every $B \subseteq C$ there is a parameter $w_B$ whose rule selects $f_0(\mathbf{p})$ on $B$ and $f_1(\mathbf{p})$ on $C \setminus B$; since the rule is an $\mathrm{argmin}$, selecting $f_0(\mathbf{p})$ over $f_1(\mathbf{p})$ forces $w_B^\top \boldsymbol{\rho}(\mathbf{p}) + h(\mathbf{p}) \le 0$ and selecting $f_1(\mathbf{p})$ forces the opposite sign. Hence the sign of $w_B^\top \boldsymbol{\rho}(\mathbf{p}) + h(\mathbf{p})$ is forced to one value on $B$ and the other on $C \setminus B$, so the binary class $\{\, \mathbf{p} \mapsto \mathbb{I}[\,w^\top \boldsymbol{\rho}(\mathbf{p}) + h(\mathbf{p}) > 0\,] : w \in \mathbb{R}^{W} \,\}$ shatters $C$.
+
+    The real-valued maps $\mathbf{p} \mapsto w^\top \boldsymbol{\rho}(\mathbf{p})$, $w \in \mathbb{R}^{W}$, are the image of $\mathbb{R}^{W}$ under the fixed linear map $w \mapsto w^\top \boldsymbol{\rho}(\cdot)$, hence a vector space of real functions on $C$ of linear dimension at most $W$. The shattering above exhibits $C$ as pseudo-shattered (Definition~\ref{def:pseudo_dimension}) by this vector space with the fixed witnesses $r(\mathbf{p}) = -h(\mathbf{p})$, which the definition admits because its witnesses are existentially quantified, so the parameter-free offsets cost nothing. The pseudo-dimension of a vector space of real functions of dimension at most $W$ is at most $W$ \citep[Theorem~11.4]{anthony1999neural}, so $|C| \le W$. Therefore $d_{Nat}(\mathcal{H}) \le W$. With $g_k \equiv 0$ this is exactly the bound of \citet[Theorem~7]{danielyshalev2014optimal} for the free class $\mathcal{H}_\Phi$. In the lifted case, the structural parameters of $\mathcal{H}$ map by a fixed (possibly nonlinear) rule into the free linear-score class of dimension $\widetilde{W}$, so $\mathcal{H}$ is a subclass of it and Lemma~\ref{lem:nat_monotone} with \citet[Theorem~7]{danielyshalev2014optimal} gives $d_{Nat}(\mathcal{H}) \leq \widetilde{W}$.
+\end{proof}
+
+Table~\ref{tab:partition_natarajan} instantiates the two lemmas for the four classes. For $\mathcal{H}_{PS}$ the scores are affine in the learnable parameter and the bound is exact: the $\leq K-1$ upper bound matches the explicit shattering of $K-1$ points in the proof of Theorem~\ref{thm:ps_complexity}, giving $d_{Nat}(\mathcal{H}_{PS}) = K-1$. For $\mathcal{H}_{Full}$ the same embedding gives the upper bound $\leq K^2$; the inclusion $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Full}$ supplies only the lower bound $\geq K-1$, so $d_{Nat}(\mathcal{H}_{Full})$ is bounded as $\leq K^2$ without a matching quadratic lower bound. For the Voronoi classes the squared-norm bias couples the weight and offset of each prototype, so the embedding is the coupled case: the prototype coordinates ($K^2$ for $\mathcal{H}_{Vor}$, $K(K-1)$ for $\mathcal{H}_{Vor}^{\Delta}$) are the free parameters, the lifted free class adds one offset per class, and Lemma~\ref{lem:linear_embedding} yields the bounds $\leq K^2+K$ and $\leq K^2$ respectively.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{@{}lllll@{}}
+        \toprule
+        Class & Free parameters & Fixed term $g_k$ & Lemma~\ref{lem:linear_embedding} & $d_{Nat}$ \\
+        \midrule
+        $\mathcal{H}_{Full}$ & $K^2$ ($\mathbf{A}$) & none & $\leq K^2$ & $\leq K^2$ \\
+        $\mathcal{H}_{PS}$ & $K-1$ ($\mathbf{v}$) & $\mathbf{c}_k^\top \mathbf{p}$ & $\leq K-1$ & $= K-1$ \\
+        $\mathcal{H}_{Sc}$ & $K-1$ ($\boldsymbol{\beta}$, gauge $\beta_0{=}1$) & $C_{0k}\,p_0$ & $\leq K-1$ & $\leq K-1$ \\
+        $\mathcal{H}_{Vor}$ & $K^2$ (prototypes, coupled) & none & $\leq K^2 + K$ & $\leq K^2 + K$ \\
+        $\mathcal{H}_{Vor}^{\Delta}$ & $K(K-1)$ (prototypes, coupled) & none & $\leq K^2$ & $\leq K^2$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Natarajan-dimension bounds for the partition score classes via Lemmas~\ref{lem:nat_monotone} and~\ref{lem:linear_embedding}. Lower bounds: the explicit shattering of $K-1$ points in the proof of Theorem~\ref{thm:ps_complexity} gives the matching bound $d_{Nat}(\mathcal{H}_{PS}) = K-1$; propagated through the inclusions $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Full}$ and $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$ (Proposition~\ref{prop:ps_in_vor}) it yields only the lower bound $\geq K-1$ for the remaining classes, whose dimensions are therefore reported as the stated upper bounds rather than matching quadratic orders.}\label{tab:partition_natarajan}
+\end{table}
+
+\begin{remark}
+    The bounds for $\mathcal{H}_{Vor}$ and $\mathcal{H}_{Vor}^{\Delta}$ are reported as the prototype counts plus a per-class bias. The lifted linear-score class adds one bias coordinate per class, so the embedding gives $\leq K^2 + K$ and $\leq K^2$ respectively, matching Theorem~\ref{thm:voronoi_complexity} and of the same order in $K$ as the $\leq K^2$ bound for $\mathcal{H}_{Full}$. The value of the Voronoi parameterization is therefore the structured prototype geometry and its implicit regularization, not a lower capacity bound.
+\end{remark}

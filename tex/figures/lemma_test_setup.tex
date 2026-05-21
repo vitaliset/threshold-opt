@@ -1,0 +1,83 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{calc, arrows.meta}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily, scale=2.6]
+
+    % K = 3 case: the simplex Delta^2 embeds in R^3 as the triangle
+    % with vertices e_0, e_1, e_2. Drawn here in the 2D centered
+    % tangent plane V (a (K-1)-dim subspace of R^K). The radius-r
+    % sphere in V is, for K=3, a circle around the reference probability
+    % vector p; sample perturbations eps sit on that circle.
+    \def\rad{1.2}
+    \def\rball{0.34}
+
+    \pgfmathsetmacro{\axc}{\rad*cos(90)}
+    \pgfmathsetmacro{\ayc}{\rad*sin(90)}
+    \pgfmathsetmacro{\bxc}{\rad*cos(210)}
+    \pgfmathsetmacro{\byc}{\rad*sin(210)}
+    \pgfmathsetmacro{\cxc}{\rad*cos(330)}
+    \pgfmathsetmacro{\cyc}{\rad*sin(330)}
+
+    % Simplex triangle Delta^{K-1}.
+    \draw[gray!70, thick]
+        (\axc,\ayc) -- (\bxc,\byc) -- (\cxc,\cyc) -- cycle;
+    \node[font=\footnotesize, above=1pt] at (\axc,\ayc) {$\mathbf{e}_0$};
+    \node[font=\footnotesize, below left=-1pt and 1pt]
+        at (\bxc,\byc) {$\mathbf{e}_1$};
+    \node[font=\footnotesize, below right=-1pt and 1pt]
+        at (\cxc,\cyc) {$\mathbf{e}_2$};
+
+    % Reference probability vector p in the interior, slightly off-center
+    % (matching the typical Dirichlet(alpha=2) sample).
+    \def\pX{0.18}
+    \def\pY{0.05}
+    \fill[black] (\pX,\pY) circle (0.018);
+    \node[font=\footnotesize, anchor=north west]
+        at (\pX+0.03,\pY+0.02) {$\mathbf{p}$};
+
+    % Radius-r sphere in V: at K=3, V is 2-dim and the sphere is a
+    % circle around p. Drawn dotted to suggest "set of allowed
+    % perturbations".
+    \draw[gray!55, dotted, thick] (\pX,\pY) circle (\rball);
+
+    % A handful of sample eps perturbations on the sphere (arrows from p
+    % to the circle). Angles chosen to avoid overlap with the labels.
+    \foreach \ang in {30, 110, 200, 285} {
+        \pgfmathsetmacro{\ux}{\pX + \rball*cos(\ang)}
+        \pgfmathsetmacro{\uy}{\pY + \rball*sin(\ang)}
+        \draw[->, gray!60!black, thick, >=Stealth]
+            (\pX,\pY) -- (\ux,\uy);
+        \fill[gray!60!black] (\ux,\uy) circle (0.012);
+    }
+
+    % Annotation for the radius.
+    \pgfmathsetmacro{\rax}{\pX + \rball*cos(285)*0.55}
+    \pgfmathsetmacro{\ray}{\pY + \rball*sin(285)*0.55}
+    \node[font=\scriptsize, color=gray!55!black, anchor=west]
+        at ($(\pX,\pY)+(0.18,-0.16)$) {$r$};
+
+    % Legend, laid out as a 2x2 grid so it fits under the simplex
+    % rather than running past the right edge of the figure.
+    \begin{scope}[shift={(-1.40, -1.35)}, font=\footnotesize]
+        % Row 1.
+        \draw[gray!70, thick] (0, 0) -- (0.22, 0);
+        \node[anchor=west] at (0.27, 0)
+            {simplex $\Delta^{K-1}$};
+        \fill[black] (1.55, 0) circle (0.018);
+        \node[anchor=west] at (1.60, 0)
+            {reference probability vector $\mathbf{p}$};
+        % Row 2.
+        \draw[gray!55, dotted, thick] (0.11, -0.30) circle (0.06);
+        \node[anchor=west] at (0.27, -0.30)
+            {radius-$r$ sphere in $V$};
+        \draw[->, gray!60!black, thick, >=Stealth]
+            (1.38, -0.30) -- (1.55, -0.30);
+        \node[anchor=west] at (1.60, -0.30)
+            {sample perturbation $\boldsymbol{\epsilon}\sim\mathrm{Unif}(\partial B_r)$};
+    \end{scope}
+
+\end{tikzpicture}
+\end{document}

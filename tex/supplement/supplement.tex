@@ -1,0 +1,162 @@
+% Per-dataset result tables: companion supplement to the dissertation.
+% Shares the IME-USP template look (imegoodies + imelooks), but as a plain
+% article with no bibliography: imelooks [nobiblatex] skips biblatex/biber so
+% this tables-only document stays fast. The template support files are vendored
+% one directory up (../imegoodies.sty etc.); latexmk finds them via TEXINPUTS.
+
+\documentclass[a4paper,12pt,twoside,brazilian,english]{article}
+
+\usepackage{imegoodies}
+% nofonts: match the main dissertation, which loads imelooks [nofonts]
+% to skip the template's Libertinus/SourceCodePro and use the default
+% LaTeX font (Latin Modern). Keeps the supplement typographically
+% consistent with the main text.
+\usepackage[nobiblatex,nofonts]{imelooks}
+
+\babeltags{br = brazilian, en = english}
+
+\title{Per-dataset result tables: companion supplement to\\ ``Multiclass threshold optimization''}
+\author{Carlo, Renato}
+\date{November 2025}
+
+\begin{document}
+
+% Whole document in landscape: every page is a side page, so the front
+% matter matches the wide per-dataset tables and no table is scaled down
+% to a portrait text width. Replaces the previous portrait/landscape mix.
+\begin{landscape}
+
+\maketitle
+\thispagestyle{empty}
+
+\noindent This supplement reports the per-dataset means $\pm\,1$ standard error
+of the mean across the ten seeds of the binary and multiclass empirical
+campaigns described in the main dissertation. Each row is a (model, strategy)
+combination and each column is an objective (cost matrix or maximization
+metric); cells whose mean$\,\pm\,$SE interval overlaps the best strategy's
+interval in that column are bolded to mark this within-$1$-SE overlap (a
+descriptive within-cell summary; see the experimental-analysis chapters of the
+main dissertation for the inferential framing at $\alpha = 0.05$). Datasets are
+ordered within each subsection by sample size: small ($N < 10^3$), medium
+($10^3 \leq N < 10^4$), large ($N \geq 10^4$).
+
+\tableofcontents
+
+\clearpage
+
+\section{Per-dataset binary result tables}\label{app:result-tables-binary}
+
+\subsection{Cost-matrix results}
+
+% Small (N < 1k)
+\input{tables/results_sonar_cost.tex}
+\input{tables/results_ionosphere_cost.tex}
+\input{tables/results_wdbc_cost.tex}
+\input{tables/results_pima_diabetes_cost.tex}
+% Medium (1k <= N < 10k)
+\input{tables/results_german_credit_cost.tex}
+\input{tables/results_pc3_cost.tex}
+\input{tables/results_ozone_cost.tex}
+\input{tables/results_madelon_cost.tex}
+\input{tables/results_spambase_cost.tex}
+\input{tables/results_phoneme_cost.tex}
+\input{tables/results_jm1_cost.tex}
+% Large (N >= 10k)
+\input{tables/results_mammography_cost.tex}
+\input{tables/results_bank_marketing_cost.tex}
+\input{tables/results_adult_cost.tex}
+
+\subsection{Maximization-metric results}
+
+% Small (N < 1k)
+\input{tables/results_sonar_max.tex}
+\input{tables/results_ionosphere_max.tex}
+\input{tables/results_wdbc_max.tex}
+\input{tables/results_pima_diabetes_max.tex}
+% Medium (1k <= N < 10k)
+\input{tables/results_german_credit_max.tex}
+\input{tables/results_pc3_max.tex}
+\input{tables/results_ozone_max.tex}
+\input{tables/results_madelon_max.tex}
+\input{tables/results_spambase_max.tex}
+\input{tables/results_phoneme_max.tex}
+\input{tables/results_jm1_max.tex}
+% Large (N >= 10k)
+\input{tables/results_mammography_max.tex}
+\input{tables/results_bank_marketing_max.tex}
+\input{tables/results_adult_max.tex}
+
+\section{Per-dataset multiclass result tables}\label{app:result-tables-multiclass}
+
+The cost-matrix subsection covers all $24$ multiclass strategies; the
+maximization-metric subsection covers only the strategies defined on
+non-decomposable objectives.
+
+\subsection{Cost-matrix results}
+
+% Small (N < 1k)
+\input{tables/results_iris_cost.tex}
+\input{tables/results_vehicle_cost.tex}
+% Medium (1k <= N < 10k)
+\input{tables/results_cmc_cost.tex}
+\input{tables/results_yeast_cost.tex}
+\input{tables/results_wine_quality_red_cost.tex}
+\input{tables/results_abalone_cost.tex}
+\input{tables/results_fot_proving_cost.tex}
+\input{tables/results_satimage_cost.tex}
+\input{tables/results_gesture_phase_cost.tex}
+% Large (N >= 10k)
+\input{tables/results_volkert_cost.tex}
+\input{tables/results_jannis_cost.tex}
+
+\subsection{Maximization-metric results}
+
+% Small (N < 1k)
+\input{tables/results_iris_max.tex}
+\input{tables/results_vehicle_max.tex}
+% Medium (1k <= N < 10k)
+\input{tables/results_cmc_max.tex}
+\input{tables/results_yeast_max.tex}
+\input{tables/results_wine_quality_red_max.tex}
+\input{tables/results_abalone_max.tex}
+\input{tables/results_fot_proving_max.tex}
+\input{tables/results_satimage_max.tex}
+\input{tables/results_gesture_phase_max.tex}
+% Large (N >= 10k)
+\input{tables/results_volkert_max.tex}
+\input{tables/results_jannis_max.tex}
+
+\section{Base-model calibration}\label{app:model-ece}
+
+The two tables below report the held-out test Expected Calibration
+Error of each base estimator trained on the full training pool, before
+the decision stage is applied. Calibration quality bounds how well the
+analytical Bayes rule performs without a learned correction, so these
+values give context for the per-dataset strategy tables above.
+
+\subsection{Binary datasets}
+\input{tables/model_ece_binary.tex}
+
+\subsection{Multiclass datasets}
+\input{tables/model_ece_multiclass.tex}
+
+\section{Base-model prediction concentration}\label{app:model-vertex}
+
+The two tables below report, for each base estimator, the mean
+Euclidean distance from a held-out predicted probability vector to its
+nearest simplex vertex. The quantity summarizes how sharply the
+estimator concentrates its predicted probabilities: values near zero
+indicate near-deterministic predictions pinned to a vertex, while
+larger values indicate probability mass spread more evenly across
+classes. It has no better or worse direction and is reported as a
+descriptive companion to the calibration tables.
+
+\subsection{Binary datasets}
+\input{tables/model_vertex_distance_binary.tex}
+
+\subsection{Multiclass datasets}
+\input{tables/model_vertex_distance_multiclass.tex}
+
+\end{landscape}
+
+\end{document}

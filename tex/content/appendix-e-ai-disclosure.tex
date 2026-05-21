@@ -1,0 +1,8 @@
+%!TeX root=../carlo_master.tex
+\chapter{How AI was used in this work}\label{app:ai-disclosure}
+
+We are living through a period in which large language models have become a routine part of technical work. This dissertation studies decision strategies for classification, but the same probabilistic machinery that underpins the classifiers examined here also powers the writing and coding assistants that helped produce this document. This appendix gives an account of how they were used.
+
+Assistants were used to draft and refactor the \texttt{threshold\_opt} library, the experiment harness and analysis scripts, the test suite, and the cloud tooling; to survey the related literature and inform the dataset selection toward diverse scenarios and overlap with data used by prior work; to locate candidate bibliographic references and page numbers, which were verified against the original sources; to draft and revise several prose subsections; and to generate and cross-check shorter derivations. Earlier in the project this was a web-based paste-in-and-out workflow; once the \LaTeX{} source was moved into the code repository it became an IDE-integrated loop in which a proposed diff was accepted, edited, or rejected before each commit, and during writing I ran one-shot ``cold reader'' passes asking a model to flag unsupported claims and inconsistencies between prose, tables, and figures. The analysis of the empirical results came out of the same loop: assistants proposed readings of the tables and figures, and the ones that appear here are those I judged correct.
+
+The research questions and the theoretical contributions are mine.

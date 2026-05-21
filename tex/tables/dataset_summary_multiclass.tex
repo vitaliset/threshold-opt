@@ -1,0 +1,26 @@
+\begin{table}[H]
+  \centering
+  \caption{Summary of multiclass classification datasets used in the experiments. Superscripts denote OpenML dataset IDs. Numerical and Categorical are the counts of raw numerical and categorical input features; Encoded is the model input dimensionality after one-hot encoding of the categorical features. The imbalance ratio (IR) is the size of the majority class divided by that of the minority class.}%
+  \label{tab:dataset-summary-multiclass}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{lrrrrrl}
+\toprule
+ &  &  & \multicolumn{3}{c}{Features} &  \\
+\cmidrule(lr){4-6}
+Dataset & Samples & Classes & Numerical & Categorical & Encoded & IR \\
+\midrule
+iris\textsuperscript{\tiny 61}~\citep{fisher1936iris} & 150 & 3 & 4 & 0 & 4 & 1.0 \\
+vehicle\textsuperscript{\tiny 54}~\citep{siebert1987vehicle} & 846 & 4 & 18 & 0 & 18 & 1.1 \\
+cmc\textsuperscript{\tiny 23}~\citep{lim2000cmc} & 1473 & 3 & 2 & 7 & 24 & 1.9 \\
+yeast\textsuperscript{\tiny 181}~\citep{horton1996yeast} & 1484 & 10 & 8 & 0 & 8 & 92.6 \\
+wine\_quality\_red\textsuperscript{\tiny 40691}~\citep{cortez2009wine} & 1599 & 6 & 11 & 0 & 11 & 68.1 \\
+abalone\textsuperscript{\tiny 1557}~\citep{nash1994abalone} & 4177 & 3 & 7 & 1 & 10 & 1.1 \\
+fot\_proving\textsuperscript{\tiny 1475}~\citep{bridge2014fol} & 6118 & 6 & 51 & 0 & 51 & 5.3 \\
+satimage\textsuperscript{\tiny 182}~\citep{srinivasan1993satimage} & 6430 & 6 & 36 & 0 & 36 & 2.4 \\
+gesture\_phase\textsuperscript{\tiny 4538}~\citep{madeo2013gesture} & 9873 & 5 & 32 & 0 & 32 & 3.0 \\
+volkert\textsuperscript{\tiny 41166}~\citep{guyon2015automl} & 58310 & 10 & 180 & 0 & 180 & 9.4 \\
+jannis\textsuperscript{\tiny 41168}~\citep{guyon2015automl} & 83733 & 4 & 54 & 0 & 54 & 22.8 \\
+\bottomrule
+\end{tabular}
+  }
+\end{table}

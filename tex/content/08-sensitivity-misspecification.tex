@@ -1,0 +1,206 @@
+%!TeX root=../carlo_master.tex
+\chapter{Sensitivity to estimation misspecification across K}\label{sec:misspec_sensitivity_K}
+
+The binary and multiclass campaigns of Sections~\ref{sec:binary_experiments} and~\ref{sec:multiclass_experiments} differ on a secondary observation. On cost-matrix objectives, the lead in overall win/tie rate of the best strategy over the bare analytical plug-in rule narrows from $87\%$ versus $69\%$ in the binary setting (Figure~\ref{fig:win-counts-binary-cost}) to $80\%$ versus $69\%$ in the multiclass setting (Figure~\ref{fig:win-counts-multiclass-cost}), i.e.\ from an $18$-point lead to an $11$-point lead. On the non-decomposable maximization metrics, where the analytical rule reduces to argmax-of-probabilities, the comparison narrows from $100\%$ versus $45\%$ (Figure~\ref{fig:win-counts-binary-max}) to $90\%$ versus $62\%$ (Figure~\ref{fig:win-counts-multiclass-max}). The direction is consistent across both objective families: the lead of the best strategy over the analytical rule shrinks as $K$ grows.
+
+There are two candidate explanations. Either the multiclass validation partition carries little exploitable signal, or the analytical Bayes-optimal rule itself becomes more robust to distributional misspecification as $K$ grows. We test the second reading with two controlled synthetic experiments and propose a mechanism to explain it.
+
+\section{Synthetic experiments}\label{sec:misspec_sensitivity_experiments}
+
+Both experiments use closed-form Gaussian class-conditional densities and evaluate the analytical Bayes-optimal rule directly under the perturbed distribution; Monte Carlo enters only to evaluate expectations. They differ in the perturbation: variance scaling (Section~\ref{sec:misspec_sensitivity_variance}) is observable only under an asymmetric cost, while per-class random mean shifts (Section~\ref{sec:misspec_sensitivity_meanshift}) break the argmax-invariance and reproduce the K-monotone ordering under both symmetric and asymmetric cost.
+
+\subsection{Variance scaling}\label{sec:misspec_sensitivity_variance}
+
+Let $\mathbb{P}_1$ denote the reference distribution over $(X, Y) \in \mathbb{R}^2 \times \mathcal{Y}$ in which the class priors are uniform ($\pi_k = 1/K$) and each class-conditional density is isotropic Gaussian, $p_1(x \mid Y{=}k) = \mathcal{N}(\mathbf{m}_k, \sigma^2 \mathbf{I})$ with $\sigma = 1$; it is the identity member of the variance family $\{\mathbb{P}_\lambda\}_{\lambda \geq 1}$ defined next. The feature-space class means $\mathbf{m}_k \in \mathbb{R}^2$ are placed at the vertices of a regular $K$-gon of radius $2$, so the geometric arrangement is rotationally symmetric and the distance between adjacent class means stays constant in $K$.
+
+The misspecified member $\mathbb{P}_\lambda$ shares the means and priors of $\mathbb{P}_1$ but scales every class-conditional density to $p_\lambda(x \mid Y{=}k) = \mathcal{N}(\mathbf{m}_k, \lambda\sigma^2 \mathbf{I})$ for a single variance multiplier $\lambda \geq 1$, with the reference recovered at the identity value $\lambda = 1$. Write $\boldsymbol{\eta}_1(x)$ and $\boldsymbol{\eta}_\lambda(x)$ for the conditional class probabilities induced by $\mathbb{P}_1$ and $\mathbb{P}_\lambda$ at $x$. Here $\boldsymbol{\eta}_1$ plays the role of the misspecified plug-in estimate $\hat{\mathbf{p}}$ and $\boldsymbol{\eta}_\lambda$ the role of the truth $\boldsymbol{\eta}$, so the difference $\boldsymbol{\eta}_\lambda - \boldsymbol{\eta}_1$ is the estimation error $\boldsymbol{\epsilon}$ of Section~\ref{sec:analytical_fragility}.
+
+The misspecified rule applies the Bayes-optimal decision $\delta^*$ from~\eqref{eq:bayes_optimal_delta} to $\boldsymbol{\eta}_1(x)$, equivalent to assuming the variance is $\sigma^2$, while the oracle applies the same $\delta^*$ to $\boldsymbol{\eta}_\lambda(x)$. Figure~\ref{fig:misspec-sensitivity-setup-geometry} illustrates the construction at $K = 5$: the assumed unit-variance contours sit inside the larger contours of $\mathbb{P}_\lambda$, and the misspecified rule built for the inner geometry is asked to act on data drawn from the outer one.
+
+\begin{figure}[H]
+    \centering
+    \input{figures/scaling_setup_geometry.tex}
+    \caption{Variance-scaling perturbation at $K = 5$ in $\mathbb{R}^2$. The class means $\mathbf{m}_k$ sit at the vertices of a regular $K$-gon of radius $2$. Solid blue rings show the $\mathbb{P}_1$ contours at $\sigma = 1$; faded red rings show $\mathbb{P}_\lambda$ contours at $\sigma = \sqrt{\lambda}$ for an example $\lambda > 1$ (here $\lambda \approx 3$). The misspecified rule is built for the inner geometry and applied to data sampled from the outer one.}%
+    \label{fig:misspec-sensitivity-setup-geometry}
+\end{figure}
+
+The variance multiplier $\lambda$ is the construction's K-independent sweep parameter, so the per-$K$ curves share a common horizontal axis: the per-class KL divergence between $\mathbb{P}_1$ and $\mathbb{P}_\lambda$ equals $(d/2)(\log\lambda + 1/\lambda - 1)$ with $d = 2$, independent of $K$ (Appendix~\ref{app:kl_invariance}). We sweep $17$ log-spaced values of $\lambda$ in $[1, 16]$.
+
+The cost matrix $\mathbf{C}$ is the Asymmetric $10\times$ family from Section~\ref{sec:multiclass_setup}: class $K{-}1$ is designated high-cost so that misclassifying it carries cost $10$, while every other off-diagonal misclassification carries cost $1$. Writing $R_\lambda(h) = \mathbb{E}_{\mathbb{P}_\lambda}[C_{Y, h(X)}]$ for the expected risk of a classifier $h$ under $\mathbb{P}_\lambda$, the oracle classifier is $h^*_\lambda(x) = \delta^*(\boldsymbol{\eta}_\lambda(x))$ and the misspecified classifier is $h^*_1(x) = \delta^*(\boldsymbol{\eta}_1(x))$. We report the relative excess risk,
+\begin{equation}
+    \frac{R_\lambda(h^*_1) - R_\lambda(h^*_\lambda)}{R_\lambda(h^*_\lambda)},
+    \label{eq:misspec_sensitivity_relative_regret}
+\end{equation}
+which normalises out the baseline difficulty of the cost matrix and is identically zero at $\lambda = 1$ (where the two classifiers coincide).
+
+Expectations are estimated by stratified Monte Carlo. Each task draws $n_{\mathrm{MC}} = 100{,}000$ samples from $\mathbb{P}_\lambda$, evaluates both classifiers on the same samples (shared-sample evaluation cancels most of the Monte Carlo variance in the difference, since the two classifiers agree at every $x$ that is not near a decision boundary), and records both risk estimates. The replicate seed vector is drawn deterministically from a master seed and persisted alongside the run, matching the protocol used by the mean-shift sweep of Section~\ref{sec:misspec_sensitivity_meanshift}. The sweep covers $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; the lower endpoint $K = 2$ recovers the binary problem and serves as the bridge to Section~\ref{sec:binary_experiments}.
+
+Figure~\ref{fig:misspec-sensitivity-variance} overlays the eight per-$K$ curves on a single panel. All curves anchor near zero and grow with $\lambda$. The ordering is monotone in $K$ across the bulk of the sweep: at every fixed $\lambda$ above the Monte Carlo floor the $K = 2$ curve sits highest, $K = 3$ next, and so on down to $K = 20$ at the bottom. Between $K = 2$ and $K = 20$ the relative excess risk differs by a factor of roughly seven to eight across $\lambda \in [1, 16]$.
+
+This K-monotone ordering is the empirical phenomenon predicted qualitatively by the second reading of the section's opening; Section~\ref{sec:misspec_sensitivity_mechanism} derives it from a geometric mechanism.
+
+\begin{figure}[H]
+    \centering
+    \input{figures/scaling_variance.tex}
+    \caption{Relative excess risk of the Bayes-optimal classifier designed for $\mathbb{P}_1$ when the data is drawn from $\mathbb{P}_\lambda$, as a function of the variance multiplier $\lambda$. Each curve covers $17$ log-spaced values of $\lambda \in [1, 16]$ for a fixed number of classes $K$. The cost matrix is Asymmetric $10\times$. Points are averages over $10$ replicate seeds; shaded bands are normal-approx $95\%$ CIs ($\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across seeds), and lines are linear interpolation between the per-$\lambda$ seed means.}%
+    \label{fig:misspec-sensitivity-variance}
+\end{figure}
+
+The exact slope of each curve depends on the cost matrix and on the geometric arrangement of the class means. Section~\ref{sec:misspec_sensitivity_mechanism} proposes a dimensional dilution mechanism for diffuse perturbations of $\boldsymbol{\eta}$ that predicts a K-monotone ordering of this kind.
+
+The reliance on asymmetric cost is itself a feature of variance scaling. Under Symmetric $0/1$ cost the construction is degenerate: variance scaling preserves the argmax of $\boldsymbol{\eta}$ at every $x$ (the closest centroid under $\boldsymbol{\eta}_1$ stays the closest under $\boldsymbol{\eta}_\lambda$), the misspecified and oracle classifiers agree everywhere, and the relative excess risk is identically zero. The Asymmetric $10\times$ cost was used precisely because it weighs the full vector $\boldsymbol{\eta}$ rather than only its argmax. Any test of the K-flattening under symmetric cost therefore requires a perturbation that affects the argmax of $\boldsymbol{\eta}$.
+
+\subsection{Random per-class mean shifts}\label{sec:misspec_sensitivity_meanshift}
+
+The variance experiment leaves two concerns open. First, it is observable only under cost matrices that weigh the full vector $\boldsymbol{\eta}$ (Section~\ref{sec:misspec_sensitivity_variance}), so the K-flattening could be specific to cost asymmetry rather than a property of the misspecification itself. Second, the Asymmetric $10\times$ cost couples to $K$: the high-cost class is one of $K$, so its relative weight in the cost-weighted argmin changes with $K$, and the geometric dilution is confounded with a cost-structure-versus-$K$ effect.
+
+The mean-shift experiment addresses both concerns. The perturbation affects the argmax of $\boldsymbol{\eta}$, so it is observable under Symmetric $0/1$ cost as well, and the geometric arrangement has $K$-independent pairwise inter-class distance. The only quantity varying with $K$ is the dimension $K-1$ that the mechanism of Section~\ref{sec:misspec_sensitivity_mechanism} is about.
+
+The construction has three ingredients, all chosen to keep one knob varying with $K$ at a time. First, the class means are placed at $K$ mutually equidistant points in $\mathbb{R}^{K-1}$. With every pair of class means at the same Euclidean distance, no two classes are geometrically privileged as ``neighbours''. Second, the circumradius of this arrangement is rescaled with $K$ so that the pairwise inter-class distance is itself $K$-independent. Writing $R_{\mathrm{circ}}(K)$ for the circumradius, the vertex norms satisfy $\|\mathbf{m}_j\| = R_{\mathrm{circ}}(K)$ and the pairwise inner products are $\mathbf{m}_j^\top \mathbf{m}_k = -R_{\mathrm{circ}}(K)^2 / (K-1)$, so the pairwise distance is
+\begin{equation}
+    \|\mathbf{m}_j - \mathbf{m}_k\| = R_{\mathrm{circ}}(K)\,\sqrt{\tfrac{2K}{K-1}}.
+    \label{eq:meanshift_pairwise}
+\end{equation}
+Choosing $R_{\mathrm{circ}}(K) = \sqrt{2(K-1)/K} \cdot s$ for a scalar $s$ gives a $K$-independent pairwise distance of $2s$, equivalently a $K$-independent pairwise KL of $2s^2/\sigma^2$ between any two reference class-conditional Gaussians (Appendix~\ref{app:kl_invariance}). We set $s = 2\sigma$ throughout so the pairwise distance is $4\sigma$ for every $K$, matching the $K=2$ baseline of the variance experiment (two K-gon centroids on a line at distance $2\sigma \cdot 2 = 4\sigma$ from each other). Third, the perturbation drives each class's mean by an independent random unit vector $\mathbf{v}_k$ uniformly distributed on the sphere $S^{K-2}$, rescaled to a fixed magnitude $\xi$,
+\begin{equation}
+    \mathbf{m}_k^{\xi} = \mathbf{m}_k + \xi\,\mathbf{v}_k, \qquad \mathbf{v}_k \overset{\mathrm{iid}}{\sim} \mathrm{Unif}(S^{K-2}).
+    \label{eq:meanshift}
+\end{equation}
+The reference member of the family $\{\mathbb{P}_\xi\}_{\xi \geq 0}$ is the unperturbed configuration $\mathbb{P}_0$ ($\xi = 0$), and the data are drawn from $\mathbb{P}_\xi$. The per-class shift length is deterministic in $\xi$; only the direction of each shift is random and varies seed-to-seed. The shifts are independent across classes, so each class's contribution to $\boldsymbol{\eta}(x)$ is perturbed independently. Figure~\ref{fig:misspec-sensitivity-meanshift-setup} illustrates the construction at $K = 3$, the only case that fits in $\mathbb{R}^2$.
+
+\begin{figure}[H]
+    \centering
+    \input{figures/scaling_meanshift_setup.tex}
+    \caption{Random per-class mean-shift construction at $K = 3$, the only case that embeds in $\mathbb{R}^2$ (since $K-1 = 2$). The three $\mathbb{P}_0$ class means $\mathbf{m}_k$ (black dots, solid blue rings) sit at the vertices of an equilateral triangle with pairwise distance $4\sigma$ (matching the $K=2$ baseline of the variance experiment). Dotted grey circles show the unit sphere $S^{K-2}$ of allowed shift directions; one realization of the random shifts $\mathbf{v}_k$ is shown as grey arrows of length $\xi$ from each $\mathbf{m}_k$ to the corresponding $\mathbb{P}_\xi$ centroid (dashed red ring). The directions of the three shifts are drawn independently, so the induced perturbation of $\boldsymbol{\eta}(x)$ at every sample point spreads over multiple simplex coordinates rather than concentrating on a single class boundary.}%
+    \label{fig:misspec-sensitivity-meanshift-setup}
+\end{figure}
+
+Under this construction the per-class Euclidean shift magnitude $\xi$ is K-independent by design. The induced per-class KL divergence between $\mathbb{P}_0$ and $\mathbb{P}_\xi$ reduces to $\xi^2/(2\sigma^2)$, again independent of $K$ (Appendix~\ref{app:kl_invariance}). The horizontal axis is therefore deterministic in $\xi$ even though the per-class shift directions are random per seed. The pairwise inter-class distance is fixed by the choice of $R_{\mathrm{circ}}(K)$. Only the ambient dimension $K-1$ varies with $K$.
+
+The cost matrix is again the Asymmetric $10\times$ family, and we also report the Symmetric $0/1$ loss as the cost configuration the variance experiment cannot probe. By analogy with the variance setup, we report the relative excess risk $(R_\xi(h^*_0) - R_\xi(h^*_\xi))/R_\xi(h^*_\xi)$, where $R_\xi(h) = \mathbb{E}_{\mathbb{P}_\xi}[C_{Y, h(X)}]$ is the expected risk under $\mathbb{P}_\xi$, the misspecified classifier $h^*_0(x) = \delta^*(\boldsymbol{\eta}_0(x))$ is built from the unperturbed conditional class probabilities, and the oracle $h^*_\xi(x) = \delta^*(\boldsymbol{\eta}_\xi(x))$ from the perturbed ones.
+
+\begin{figure}[H]
+    \centering
+    \input{figures/scaling_meanshift.tex}
+    \caption{Relative excess risk under the random per-class mean-shift perturbation of Equation~\eqref{eq:meanshift}, as a function of the per-class Euclidean shift magnitude $\xi/\sigma$. The class means are at $K$ mutually equidistant points in $\mathbb{R}^{K-1}$ with $K$-dependent circumradius $R_{\mathrm{circ}}(K) = \sqrt{2(K-1)/K}\,\sigma$ chosen so the pairwise inter-class distance is the same for every $K$; each class's mean is shifted by an independent random unit direction scaled to magnitude $\xi$. Left column: Symmetric $0/1$ cost. Right column: Asymmetric $10\times$ cost. Shaded bands are normal-approx $95\%$ CIs ($\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across $10$ replicate seeds).}%
+    \label{fig:misspec-sensitivity-meanshift}
+\end{figure}
+
+Figure~\ref{fig:misspec-sensitivity-meanshift} shows the relative excess risk under both cost matrices. At every fixed $\xi/\sigma$ above the Monte Carlo floor the $K = 2$ curve sits above $K = 3$, $K = 3$ above $K = 4$, and so on down to $K = 20$, in both panels. The $K=2$-to-$K=20$ spread at the right edge of the linear panels is roughly four- to six-fold.
+
+The K-monotone ordering and the position of $K = 2$ at the top both reproduce under symmetric $0/1$ cost, dispatching the cost-coupling caveat raised at the end of Section~\ref{sec:misspec_sensitivity_variance}: the K-flattening is a geometric property visible across cost matrices that probe $\boldsymbol{\eta}$ differently.
+
+The fixed pairwise inter-class distance also removes the Bayes-risk artefact that inflates the spread in the variance experiment. With $R_{\mathrm{circ}}(K)$ as above, the Bayes risk $R_\xi(h^*_\xi)$ grows only mildly with $K$ (it is dominated by the inter-class confusion, which is constant in $K$ here), so the relative excess risk is closer to the geometric dilution that Section~\ref{sec:misspec_sensitivity_mechanism} derives.
+
+Both experiments support the second reading of the section's opening: the K-flattening of the misspecification cost of the Bayes-optimal rule is a generic geometric phenomenon, visible under two perturbation modes (variance scaling, per-class random mean shifts) and two cost configurations (Asymmetric $10\times$, Symmetric $0/1$). The next subsection isolates a geometric mechanism that predicts the leading-order K-decay.
+
+\section{Mechanism and numerical verification of dimensional dilution}\label{sec:misspec_sensitivity_mechanism}
+
+The K-monotone ordering observed in Figures~\ref{fig:misspec-sensitivity-variance} and~\ref{fig:misspec-sensitivity-meanshift} admits a geometric explanation. The simplex $\Delta^{K-1}$ has $K-1$ degrees of freedom, while a scalar functional of a probability vector probes only one. An isotropic perturbation of fixed Euclidean radius $r$ in the $(K-1)$-dimensional tangent space of $\Delta^{K-1}$ projects onto any fixed scalar gradient with expected squared overlap $r^2/(K-1)$, the standard concentration-of-measure behaviour of uniform random vectors on a high-dimensional sphere.
+
+The rest of this section makes the observation precise as a lemma, verifies it numerically in a synthetic setting where the assumptions hold by construction, and discusses why the lemma's quantitative exponent does not transfer to the misspecification experiments at finite perturbation magnitude.
+
+\subsection{Pointwise dilution and its integrated form}\label{sec:misspec_sensitivity_lemma}
+
+Throughout this subsection, $\delta : \Delta^{K-1} \to \mathcal{Y}$ denotes a fixed decision rule. The per-sample expected cost of $\delta$ at a probability vector $\mathbf{p} \in \Delta^{K-1}$ is
+\begin{equation}\label{eq:per_sample_cost_functional}
+    \phi_\delta(\mathbf{p}) := \mathcal{L}_{\delta(\mathbf{p})}(\mathbf{p}) = \mathbf{c}_{\delta(\mathbf{p})}^\top \mathbf{p},
+\end{equation}
+the global conditional-risk functional $\mathcal{L}_i$ of Section~\ref{sec:multiclass} evaluated at the action $\delta(\mathbf{p})$ that $\delta$ selects at $\mathbf{p}$ (Eq.~\eqref{eq:bayes_optimal_delta}). The integrated cost-sensitive risk of $\delta$ along a curve $X \mapsto \boldsymbol{\eta}(X)$ is $\mathcal{R}(\delta; \boldsymbol{\eta}) := \mathbb{E}_X[\phi_\delta(\boldsymbol{\eta}(X))]$. The experiments of Sections~\ref{sec:misspec_sensitivity_variance} and~\ref{sec:misspec_sensitivity_meanshift} report the integrated regret $\mathcal{R}(\delta_{\mathrm{ref}}; \boldsymbol{\eta}_\theta) - \mathcal{R}(\delta_\theta; \boldsymbol{\eta}_\theta)$, where $\mathbb{P}_\theta$ is the perturbed member of the misspecification family ($\theta = \lambda$ for variance scaling, $\theta = \xi$ for mean shifts) and $\mathbb{P}_{\mathrm{ref}}$ its reference (identity) member, $\delta_{\mathrm{ref}}$ is the Bayes-optimal rule for the reference class probabilities $\boldsymbol{\eta}_{\mathrm{ref}}$, $\delta_\theta$ is the oracle Bayes-optimal rule for the true class probabilities $\boldsymbol{\eta}_\theta$, and the expectation is taken under $\mathbb{P}_\theta$.
+
+A perturbation $\boldsymbol{\epsilon}$ of a probability vector $\boldsymbol{\eta} \in \Delta^{K-1}$ must keep $\boldsymbol{\eta} + \boldsymbol{\epsilon}$ a probability vector, so its entries sum to zero. The set of admissible perturbations is
+\begin{equation}\label{eq:perturbation_space}
+    V := \{ \mathbf{v} \in \mathbb{R}^K : \mathbf{1}^\top \mathbf{v} = 0 \},
+\end{equation}
+a $(K-1)$-dimensional linear subspace of $\mathbb{R}^K$. We equip $V$ with the Euclidean inner product inherited from $\mathbb{R}^K$, and measure the size of a perturbation by its Euclidean radius $r := \|\boldsymbol{\epsilon}\|$.
+
+The two ingredients of the mechanism are a smoothness condition on the scalar functional and a directional condition on the perturbation.
+
+\begin{assumption}[Local smoothness]\label{ass:smoothness}
+    The functional $\phi : \Delta^{K-1} \to \mathbb{R}$ is differentiable at an interior point $\mathbf{p} \in \Delta^{K-1}$ with gradient $\mathbf{g} \in V$, and there exist a constant $M > 0$ and a smoothness radius $\rho > 0$ such that the second-order remainder satisfies
+    \begin{equation}\label{eq:smoothness_bound}
+        \bigl|\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p}) - \mathbf{g}^\top \boldsymbol{\epsilon}\bigr| \leq M\,\|\boldsymbol{\epsilon}\|^2 \quad \text{for all } \boldsymbol{\epsilon} \in V \text{ with } \|\boldsymbol{\epsilon}\| \leq \rho.
+    \end{equation}
+\end{assumption}
+
+The condition is satisfied by the per-sample expected cost $\phi_\delta$ at any interior $\mathbf{p}$ that does not lie on the decision boundary of $\delta$: small perturbations of $\mathbf{p}$ do not flip the chosen action, and on a neighbourhood of $\mathbf{p}$ the functional $\phi_\delta$ is linear in its argument, $\phi_\delta(\mathbf{q}) = \mathbf{c}_{\delta(\mathbf{p})}^\top \mathbf{q}$. The directional derivative along any $\boldsymbol{\epsilon} \in V$ is therefore $\mathbf{c}_{\delta(\mathbf{p})}^\top \boldsymbol{\epsilon}$, and the lemma's gradient (the unique $\mathbf{g} \in V$ representing this directional derivative) is the centered cost column $\mathbf{c}_{\delta(\mathbf{p})} - \bar{c}_{\delta(\mathbf{p})}\mathbf{1}$ with $\bar{c}_i = K^{-1}\mathbf{1}^\top \mathbf{c}_i$, generally nonzero. The second-order remainder in Eq.~\eqref{eq:smoothness_bound} is identically zero because a linear function has no quadratic term in its Taylor expansion.
+
+\begin{assumption}[Diffuse perturbation direction]\label{ass:diffuse}
+    The perturbation $\boldsymbol{\epsilon}$ is a random vector taking values in $V$, with distribution uniform on the Euclidean sphere $\{\mathbf{v} \in V : \|\mathbf{v}\| = r\}$ for some $0 < r \leq \rho$.
+\end{assumption}
+
+This is a modelling choice rather than a literal description of the perturbations realised by either experiment. It encodes the idea that the misspecification energy is spread over the available directions rather than concentrated on a single pair of classes; without diffusion, the decision problem reduces to a binary subproblem and the mechanism does not apply.
+
+\begin{lemma}[Dimensional dilution]\label{lem:dimensional_dilution}
+    Under Assumptions~\ref{ass:smoothness} and~\ref{ass:diffuse},
+    \begin{equation}\label{eq:dimensional_dilution}
+        \mathbb{E}\bigl[(\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p}))^2\bigr] = \frac{r^2}{K-1}\,\|\mathbf{g}\|^2 + O(r^3).
+    \end{equation}
+\end{lemma}
+
+\begin{proof}
+    Choose an orthonormal basis $\mathbf{b}_1, \ldots, \mathbf{b}_{K-1}$ of $V$ (distinct from the simplex vertices $\mathbf{e}_k$). The Helmert basis $\mathbf{b}_k = (\underbrace{1, \ldots, 1}_{k}, -k, 0, \ldots, 0)/\sqrt{k(k+1)}$ is one such choice, and the argument does not depend on the particular basis. Write $\boldsymbol{\epsilon} = \sum_{k=1}^{K-1} Z_k \mathbf{b}_k$ for scalar coordinates $Z_k = \boldsymbol{\epsilon}^\top \mathbf{b}_k$. Since the $\mathbf{b}_k$ are orthonormal, $\|\boldsymbol{\epsilon}\|^2 = \sum_k Z_k^2$, which equals $r^2$ deterministically by Assumption~\ref{ass:diffuse}. Uniform distribution of $\boldsymbol{\epsilon}$ on the radius-$r$ sphere in $V$ is equivalent to uniform distribution of $(Z_1, \ldots, Z_{K-1})$ on the radius-$r$ sphere in $\mathbb{R}^{K-1}$.
+
+    The uniform distribution on a sphere is invariant under coordinate permutations and sign flips, so $\mathbb{E}[Z_k Z_l] = 0$ for $k \neq l$ and $\mathbb{E}[Z_k^2]$ does not depend on $k$. Combined with $\sum_k \mathbb{E}[Z_k^2] = r^2$, this gives $\mathbb{E}[Z_k^2] = r^2/(K-1)$ for each $k$.
+
+    Since $\mathbf{g} \in V$, we may write $\mathbf{g} = \sum_k (\mathbf{g}^\top \mathbf{b}_k)\,\mathbf{b}_k$, so $\mathbf{g}^\top \boldsymbol{\epsilon} = \sum_k (\mathbf{g}^\top \mathbf{b}_k)\,Z_k$ and
+    \begin{equation*}
+        \mathbb{E}\bigl[(\mathbf{g}^\top \boldsymbol{\epsilon})^2\bigr] = \sum_k (\mathbf{g}^\top \mathbf{b}_k)^2 \cdot \mathbb{E}[Z_k^2] = \frac{r^2}{K-1} \sum_k (\mathbf{g}^\top \mathbf{b}_k)^2 = \frac{r^2}{K-1}\,\|\mathbf{g}\|^2.
+    \end{equation*}
+    By Assumption~\ref{ass:smoothness}, $\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p}) = \mathbf{g}^\top \boldsymbol{\epsilon} + \mathrm{rem}(\boldsymbol{\epsilon})$ with $|\mathrm{rem}(\boldsymbol{\epsilon})| \leq M\,r^2$. Squaring and taking expectations, the cross term $\mathbb{E}[(\mathbf{g}^\top \boldsymbol{\epsilon})\,\mathrm{rem}(\boldsymbol{\epsilon})]$ is bounded in absolute value by $\|\mathbf{g}\| \cdot r \cdot M\,r^2 = O(r^3)$ (Cauchy-Schwarz) and the squared remainder by $M^2\,r^4 = O(r^4)$, yielding Eq.~\eqref{eq:dimensional_dilution}.
+\end{proof}
+
+Lemma~\ref{lem:dimensional_dilution} is pointwise: a single probability vector $\mathbf{p}$, a single rule's gradient $\mathbf{g}$. The experiments report quantities averaged over $X \sim \mathbb{P}_\theta$. The following corollary is the integration of the lemma along the curve $X \mapsto \boldsymbol{\eta}(X)$ for a fixed rule.
+
+\begin{corollary}[Integrated dilution]\label{cor:integrated_dilution}
+    Fix a rule $\delta$ and a curve $X \mapsto \boldsymbol{\eta}(X)$. Suppose Assumption~\ref{ass:smoothness} holds at $\boldsymbol{\eta}(X)$ for almost every $X$ with gradient $\mathbf{g}_\delta(X) \in V$ and remainder constant $M(X)$, both square-integrable in $X$. Suppose further that the perturbation $\boldsymbol{\epsilon}(X) \in V$, conditionally on $X$, is uniform on the radius-$r$ sphere in $V$. Then
+    \begin{equation}\label{eq:integrated_dilution}
+        \mathbb{E}_{X,\boldsymbol{\epsilon}}\!\bigl[(\phi_\delta(\boldsymbol{\eta}(X) + \boldsymbol{\epsilon}(X)) - \phi_\delta(\boldsymbol{\eta}(X)))^2\bigr] = \frac{r^2}{K-1}\,\mathbb{E}_X[\|\mathbf{g}_\delta(X)\|^2] + O(r^3).
+    \end{equation}
+\end{corollary}
+
+\begin{proof}
+    Apply Lemma~\ref{lem:dimensional_dilution} conditionally on $X$, then take the outer expectation. The leading term integrates to $\frac{r^2}{K-1}\,\mathbb{E}_X[\|\mathbf{g}_\delta(X)\|^2]$. The conditional remainder is bounded by an absolute constant times $M(X)\,\|\mathbf{g}_\delta(X)\|\,r^3 + M(X)^2\,r^4$; its expectation is finite by the square-integrability of $M$ and $\mathbf{g}_\delta$ together with Cauchy-Schwarz, so the integrated remainder is $O(r^3)$.
+\end{proof}
+
+\subsection{Numerical verification of the dilution lemma}\label{sec:misspec_sensitivity_lemma_verification}
+
+We verify the Lemma's leading-order prediction in its native setting: reference probability vectors drawn from a Dirichlet on the simplex interior, and perturbations sampled uniformly on the radius-$r$ sphere in $V$.
+
+We do not attempt the verification on the variance or mean-shift constructions of Sections~\ref{sec:misspec_sensitivity_variance} and~\ref{sec:misspec_sensitivity_meanshift}. Those constructions induce differences $\boldsymbol{\eta}_\theta(X) - \boldsymbol{\eta}_{\mathrm{ref}}(X)$ whose covariance at fixed $X$ depends on the Gaussian geometry of the classes rather than satisfying Assumption~\ref{ass:diffuse}'s uniform-on-sphere distribution, so the lemma's quantitative exponent does not transfer at finite perturbation magnitude. Their empirical content is the K-monotone ordering of Figures~\ref{fig:misspec-sensitivity-variance} and~\ref{fig:misspec-sensitivity-meanshift}, which the dilution mechanism predicts qualitatively.
+
+For each $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$, perturbation radius $r$, and cost configuration $\mathbf{C}$ (Symmetric $0/1$, Asymmetric $M\times$ for $M \in \{2, 5, 10\}$), we draw $n_p = 400$ reference probability vectors $\mathbf{p}_i \overset{\mathrm{iid}}{\sim} \mathrm{Dir}(a\mathbf{1})$ with symmetric concentration $a = 2$, take $\delta(\mathbf{p}_i) = \arg\min_{j \in \mathcal{Y}} (\mathbf{p}_i^\top \mathbf{C})_j$ as the cost-sensitive action, and form the centered cost column $\mathbf{g}_i = \mathbf{c}_{\delta(\mathbf{p}_i)} - \bar c_{\delta(\mathbf{p}_i)}\mathbf{1}$. At each $\mathbf{p}_i$ we draw $n_{\epsilon} = 1000$ perturbations $\boldsymbol{\epsilon}_{ij}$ uniformly on the radius-$r$ sphere in $V$ (Assumption~\ref{ass:diffuse}). Figure~\ref{fig:lemma-test-setup} illustrates the construction at $K = 3$, where $V$ is two-dimensional and the radius-$r$ sphere is a circle around $\mathbf{p}$ in the simplex tangent plane.
+
+\begin{figure}[H]
+    \centering
+    \input{figures/lemma_test_setup.tex}
+    \caption{Geometry of the synthetic Lemma verification at $K = 3$. The simplex $\Delta^{K-1}$ is the triangle with vertices $\mathbf{e}_0, \mathbf{e}_1, \mathbf{e}_2$. A reference probability vector $\mathbf{p}$ is drawn from $\mathrm{Dir}(a\mathbf{1})$ ($a = 2$) in the interior; perturbations $\boldsymbol{\epsilon}$ are then drawn uniformly on the radius-$r$ sphere of $V$, which at $K = 3$ is the circle of radius $r$ around $\mathbf{p}$ in the simplex tangent plane (dotted). Four sample $\boldsymbol{\epsilon}$ realisations are shown.}%
+    \label{fig:lemma-test-setup}
+\end{figure}
+
+Lemma~\ref{lem:dimensional_dilution}'s linearised content is the projection identity $\mathbb{E}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] = r^2/(K-1)\,\|\mathbf{g}\|^2$; integrating over the reference probability vectors,
+\begin{equation}\label{eq:lemma_test_prediction}
+    \frac{\mathbb{E}_\mathbf{p}\!\left[\mathbb{E}_{\boldsymbol{\epsilon}}\!\bigl[(\mathbf{g}(\mathbf{p})^\top \boldsymbol{\epsilon})^2\bigr]\right]}{\mathbb{E}_\mathbf{p}[\|\mathbf{g}(\mathbf{p})\|^2]} = \frac{r^2}{K-1}.
+\end{equation}
+This is the Lemma's leading-order claim, exact at any $r$ within the smoothness radius $\rho$ of Assumption~\ref{ass:smoothness}; the higher-order remainder of the lemma's expansion would enter only through nonlinearities of $\phi_\delta$, which are absent for the cost-sensitive functional on the interior of each decision region. Regressing $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ against $\log(K-1)$ at each $r$ recovers the empirical K-decay exponent $\widehat{\gamma}$, which Eq.~\eqref{eq:lemma_test_prediction} predicts to equal $1$ uniformly across cost matrices.
+
+\begin{table}[H]
+    \centering
+    \input{tables/lemma_test.tex}
+    \caption{Fitted K-decay exponent $\widehat{\gamma}$ for the four cost configurations at the smallest and largest swept perturbation radii. At each $r$, $\widehat{\gamma}$ is the negative ordinary-least-squares (OLS) slope of $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ regressed against $\log(K-1)$ across $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; bracketed intervals are normal-approx $95\%$ CIs from the OLS slope standard error. Equation~\eqref{eq:lemma_test_prediction} predicts $\widehat{\gamma} = 1$ uniformly across cost matrices and $r$.}%
+    \label{tab:lemma-test}
+\end{table}
+
+Table~\ref{tab:lemma-test} reports $\widehat{\gamma}$ for the four cost configurations at the smallest swept radius $r = 0.01$ and the largest $r = 0.2$. All entries equal $1$ to three decimal places with sampling-error intervals narrower than $\pm 0.001$. The linearised projection identity holds exactly across cost matrices and radii, as Eq.~\eqref{eq:lemma_test_prediction} predicts.
+
+The non-linear contribution of $\phi_\delta(\mathbf{p} + \boldsymbol{\epsilon}) - \phi_\delta(\mathbf{p})$ on the set where $\boldsymbol{\epsilon}$ flips the cost-sensitive action of $\delta$ is not in the Lemma's regime: Eq.~\ref{eq:smoothness_bound} requires $\|\boldsymbol{\epsilon}\| \leq \rho$, and $\rho$ in turn requires that $\mathbf{p}$ has enough margin from the decision boundaries for the chosen action to be stable in a $\rho$-neighbourhood. This exclusion is why the lemma's exponent transfers cleanly here and not to the variance or mean-shift constructions, whose action-flip events at large perturbations produce the structural deviations from $1/(K-1)$.
+
+\subsection{Scope of the dilution mechanism}\label{sec:misspec_sensitivity_caveats}
+
+The $1/(K-1)$ rate is a property of the linearised functional under an isotropic perturbation of $V$, and neither variance scaling nor mean shifts meet that idealisation. The conditional covariance of $\boldsymbol{\eta}_\theta(X) - \boldsymbol{\eta}_{\mathrm{ref}}(X)$ at fixed $X$ depends on $\boldsymbol{\eta}_{\mathrm{ref}}(X)$ rather than being a scalar multiple of the projector onto $V$, and finite-magnitude perturbations flip decision regions of $\delta$ outside the smoothness regime. The K-monotone ordering observed across both perturbation modes and both cost configurations is consistent with the dilution mechanism, but the exact rate is not expected to transfer.
+
+This reframes the section's opening observation. The analytical rule trails the per-row best on a smaller fraction of cost cells in Section~\ref{sec:multiclass_experiments} than in Section~\ref{sec:binary_experiments} because it recovers the oracle's expected cost up to a K-decaying residual, so the room for any decision-layer correction shrinks with $K$.
+
+The binary endpoint reads the same way in reverse. At $K = 2$ the relative excess risk climbs steeply with perturbation magnitude in Figures~\ref{fig:misspec-sensitivity-variance} and~\ref{fig:misspec-sensitivity-meanshift}, matching the binary chapter's finding that calibration composed with the analytical rule and direct empirical tuning both improve over the plug-in rule on a substantial fraction of (dataset, model, objective) triples. Empirical tuning continues to help under misspecifications outside the diffuse family considered here (instance-dependent cost shifts, rotational distortions of the kind exploited by Theorem~\ref{thm:rotational_dominance}, or perturbations concentrated on a single pair of classes), but its average effect declines with $K$.
+
+Two caveats remain. First, the synthetic comparison is between two known class-probability functions rather than between a fitted estimator and the truth, so the OpenML pattern of Section~\ref{sec:multiclass_experiments} mixes the geometric effect probed here with sample-complexity effects on the tuning side. Second, whether realistic estimator misspecification on a real dataset is diffuse enough for this mechanism to dominate over the worst-case binary-subproblem regime is an open empirical question.

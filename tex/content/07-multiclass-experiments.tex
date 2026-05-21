@@ -1,0 +1,149 @@
+%!TeX root=../carlo_master.tex
+\chapter{Experimental analysis: multiclass classification}\label{sec:multiclass_experiments}
+
+This chapter evaluates the partition-optimization and Voronoi decision strategies of Chapters~\ref{sec:partition_optimization} and~\ref{sec:voronoi_tessellation} on eleven datasets, ten base classifiers, and twelve objectives (seven cost-sensitive objectives and five maximization metrics). The protocol adapts the binary setup of Chapter~\ref{sec:binary_experiments}, changing only the dataset pool, decision-strategy families, and objective set. The cross-validated tuning variants lead both objective groups. On cost objectives the top is shared by three variants within sampling noise (FullMatrixPartitioningCV, RiskPartitioningCV, LinearScalingCV, all between $78$ and $80\%$); on maximization metrics ThresholdRatioCV leads at $90\%$.
+
+\section{Experimental setup}\label{sec:multiclass_setup}
+
+We adapt the binary protocol of Section~\ref{sec:binary_experiments} to the multiclass case, changing the dataset pool, decision-strategy families, and objective set while keeping the data partition, preprocessing, and evaluation method identical.
+
+\subsection{Datasets}
+The benchmark draws eleven multiclass datasets from OpenML \citep{vanschoren2014openml}, selected along the same axes as the binary pool of Section~\ref{sec:binary_experiments} with imbalance diversity replaced by class-count spread: $K$ ranges from $3$ to $10$, exercising the partition-optimization strategies of Section~\ref{sec:partition_optimization} across simplex dimensions where the number of decision-boundary parameters grows with the number of classes. Sample sizes span $N=150$ to $N\approx 83\text{k}$ across the same three tiers, and the pool recovers the core multiclass datasets of \citet{obrien2008costsensitive}, extended with larger-$N$ and higher-$K$ tasks.
+
+Table~\ref{tab:dataset-summary-multiclass} summarizes the datasets. Preprocessing follows the binary pipeline (Section~\ref{sec:binary_experiments}): median imputation and standardization for numerical features, most-frequent imputation and one-hot encoding for categorical features, fitted once per dataset prior to splitting.
+
+\input{tables/dataset_summary_multiclass.tex}
+
+\subsection{Estimator architectures}
+The ten base classifiers from the binary setup (Section~\ref{sec:binary_experiments}) carry over unchanged. Following the usage guidelines of TabPFN \citep{hollmann2025accurate} and TabICL \citep{qu2025tabicl} (labeled TabICL in the result tables), which cap the training set at roughly ten thousand samples, both are skipped on the two largest datasets (\textit{volkert}, \textit{jannis}), and TabICL is additionally skipped on the smallest (\textit{iris}) by its documented input gates, leaving those (dataset, model) cells absent from the results.
+
+\subsection{Objectives}\label{sec:multiclass_objectives}
+The objective set covers twelve targets: five maximization metrics (macro $F_1$, macro $F_2$, macro $F_{0.5}$, MCC, and macro G-Mean) and seven cost-sensitive objectives (six $K$-parameterized cost matrices and Balanced Accuracy in its prior-weighted cost-matrix form, see Section~\ref{sec:binary_objectives}).
+
+The four \emph{macro} metrics share the same one-vs-rest reduction: for each class $k \in \mathcal{Y}$, examples with true label $k$ are treated as positives and all others as negatives, yielding per-class counts $\mathrm{TP}_k$, $\mathrm{FP}_k$, $\mathrm{FN}_k$ from the $K \times K$ test confusion matrix. The macro aggregate combines the $K$ per-class scores with equal weight across classes (independent of the class priors). For $F_\beta$ that aggregate is the arithmetic mean of per-class $F_\beta$ scores,
+\begin{equation*}
+F_\beta^{\mathrm{macro}} = \frac{1}{K}\sum_{k=1}^{K} \frac{(1+\beta^2)\,\mathrm{TP}_k}{(1+\beta^2)\,\mathrm{TP}_k + \beta^2\,\mathrm{FN}_k + \mathrm{FP}_k},
+\end{equation*}
+implemented as \texttt{sklearn.\allowbreak metrics.\allowbreak fbeta\_\allowbreak score(average=`macro')}. For G-Mean the per-class score is the true-positive rate $\mathrm{TPR}_k = \mathrm{TP}_k / (\mathrm{TP}_k + \mathrm{FN}_k)$ and the aggregate is the geometric mean,
+\begin{equation*}
+\mathrm{GMean}^{\mathrm{macro}} = \Big(\prod_{k=1}^{K} \mathrm{TPR}_k\Big)^{\!1/K},
+\end{equation*}
+implemented as \texttt{imblearn.\allowbreak metrics.\allowbreak geometric\_\allowbreak mean\_\allowbreak score(average=`macro')}. MCC is not a per-class score and so does not use this reduction; it generalises to $K > 2$ as a single scalar computed directly from the full $K \times K$ confusion matrix in the \citet{gorodkin2004comparing} formulation (\texttt{sklearn.\allowbreak metrics.\allowbreak matthews\_\allowbreak corrcoef}). These five maximization metrics are non-decomposable in the sense of \citet{narasimhan2015optimizing}, as discussed in Section~\ref{sec:binary_objectives}.
+
+The cost-sensitive objectives are:
+\begin{itemize}
+    \item Symmetric: $0/1$ loss ($C_{ij} = 0$ if $i = j$, else $1$).
+    \item Asymmetric $10\times$ / Asymmetric $100\times$: unit costs with a $10\times$ or $100\times$ penalty on errors involving the last class.
+    \item Custom: A hand-specified matrix for $K\!=\!3$ ($C_{12} = C_{21} = 5$, other off-diagonals $1$).
+    \item Ordinal: $C_{ij} = |i - j|$.
+    \item Quadratic: $C_{ij} = (i - j)^2$ \citep{obrien2008costsensitive}.
+    \item Balanced Error: the prior-weighted form of Section~\ref{sec:binary_objectives}, generalized to $K > 2$ as $1 - \texttt{sklearn.\allowbreak metrics.\allowbreak balanced\_\allowbreak accuracy\_\allowbreak score}$ (one minus the unweighted mean of per-class recalls, equivalent to misclassification weights $1/(K\pi_y)$ on class $y$ under per-sample-average risk).
+\end{itemize}
+The two distance-based matrices model class labels with an implicit ordering, such as severity grades or quality tiers, where confusing adjacent classes is less costly than confusing distant ones.
+
+\subsection{Decision strategies}\label{sec:multiclass_strategies}
+For each combination of dataset, model, and objective we evaluate twenty-four strategies mapping a probability vector $\hat{\mathbf{p}}(x) \in \Delta^{K-1}$ to a class label. Each tuning strategy is one of the parameterizations of the partition-matrix framework analyzed in Section~\ref{sec:partition_optimization}: the baselines fix $\mathbf{A} = \mathbf{C}$ (the analytical rule of Eq.~\ref{eq:multiclass_bayes}) or ignore the cost matrix, the vector-tuned and full-matrix families learn $\mathbf{A}$ under the structural constraints of Section~\ref{sec:partition_matrix_framework}, and the Voronoi family replaces the linear partition with a nearest-prototype tessellation (Section~\ref{sec:voronoi_tessellation}). They are presented in order of increasing hypothesis-class complexity (the $\mathcal{H}_{PS}$, $\mathcal{H}_{Vor}$, $\mathcal{H}_{Full}$ hierarchy of Table~\ref{tab:partition_natarajan}), with the priority-based cascade of Section~\ref{sec:sequential_selection} grouped on its own since its non-convex, order-dependent regions fall outside that hierarchy. Following Section~\ref{sec:partition_optimization}, we refer to $\mathcal{H}_{PS} \cup \mathcal{H}_{Sc} \cup \mathcal{H}_{Full}$ collectively as the \emph{matrix-parameterized methods} and to the $K-1$-parameter subset $\mathcal{H}_{PS} \cup \mathcal{H}_{Sc}$ as the \emph{vector-tuned methods}.
+
+\paragraph{Uncalibrated and calibrate-then-decide baselines.}
+\begin{itemize}
+    \item Argmax: The cost-blind rule $\mathrm{argmax}_{k \in \mathcal{Y}} \hat{p}_k$.
+    \item Analytical: The Bayes-optimal projection $\mathrm{argmin}_{k \in \mathcal{Y}} \mathbf{c}_k^\top \hat{\mathbf{p}}$ (Eq.~\ref{eq:multiclass_bayes}) applied to uncalibrated scores; the fixed point $\mathbf{A} = \mathbf{C}$ of the partition-matrix framework that every tuning strategy below departs from.
+    \item {\sloppy IsotonicArgmax, PlattScalingArgmax, TemperatureScalingArgmax, DirichletCalibrationArgmax: Post-hoc calibration (isotonic one-vs-rest, Platt one-vs-rest, single-parameter temperature, and Dirichlet; Section~\ref{sec:multiclass_calibration}) followed by $\mathrm{argmax}$.\par}
+    \item {\sloppy IsotonicAnalytical, PlattScalingAnalytical, TemperatureScalingAnalytical, DirichletCalibrationAnalytical: The same four calibrators (Section~\ref{sec:multiclass_calibration}) followed by the analytical rule of Eq.~\ref{eq:multiclass_bayes} instead of $\mathrm{argmax}$.\par}
+\end{itemize}
+
+\paragraph{Vector-tuned partition methods.} These strategies are the vector-parameterized members of the partition-matrix framework (Section~\ref{sec:partition_optimization}). Each learns a single $K$-vector that translates or rescales the polyhedral boundaries of the standard partition, keeping the decision rule within the vector-tuned subset $\mathcal{H}_{PS} \cup \mathcal{H}_{Sc}$ (per-class bias gives $\mathcal{H}_{PS}$ with $d_{Nat} = K-1$; per-class scaling gives $\mathcal{H}_{Sc}$ with $d_{Nat} \leq K-1$):
+\begin{itemize}
+    \item ThresholdRatio: Probability ratio thresholding (Section~\ref{sec:prob_ratio_thresholding}, Eq.~\ref{eq:threshold_ratio}). Per-class scalar rescaling $\hat{p}_k / \tau_k$ prior to $\mathrm{argmax}$, with the per-class ratios $\tau_k$ sampled by random search from $[0.01,\, 1.5]$. The range is asymmetric because $\tau_k \to 0$ amplifies $\hat{p}_k/\tau_k$ unboundedly while $\tau_k > 1.5$ would suppress class $k$ to the point of never being selected against competitors with $\tau_j$ near $1$.
+    \item MultidimensionalThreshold: The simplex-side parameterization of \citet{marchetti2025multidimensional} (Section~\ref{sec:multidim_thresholding}), a per-class additive bias $\hat{p}_k - b_k$ prior to $\mathrm{argmax}$, with the per-class biases $b_k$ sampled by random search from $[-1, 1]$ (one class pinned at $b_k = 0$ for identifiability, so $K-1$ free parameters) and warm-started at $\mathbf{b} = \mathbf{0}$, so that Argmax is a fixed point; equivalent to the parallel-shift rule under $0/1$ loss (Proposition~\ref{prop:marchetti_equivalence}).
+    \item RiskPartitioning: O'Brien's parallel-shift regularization (Section~\ref{sec:parallel_shifts}), the affine bias $A_{ij} = C_{ij} + \alpha_j$ on the cost matrix, fit by the changepoint solver of \citet{obrien2008costsensitive}. By Proposition~\ref{prop:parallel_invariance} it translates the cost-induced boundaries along the fixed normals $\mathbf{c}_i - \mathbf{c}_j$ without rotating them.
+    \item LinearScaling: O'Brien's linear class scaling (Section~\ref{sec:linear_scaling}), the row-wise rescaling $A_{ij} = C_{ij}\beta_i$ of the cost matrix, equivalently the per-class probability reweighting of \citet{lachiche2003improving}. The per-truth-class weights $\boldsymbol{\beta} \in \mathbb{R}^K_{\ge 0}$ are sampled by random search from $[0,\, 5]$ and warm-started at $\boldsymbol{\beta} = \mathbf{1}$, so that Analytical is a fixed point; the lower bound of $0$ enforces $\beta_k \ge 0$ (a negative weight would invert the sign of truth class $k$'s costs), and only the ratios $\beta_i/\beta_j$ affect the prediction. By Proposition~\ref{prop:column_rotation} it rotates the cost-induced boundaries instead of translating them, the cost-aware counterpart of ThresholdRatio (the two coincide under $0/1$ loss with $\beta_k = 1/\tau_k$, Proposition~\ref{prop:ratio_equivalence}).
+\end{itemize}
+
+\paragraph{Priority-based cascade.} SequentialSelection is the threshold cascade of Section~\ref{sec:sequential_selection} (Eq.~\ref{eq:sequential_selection}), with $K{-}1$ scalar thresholds sampled by random search from $[0, 1]$ and applied in ascending-count (minority-first) order, so the rarest training class is the first candidate at every prediction. Its first-match-with-default structure yields non-convex, order-dependent decision regions, so it sits outside the $\mathcal{H}_{PS}/\mathcal{H}_{Vor}/\mathcal{H}_{Full}$ hierarchy at a parameter budget comparable to the vector-tuned methods.
+
+\paragraph{Voronoi partition tuning.} The Voronoi hypothesis class $\mathcal{H}_{Vor}$ (Section~\ref{sec:voronoi_tessellation}) replaces the linear partition with a nearest-prototype tessellation of $\Delta^{K-1}$, allowing boundaries to rotate as well as translate at a parameter count of $K(K-1)$ for the simplex-restricted class and a Natarajan-dimension bound $d_{Nat} \le K^2$ (the middle tier of Table~\ref{tab:partition_natarajan}). VoronoiTuning performs a random search over prototype configurations drawn from Sequential $d^2$ (Algorithm~\ref{alg:voronoi_tuning}), which satisfies the Dominant Label Constraint (Definition~\ref{def:dlc}) by construction.
+
+\paragraph{Full-matrix partition tuning.} The unconstrained partition class $\mathcal{H}_{Full}$ (Section~\ref{sec:partition_optimization}) learns all $K^2$ entries of the partition matrix $\mathbf{A}$ in the apparent-risk rule of Eq.~\ref{eq:obrien_rule}, $\delta_{\mathbf{A}}(\mathbf{p}) = \mathrm{argmin}_{i \in \mathcal{Y}} \mathbf{a}_i^\top \mathbf{p}$, the $d_{Nat} \le K^2$ ceiling of the framework. It is the parameterization \citet{obrien2008costsensitive} introduced before imposing the structural constraints that the parallel-shift family (Section~\ref{sec:parallel_shifts}) restricts to.
+
+FullMatrixPartitioning parameterizes $\mathbf{A} = \mathbf{A}_0 + \boldsymbol{\Delta}$ around an anchor $\mathbf{A}_0$ and samples the perturbation $\boldsymbol{\Delta} \in [-1, 1]^{K \times K}$ by random search. The anchor is the cost matrix $\mathbf{C}$ for cost-sensitive objectives and the $0/1$ loss matrix $\mathbf{1}\mathbf{1}^\top - \mathbf{I}$ (off-diagonal entries $1$, diagonal entries $0$) for non-decomposable metrics, so that $\boldsymbol{\Delta} = \mathbf{0}$ reproduces Analytical or Argmax respectively.
+
+The matrix analogue of the Dominant Label Constraint (Definition~\ref{def:dlc}), $A_{jj} \leq A_{ji}$ for all $i \neq j$, is not imposed, matching the unconstrained $\mathcal{H}_{Full}$ row of Table~\ref{tab:partition_natarajan}. Consequently the learned $\mathbf{A}$ need not be admissible (Definition~\ref{def:admissibility}) even when the evaluation matrix $\mathbf{C}$ is: an unconstrained $\mathbf{A}$ can leave some action $i$ dominated everywhere on $\Delta^{K-1}$, so that $\mathcal{P}_i^{\mathbf{A}} = \emptyset$ and class $i$ is never predicted. Keeping each vertex $\mathbf{e}_i$ in its own region, the property the Dominant Label Constraint enforces, is what rules out this empty-region case.
+
+\paragraph{Cross-validated tuning variants.} For each tuning strategy above, we additionally evaluate a CV variant (ThresholdRatioCV, MultidimensionalThresholdCV, SequentialSelectionCV, RiskPartitioningCV, LinearScalingCV, VoronoiTuningCV, FullMatrixPartitioningCV) that selects parameters by 5-fold stratified cross-validation on the full train-full partition, eliminating the dedicated validation split. These variants use the same training data as Argmax and Analytical, which improves robustness on small datasets at the cost of a $5\times$ increase in fit time for the underlying base classifier.
+
+\paragraph{Search budget.} Every tuning strategy that relies on stochastic search (ThresholdRatio, MultidimensionalThreshold, SequentialSelection, LinearScaling, VoronoiTuning, FullMatrixPartitioning, and their CV variants) uses random search with a fixed budget of $T = 301$ configurations per fit, drawn i.i.d.\ from the per-strategy ranges listed above ($\tau_k \in [0.01, 1.5]$, $b_k \in [-1, 1]$, SequentialSelection thresholds in $[0, 1]$, $\beta_k \in [0, 5]$, $\boldsymbol{\Delta} \in [-1, 1]^{K \times K}$). Each search is initialized at the analytical or $\arg\max$ fixed point of its parameterization ($\boldsymbol{\tau} = \mathbf{1}$, $\mathbf{b} = \mathbf{0}$, $\boldsymbol{\beta} = \mathbf{1}$, $\boldsymbol{\Delta} = \mathbf{0}$, or the standard argmax prototypes for VoronoiTuning) and the incumbent is replaced only on strict improvement of the validation objective (its cross-validated average for the CV variants), so each tuned strategy is no worse than its baseline on the tuning signal by construction. VoronoiTuning draws each of the $T$ configurations from the Sequential $d^2$ sampler (Algorithm~\ref{alg:voronoi_tuning}) with retry budget $M = 500$. RiskPartitioning is the exception: it is solved by the \citet{obrien2008costsensitive} changepoint algorithm rather than by sampling, and its CV variant reuses the same $T = 301$ random-search budget over the bias vector in $[-1, 1]^{K-1}$. A single random-search budget of $T = 301$ applies to every decision-layer search in this work. The binary campaign of Section~\ref{sec:binary_experiments} stands apart from this uniform setting: it optimizes its single threshold by exhaustive grid search ($G = 301$ points on $[0, 1]$) and so carries no sampling budget.
+
+\subsection{Evaluation protocol}
+The data partition matches the binary setup of Section~\ref{sec:binary_experiments}: $80\%$ train-full / $20\%$ test, with $70\%$ training / $10\%$ validation nested inside train-full.
+
+Strategies consume different data budgets: Argmax and Analytical fit the base estimator on the full $80\%$ pool; calibration and hold-out tuning strategies fit on the $70\%$ training split and tune on the $10\%$ validation split; CV strategies cross-validate within the $80\%$ pool with the estimator fit anew on each fold.
+
+The reported metric is the objective value on the held-out $20\%$ test set, averaged over $5$ independent seeds.
+
+\section{Results and discussion}
+
+Table~\ref{tab:model-auc-multiclass} reports the held-out test ROC AUC of each base estimator, computed one-vs-rest and weighted by class frequency, averaged over the ten seeds. The values fall within the ranges published for these datasets, so the comparison operates on estimators with the expected discriminative performance.
+
+\input{tables/model_auc_multiclass.tex}
+
+The cross-validated tuning variants lead both objective groups. On cost objectives three CV variants are tied at the top within sampling noise: FullMatrixPartitioningCV ($80\%$ of cost cells won or tied), RiskPartitioningCV ($79\%$), and LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$. The bare Analytical rule is the strongest non-tuning strategy on cost at $69\%$.
+
+Per-dataset means $\pm\,1$ standard error (SE) over the ten seeds for every (model, objective, strategy) combination are reported in the companion supplement (\texttt{tex/supplement/supplement.pdf} in the source repository), in a cost-matrix table (all $24$ strategies) and a maximization-metric table, with the same bolding convention as the binary supplement. As in the binary chapter the within-$1$-SE rule is descriptive, not a per-cell significance test. The aggregates cover all ten base classifiers.
+
+\subsection{Analytical thresholds under cost asymmetry}
+
+Under the Symmetric matrix the analytical rule and the cost-blind Argmax coincide, since the cost-weighted argmin reduces to the argmax.
+
+As the asymmetry grows the cost-blind rule degrades while the analytical rule, which folds the cost matrix into the decision, stays closer to the per-row best. Analytical wins or ties the per-row best on $69\%$ of cost cells, against $31\%$ for Argmax. The cross-validated tuning variants improve on this further, with the largest gains on the heavy-asymmetry matrices.
+
+Figure~\ref{fig:ci-abalone-quadratic_cost} shows a representative cell, \textit{abalone} with LGBM under Quadratic: the cross-validated tuning variants, Analytical, and the parametric calibrate-then-analytical pipelines lead, the single-split tuning strategies follow, and the cost-blind strategies trail.
+
+\input{figures/ci_plots/abalone_quadratic_cost.tex}
+
+\subsection{Calibration in the multiclass simplex}
+
+The parametric calibrate-then-analytical pipelines have win-or-tie rates between $30\%$ (Dirichlet) and $53\%$ (Temperature) on cost cells, against $79$ to $80\%$ for the three leading CV variants. DirichletCalibrationArgmax sits near the floor at $8\%$ on cost.
+
+The calibrators are fit on the dedicated $10\%$ validation partition, while the cross-validated tuning variants use the full $80\%$ pool (roughly seven times the label budget). Whether matched-budget calibration would close the gap is outside the scope of this work, since the natural budget-matching protocols change what ``calibration'' denotes in the comparison (Chapter~\ref{sec:conclusion} discusses this).
+
+\subsection{Vector-tuned versus Voronoi partitioning}
+
+The Voronoi class contains the parallel-shift class and can rotate boundaries (Section~\ref{sec:voronoi_tessellation}, Proposition~\ref{prop:ps_in_vor}). Under the SE-overlap rule, partition by per-cell winning family:
+\begin{itemize}
+    \item Cost cells: a vector-tuned variant alone is in the winning band on $52\%$ of cells, both families share the band on $38\%$, a Voronoi variant alone on $0.1\%$, and neither on $9\%$.
+    \item Maximization cells: both families share the band on $76\%$, vector-tuned alone on $18\%$, Voronoi alone on $1.2\%$, neither on $5\%$.
+\end{itemize}
+Voronoi variants are therefore rarely the unique winning family. On cost cells they are typically below the SE band; on maximization cells they typically share it with the vector-tuned methods.
+
+This is consistent with Proposition~\ref{prop:ps_in_vor}: containment is population-level. The strict separation of Theorem~\ref{thm:rotational_dominance} requires a rotational regime the OpenML pool does not appear to concentrate in. The extra Voronoi parameters do not earn back their validation cost under the shared $10\%$ split.
+
+\subsection{Cross-validated tuning variants}
+
+Each cross-validated tuning variant has a higher cost win-or-tie rate than its single-split counterpart. Among the leading CV variants, the gap to the corresponding single-split variant is large: RiskPartitioningCV $79\%$ versus RiskPartitioning $29\%$, LinearScalingCV $78\%$ versus LinearScaling $30\%$, FullMatrixPartitioningCV $80\%$ versus FullMatrixPartitioning $34\%$. The single-split variants tune on the same $10\%$ validation partition the calibrators use; the CV variants tune over the full $80\%$ pool.
+
+The cross-validated variant is therefore the recommended default for cost-sensitive multiclass decisions on benchmark pools of this scale.
+
+\subsection{Non-decomposable maximization objectives}
+
+For the macro $F_\beta$ metrics, MCC, and macro G-Mean the cross-validated tuning variants lead. The top is ThresholdRatioCV at $90\%$, with SequentialSelectionCV ($83\%$) and VoronoiTuningCV ($76\%$) next; Argmax sits at $62\%$. The calibrate-then-Argmax strategies fall in the $13$ to $41\%$ range.
+
+Figure~\ref{fig:ci-fot_proving-f2_macro} shows a representative cell, \textit{fot\_proving} with LGBM on macro $F_2$: the cross-validated tuning variants cluster at the top within a narrow band, with Argmax among them, and the calibrate-then-Argmax strategies a few points below.
+
+\input{figures/ci_plots/fot_proving_f2_macro.tex}
+
+Figures~\ref{fig:win-counts-multiclass-cost} and~\ref{fig:win-counts-multiclass-max} give the per-strategy win and tie rates under the $\pm 1$ SE overlap rule, broken out by base classifier and by dataset size and imbalance bucket; the figure captions document the reading convention and the bootstrap half-width. The dominant pattern on both objective groups is the gap between each cross-validated tuning variant and its single-split counterpart. DirichletCalibrationArgmax sits near the floor on every slice.
+
+\input{figures/win_counts/win_counts_multiclass_cost.tex}
+
+\input{figures/win_counts/win_counts_multiclass_max.tex}
+
+\section{Summary of multiclass analysis}
+
+The multiclass campaign supports three conclusions.
+
+\begin{enumerate}
+    \item The cross-validated tuning variants lead the per-row comparison on both objective groups. On cost objectives three variants share the top within sampling noise: FullMatrixPartitioningCV ($80\%$), RiskPartitioningCV ($79\%$), LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$.
+    \item The calibrate-then-analytical pipelines do not match the leading CV variants on cost (their win-or-tie rates are $30$ to $53\%$). The calibrators are fit on the $10\%$ validation partition while the CV variants use the full $80\%$ pool, so this gap is consistent with a label-budget gap but does not isolate it from other differences.
+    \item The richer Voronoi class does not improve on the vector-tuned variants on this benchmark. Counting cells where a Voronoi variant is the unique SE-overlap winning family, the rate is $0.1\%$ on cost cells and $1.2\%$ on maximization cells. This is consistent with the population-level containment of Proposition~\ref{prop:ps_in_vor}: the strict advantage of Theorem~\ref{thm:rotational_dominance} requires a rotational regime the OpenML pool does not appear to concentrate in.
+\end{enumerate}

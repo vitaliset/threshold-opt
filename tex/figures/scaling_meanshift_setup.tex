@@ -1,0 +1,77 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{calc}
+
+\begin{document}
+\begin{tikzpicture}[font=\sffamily, scale=0.9]
+
+    % K=3 vertices of a regular simplex in R^{K-1} = R^2: an
+    % equilateral triangle with K-independent pairwise distance.
+    % Pairwise = 2*sqrt(2)*sigma ~= 2.828, so circumradius =
+    % pairwise / sqrt(3) ~= 1.633 for K=3 (or use direct formula
+    % R(K=3) = sqrt(2*(K-1)/K)*sigma * sqrt(2*K/(K-1))... wait the
+    % cleanest is just use the chord formula).
+    \def\rad{2.309}
+    \def\rng{0.8}
+    \def\shf{0.85}
+
+    \pgfmathsetmacro{\axc}{\rad*cos(90)}
+    \pgfmathsetmacro{\ayc}{\rad*sin(90)}
+    \pgfmathsetmacro{\bxc}{\rad*cos(210)}
+    \pgfmathsetmacro{\byc}{\rad*sin(210)}
+    \pgfmathsetmacro{\cxc}{\rad*cos(330)}
+    \pgfmathsetmacro{\cyc}{\rad*sin(330)}
+
+    \pgfmathsetmacro{\axQ}{\axc + \shf*cos(40)}
+    \pgfmathsetmacro{\ayQ}{\ayc + \shf*sin(40)}
+    \pgfmathsetmacro{\bxQ}{\bxc + \shf*cos(150)}
+    \pgfmathsetmacro{\byQ}{\byc + \shf*sin(150)}
+    \pgfmathsetmacro{\cxQ}{\cxc + \shf*cos(290)}
+    \pgfmathsetmacro{\cyQ}{\cyc + \shf*sin(290)}
+
+    \fill[red!10] (\axQ,\ayQ) circle (\rng);
+    \draw[red!70!black, dashed, thin] (\axQ,\ayQ) circle (\rng);
+    \fill[red!10] (\bxQ,\byQ) circle (\rng);
+    \draw[red!70!black, dashed, thin] (\bxQ,\byQ) circle (\rng);
+    \fill[red!10] (\cxQ,\cyQ) circle (\rng);
+    \draw[red!70!black, dashed, thin] (\cxQ,\cyQ) circle (\rng);
+
+    \draw[gray!50, dotted, thin] (\axc,\ayc) circle (\shf);
+    \draw[gray!50, dotted, thin] (\bxc,\byc) circle (\shf);
+    \draw[gray!50, dotted, thin] (\cxc,\cyc) circle (\shf);
+
+    \draw[blue!70!black, thick] (\axc,\ayc) circle (\rng);
+    \draw[blue!70!black, thick] (\bxc,\byc) circle (\rng);
+    \draw[blue!70!black, thick] (\cxc,\cyc) circle (\rng);
+    \fill[black] (\axc,\ayc) circle (1.5pt);
+    \fill[black] (\bxc,\byc) circle (1.5pt);
+    \fill[black] (\cxc,\cyc) circle (1.5pt);
+
+    \draw[->, gray!70!black, thick] (\axc,\ayc) -- (\axQ,\ayQ);
+    \draw[->, gray!70!black, thick] (\bxc,\byc) -- (\bxQ,\byQ);
+    \draw[->, gray!70!black, thick] (\cxc,\cyc) -- (\cxQ,\cyQ);
+
+    \node[font=\footnotesize, above=2pt] at (\axc,\ayc) {$\mathbf{m}_0$};
+    \node[font=\footnotesize, below left=-1pt and 2pt] at (\bxc,\byc) {$\mathbf{m}_1$};
+    \node[font=\footnotesize, below right=-1pt and 2pt] at (\cxc,\cyc) {$\mathbf{m}_2$};
+
+    % Pairwise-distance indicator below the bottom edge.
+    \pgfmathsetmacro{\midx}{0.5*(\bxc + \cxc)}
+    \pgfmathsetmacro{\midy}{\byc - 0.45}
+    \draw[gray!60, <->, thin] (\bxc, \midy) -- (\cxc, \midy);
+    \node[font=\scriptsize, color=gray!60!black, below] at (\midx, \midy)
+        {pairwise distance $4\sigma$};
+
+    \begin{scope}[shift={(-4.0, -3.5)}, font=\footnotesize]
+        \draw[blue!70!black, thick] (0,0) circle (0.18);
+        \node[anchor=west] at (0.3, 0) {$\mathbb{P}_0$};
+        \fill[red!10] (2.0, 0) circle (0.18);
+        \draw[red!70!black, dashed, thin] (2.0, 0) circle (0.18);
+        \node[anchor=west] at (2.3, 0) {$\mathbb{P}_\xi$};
+        \draw[->, gray!70!black, thick] (4.4, -0.05) -- (4.8, 0.15);
+        \node[anchor=west] at (4.9, 0) {shift $\xi\mathbf{v}_k$, $\|\mathbf{v}_k\|=1$};
+    \end{scope}
+
+\end{tikzpicture}
+\end{document}
