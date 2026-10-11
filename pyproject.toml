@@ -1,7 +1,8 @@
 [project]
-name = "threshold_opt"
+name = "threshold-opt"
 version = "0.1.0"
 description = "Threshold optimization for binary and multiclass classification"
+readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Carlo Lemos", email = "vitaliset@users.noreply.github.com" }]
@@ -17,7 +18,6 @@ keywords = [
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
@@ -32,14 +32,23 @@ dependencies = [
     "joblib>=1.3",
 ]
 
-# TODO(vitaliset): Add project.urls with repo and issue links.
+[project.urls]
+Repository = "https://github.com/vitaliset/threshold-opt"
+Issues = "https://github.com/vitaliset/threshold-opt/issues"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# The distribution is the library alone: the experiment pipeline and the
+# dissertation source stay out of both artifacts. The tests live next to
+# the modules and ship in the sdist, not in the wheel.
+[tool.hatch.build.targets.sdist]
+include = ["src/threshold_opt"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/threshold_opt"]
+exclude = ["*_test.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["src", "experiments"]

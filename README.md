@@ -4,23 +4,23 @@ Threshold optimization for binary and multiclass classification.
 
 Given a trained classifier and a cost matrix (or metric objective), `threshold_opt` finds the decision rule that minimizes expected cost. It supports binary and multiclass problems, with strategies ranging from closed-form analytical solutions to empirical search and calibration-based approaches.
 
-This library is part of a [master's dissertation](tex/main.tex) on multiclass threshold optimization. The full experiment pipeline lives in [`experiments/`](experiments/README.md).
+This library is part of a [master's dissertation](https://github.com/vitaliset/threshold-opt/blob/main/tex/carlo_master.tex) on multiclass threshold optimization. The full experiment pipeline lives in [`experiments/`](https://github.com/vitaliset/threshold-opt/blob/main/experiments/README.md).
 
 ## Install
 
 ```bash
-pip install git+https://github.com/vitaliset/mestrado-draft.git
+pip install threshold-opt
 ```
-TODO(vitaliset): Update repo name once we migrate.
+
+The package is published as `threshold-opt` and imported as `threshold_opt`.
 
 For development (includes experiment dependencies):
 
 ```bash
-git clone https://github.com/vitaliset/mestrado-draft.git
+git clone https://github.com/vitaliset/threshold-opt.git
 cd threshold-opt
 uv sync
 ```
-TODO(vitaliset): Update repo name once we migrate.
 
 ## Quick example
 
@@ -72,20 +72,20 @@ All strategies follow a unified interface: `fit(X, y, objective)` then `predict(
 
 `threshold_opt` ships its public API as importable submodules; there is no flat top-level namespace re-export. Stable surface:
 
-- **Strategy contract** ([`base.DecisionStrategy`](src/threshold_opt/base.py)). All strategies subclass `DecisionStrategy` and expose:
+- **Strategy contract** ([`base.DecisionStrategy`](https://github.com/vitaliset/threshold-opt/blob/main/src/threshold_opt/base.py)). All strategies subclass `DecisionStrategy` and expose:
     - `fit(X, y, optimization_objective)` — fit the decision layer on validation data and return `self`.
     - `predict(X)` — emit class predictions.
     - `needs_validation_set: bool` — `True` if the strategy consumes a held-out validation split (calibrators, single-split tuners), `False` otherwise (default, analytical, CV-tuners).
-- **Optimization objectives** ([`metrics.OptimizationObjective`](src/threshold_opt/metrics.py)). Either a numpy `(K, K)` cost matrix (cell `[i, j]` = cost of predicting `j` when the truth is `i`), or a `metrics.MetricObjective(metric_fn, higher_is_better, ...)` wrapping any `(y_true, y_pred) -> float` callable. `MetricObjective.vectorized_key` is the optional fast path used by binary strategies; binary metric objectives that omit it still work via a per-threshold loop.
-- **Calibrator** ([`calibration.DirichletCalibrator`](src/threshold_opt/calibration.py)). Standalone `fit(probs, y)` / `predict_proba(probs)` calibrator with optional ODIR penalties (`reg_lambda`, `reg_mu`). Used by `DirichletCalibrationDefault` / `DirichletCalibrationAnalytical` and freely composable.
-- **Optimizers** ([`optimization.RandomSearchOptimizer`, `GridSearchOptimizer`](src/threshold_opt/optimization.py)). Pluggable parameter optimizers for tuning strategies; subclass `optimization.ParameterOptimizer` to add new ones.
-- **Shared CV seed** ([`base.CV_RANDOM_STATE`](src/threshold_opt/base.py)). Every K-fold loop in the library uses this constant, so external precompute caches that key on it stay in sync with strategies' lazy refits.
+- **Optimization objectives** ([`metrics.OptimizationObjective`](https://github.com/vitaliset/threshold-opt/blob/main/src/threshold_opt/metrics.py)). Either a numpy `(K, K)` cost matrix (cell `[i, j]` = cost of predicting `j` when the truth is `i`), or a `metrics.MetricObjective(metric_fn, higher_is_better, ...)` wrapping any `(y_true, y_pred) -> float` callable. `MetricObjective.vectorized_key` is the optional fast path used by binary strategies; binary metric objectives that omit it still work via a per-threshold loop.
+- **Calibrator** ([`calibration.DirichletCalibrator`](https://github.com/vitaliset/threshold-opt/blob/main/src/threshold_opt/calibration.py)). Standalone `fit(probs, y)` / `predict_proba(probs)` calibrator with optional ODIR penalties (`reg_lambda`, `reg_mu`). Used by `DirichletCalibrationArgmax` / `DirichletCalibrationAnalytical` and freely composable.
+- **Optimizers** ([`optimization.RandomSearchOptimizer`, `GridSearchOptimizer`](https://github.com/vitaliset/threshold-opt/blob/main/src/threshold_opt/optimization.py)). Pluggable parameter optimizers for tuning strategies; subclass `optimization.ParameterOptimizer` to add new ones.
+- **Shared CV seed** ([`base.CV_RANDOM_STATE`](https://github.com/vitaliset/threshold-opt/blob/main/src/threshold_opt/base.py)). Every K-fold loop in the library uses this constant, so external precompute caches that key on it stay in sync with strategies' lazy refits.
 
 Internal symbols (prefixed with `_`, e.g. `base._CVFoldPredictions`, `binary_strategies._positive_class_probs`) are not part of the public API and may change without notice.
 
 ## Dissertation and experiments
 
-This repo also contains the experiment pipeline and LaTeX source for the dissertation. See [`experiments/README.md`](experiments/README.md) for how to run experiments, generate tables, and build the PDF.
+This repo also contains the experiment pipeline and LaTeX source for the dissertation. See [`experiments/README.md`](https://github.com/vitaliset/threshold-opt/blob/main/experiments/README.md) for how to run experiments, generate tables, and build the PDF.
 
 ## Development
 
@@ -95,18 +95,14 @@ make lint      # ruff + ruff-format + chktex
 make help      # all available targets
 ```
 
-## Publishing to PyPI
+## Releasing
 
-<!-- TODO(vitaliset): Remove this checklist once the package is published. -->
+The package is uploaded to [PyPI](https://pypi.org/project/threshold-opt/) by [`.github/workflows/publish.yml`](https://github.com/vitaliset/threshold-opt/blob/main/.github/workflows/publish.yml), through [trusted publishing](https://docs.pypi.org/trusted-publishers/). To release a new version:
 
-Steps to publish `threshold_opt` as a standalone pip-installable package:
+1. Set `version` in `pyproject.toml`.
+2. Publish a GitHub release whose tag is `v` followed by that version (`v0.1.0` for version `0.1.0`).
 
-- [ ] Check name availability on PyPI (`pip index versions threshold_opt`)
-- [ ] Create a dedicated repo and update all URLs (install instructions above, `pyproject.toml`)
-- [ ] Remove `[project.scripts]` from `pyproject.toml` (they are experiment-specific)
-- [ ] Set up [trusted publishing](https://docs.pypi.org/trusted-publishers/) on PyPI for the GitHub repo
-- [ ] Add a publish job to `.github/workflows/ci.yml` triggered on GitHub releases (`uv build` + `twine upload`)
-- [ ] Tag a release (`git tag v0.1.0`) and create a GitHub release to trigger the first publish
+The workflow checks that the tag matches the version, builds the package and uploads it. Releases with any other tag publish nothing.
 
 ## Project structure
 

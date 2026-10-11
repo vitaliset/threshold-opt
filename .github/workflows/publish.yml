@@ -1,0 +1,45 @@
+name: Publish
+
+# Uploads the package to PyPI when a GitHub release is published with a
+# version tag (v0.1.0, v0.2.0, ...). Releases with other tags, such as the
+# ones that mark versions of the dissertation, publish nothing.
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    if: startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Check that the tag matches the package version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: test "v$(uv version --short)" = "$TAG"
+
+      - run: uv build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/threshold-opt/
+    permissions:
+      id-token: write  # trusted publishing: no API token is stored
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
