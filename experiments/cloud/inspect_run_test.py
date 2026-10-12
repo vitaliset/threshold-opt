@@ -160,7 +160,7 @@ def test_voronoi_sampler_exhausted_is_classified_as_error(
         ),
         (
             "pl_pytree_deprecation",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "pytorch_lightning/utilities/_pytree.py:21:"
             " `isinstance(treespec, LeafSpec)` is deprecated",
         ),
@@ -235,7 +235,7 @@ def test_gpu_noise_patterns_are_classified_silently(
     [
         (
             "sklearn_ypred_classes_header",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "sklearn/metrics/_classification.py:2924: UserWarning:"
             " y_pred contains classes not in y_true",
         ),
@@ -245,7 +245,7 @@ def test_gpu_noise_patterns_are_classified_silently(
         ),
         (
             "sklearn_calibration_divide_header",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "sklearn/calibration.py:533: RuntimeWarning:"
             " invalid value encountered in divide",
         ),
@@ -255,13 +255,13 @@ def test_gpu_noise_patterns_are_classified_silently(
         ),
         (
             "sklearn_cv_runtime_warning",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "sklearn/model_selection/_validation.py:1352: RuntimeWarning:"
             " Mean of empty slice",
         ),
         (
             "sklearn_logistic_convergence_header",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "sklearn/linear_model/_logistic.py:406: ConvergenceWarning:"
             " lbfgs failed to converge (status=1):",
         ),
@@ -298,7 +298,7 @@ def test_gpu_noise_patterns_are_classified_silently(
         ),
         (
             "sklearn_stratkfold_small_class",
-            "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+            "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
             "sklearn/model_selection/_split.py:813: UserWarning:"
             " The least populated class in y has only 2 members,"
             " which is less than n_splits=5.",
@@ -354,7 +354,7 @@ def test_joblib_worker_stopped_is_classified_as_warning(
 ) -> None:
     log = tmp_path / "run.log"
     log.write_text(
-        "/home/carlo/mestrado-draft/.venv/lib/python3.12/site-packages/"
+        "/home/carlo/threshold-opt/.venv/lib/python3.12/site-packages/"
         "joblib/externals/loky/process_executor.py:782: UserWarning: A"
         " worker stopped while some jobs were given to the executor. This"
         " can be caused by a too short worker timeout or by a memory leak.\n"

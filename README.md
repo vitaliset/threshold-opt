@@ -60,7 +60,7 @@ y_pred = strategy.predict(X_val)
 | Module | Description |
 |--------|-------------|
 | `binary_strategies` | 11 strategies for binary classification: default, analytical, empirical search, and calibration variants (isotonic, Platt, temperature, Dirichlet) |
-| `multiclass_strategies` | 12 strategies for multiclass: argmax, risk minimization, threshold ratios, Voronoi tuning, sequential selection, risk partitioning, and calibration variants |
+| `multiclass_strategies` | 17 strategies for multiclass: argmax, risk minimization, threshold ratios, multidimensional thresholds, Voronoi tuning, sequential selection, risk partitioning, linear scaling, full-matrix partitioning, and calibration variants (isotonic, Platt, temperature, Dirichlet) |
 | `calibration` | `DirichletCalibrator` for post-hoc probability calibration in log-space |
 | `metrics` | Cost matrix utilities, metric objectives (`MetricObjective`), vectorized scoring, analytical threshold derivation |
 | `optimization` | Grid search and random search optimizers for strategy parameter tuning |

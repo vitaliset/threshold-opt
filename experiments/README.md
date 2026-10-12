@@ -6,9 +6,11 @@ Experiment pipeline for the master's dissertation on cost-sensitive decision str
 
 | Study | Command | What it varies |
 |-------|---------|----------------|
-| Binary | `uv run python -m experiments.binary.runner` | 12 models, 12 strategies, 6 objectives, 10 datasets |
-| Multiclass | `uv run python -m experiments.multiclass.runner` | 12 models, 12 strategies, custom cost matrices, 10 datasets |
+| Binary | `uv run python -m experiments.binary.runner` | 10 models, 12 strategies, 10 objectives (5 cost matrices, 5 metrics), 14 datasets |
+| Multiclass | `uv run python -m experiments.multiclass.runner` | 10 models, 24 strategies, 12 objectives (7 cost matrices, 5 metrics), 11 datasets |
 | Rotational bias | `uv run python -m experiments.rotational_bias.runner` | Boundary rotation on synthetic 3-class data |
+
+Both runners also evaluate Balanced Error as a metric, next to its cost-matrix form. The two are reported as one objective, so each runner lists one more objective name than the table.
 
 Common flags: `--n-seeds N`, `--n-jobs N`, `--resume DIR`.
 
@@ -63,7 +65,7 @@ results/             Parquet output (gitignored; filled by the runners or by mak
 ## Development
 
 ```bash
-make test      # run pytest (522 tests)
+make test      # run pytest
 make lint      # ruff + ruff-format + chktex
 make profile   # cProfile harness for threshold_opt hot paths
 make timing    # per-model / per-strategy timing breakdown

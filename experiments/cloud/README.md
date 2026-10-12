@@ -111,25 +111,14 @@ First time it offers to generate an SSH key — say yes, empty passphrase is fin
 For Claude commands without an interactive shell, append `--command=...`:
 
 ```bash
-gcloud compute ssh mestrado-runner --zone=us-central1-a --command='cd mestrado-draft && git pull --ff-only && uv sync'
+gcloud compute ssh mestrado-runner --zone=us-central1-a --command='cd threshold-opt && git pull --ff-only && uv sync'
 ```
-
-**Create a GitHub token first (do this on your laptop before SSHing in):**
-
-GitHub killed password auth in 2021, so you need a Personal Access Token to clone a private repo over HTTPS.
-
-1. Go to <https://github.com/settings/tokens?type=beta> (Settings → Developer settings → Personal access tokens → Fine-grained tokens).
-2. Click **Generate new token**.
-3. Give it a name (e.g. `mestrado-vm`) and set an expiration long enough to cover your run.
-4. Under **Repository access**, choose **Only select repositories** and pick `mestrado-draft`.
-5. Under **Permissions → Repository permissions**, set **Contents** to **Read-only**.
-6. Click **Generate token** and copy it immediately — GitHub won't show it again.
 
 On the VM:
 
 ```bash
-git clone https://<YOUR_GITHUB_TOKEN>@github.com/vitaliset/mestrado-draft.git
-cd mestrado-draft
+git clone https://github.com/vitaliset/threshold-opt.git
+cd threshold-opt
 bash experiments/cloud/bootstrap.sh
 
 # pre-warm the OpenML cache BEFORE any parallel run (see note below).
@@ -167,7 +156,7 @@ Close your laptop. `tmux` keeps it running. Reconnect anytime:
 
 ```bash
 gcloud compute ssh mestrado-runner --zone=us-central1-a
-cd mestrado-draft
+cd threshold-opt
 make cloud-status
 ```
 
@@ -190,7 +179,7 @@ Other useful checks from a second SSH session:
 On your **laptop**, in the repo directory:
 
 ```bash
-cd ~/Documents/mestrado_stuff/mestrado-draft
+cd threshold-opt
 make cloud-pull
 ```
 
@@ -291,8 +280,8 @@ On the GPU VM (copy-paste cheatsheet):
 
 ```bash
 # 1. Clone and install drivers (triggers a reboot)
-git clone https://<YOUR_GITHUB_TOKEN>@github.com/vitaliset/mestrado-draft.git
-cd mestrado-draft
+git clone https://github.com/vitaliset/threshold-opt.git
+cd threshold-opt
 bash experiments/cloud/bootstrap-gpu.sh
 # Machine reboots here — wait ~30s, then SSH back in
 ```
@@ -305,7 +294,7 @@ gcloud compute ssh mestrado-gpu --zone=us-central1-a
 
 ```bash
 # 2. Finish bootstrap (installs uv + Python deps, verifies GPU)
-cd mestrado-draft
+cd threshold-opt
 bash experiments/cloud/bootstrap-gpu.sh
 source ~/.bashrc
 
@@ -333,7 +322,7 @@ Close your laptop. `tmux` keeps it running. Reconnect anytime:
 
 ```bash
 gcloud compute ssh mestrado-gpu --zone=us-central1-a
-cd mestrado-draft
+cd threshold-opt
 make cloud-status
 ```
 
@@ -424,8 +413,8 @@ RunPod's template ships with `uv`, `python3`, `git`, `tmux`, `make`, and the NVI
 
 ```bash
 cd /workspace                 # persistent; / is ephemeral
-git clone https://<GITHUB_TOKEN>@github.com/vitaliset/mestrado-draft.git
-cd mestrado-draft
+git clone https://github.com/vitaliset/threshold-opt.git
+cd threshold-opt
 uv sync                       # ~1 min on RunPod's fast network
 uv run python -c "import torch; print(torch.cuda.get_device_name(0))"
 ```
@@ -435,7 +424,7 @@ uv run python -c "import torch; print(torch.cuda.get_device_name(0))"
 `make cloud-run` is GCP-specific (it shells out to `gcloud compute ssh`), so invoke the runner directly inside `tmux`:
 
 ```bash
-cd /workspace/mestrado-draft
+cd /workspace/threshold-opt
 tmux new-session -d -s smoke \
   "RESULTS_DIR=/workspace/results uv run python -m experiments.binary.runner \
      --n-seeds 1 --device gpu --n-jobs 4 \
@@ -484,6 +473,6 @@ scp -r -i ~/.ssh/id_ed25519 \
 - **"Quota 'CPUS' exceeded" when creating the VM:** either the global `CPUS-ALL-REGIONS` cap kicked in (drop to 80 vCPU), or a per-family quota is still 0 (switch to N2).
 - **`uv sync` fails with "No space left on device" extracting `nvidia-cudnn-cu12`:** your boot disk is 10 GB — you created the VM via the web console and missed the "ALTERAR" / "CHANGE" button. Delete and recreate with the `gcloud` one-liner in step 6.
 - **`gcloud compute ssh` returns "Permission denied":** first-time SSH can take 10–30 seconds to provision keys. Wait and retry once.
-- **`make cloud-status` prints "no run folders under experiments/results":** you're not at the repo root, or no run has started yet. `cd mestrado-draft` and try again.
+- **`make cloud-status` prints "no run folders under experiments/results":** you're not at the repo root, or no run has started yet. `cd threshold-opt` and try again.
 - **All cores idle during run:** verify `--n-jobs` is unset or `-1`. The binary study has ~110 tasks, enough to saturate 80 cores.
 - **Forgot the VM name:** `gcloud compute instances list` shows everything running in the project.
