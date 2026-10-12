@@ -23,7 +23,7 @@ set -euo pipefail
 INSTANCE="${1:-mestrado-runner}"
 ZONE="${2:-us-central1-a}"
 REMOTE_USER="${3:-${USER:-$(whoami)}}"
-REMOTE_PARENT="/home/$REMOTE_USER/mestrado-draft/experiments"
+REMOTE_PARENT="/home/$REMOTE_USER/threshold-opt/experiments"
 LOCAL_DIR="experiments"
 
 mkdir -p "$LOCAL_DIR/results"

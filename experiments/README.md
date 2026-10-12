@@ -63,7 +63,7 @@ results/             Parquet output (gitignored; filled by the runners or by mak
 ## Development
 
 ```bash
-make test      # run pytest (522 tests)
+make test      # run pytest
 make lint      # ruff + ruff-format + chktex
 make profile   # cProfile harness for threshold_opt hot paths
 make timing    # per-model / per-strategy timing breakdown

@@ -21,7 +21,7 @@ if ! nvidia-smi >/dev/null 2>&1; then
     echo "============================================="
     echo "  Drivers installed. Rebooting in 5 seconds."
     echo "  After reboot, SSH back in and re-run:"
-    echo "    cd mestrado-draft"
+    echo "    cd threshold-opt"
     echo "    bash experiments/cloud/bootstrap-gpu.sh"
     echo "============================================="
     sleep 5
