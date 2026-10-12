@@ -1,5 +1,5 @@
-.PHONY: help all tables ci-plots win-counts figures figures-sampler-analysis pdf supplement \
-       test test-e2e test-freshness lint check-refs clean setup profile timing \
+.PHONY: help all fetch-results tables ci-plots win-counts figures figures-sampler-analysis pdf supplement \
+       test test-e2e test-freshness test-provenance lint check-refs clean setup profile timing \
        experiments experiments-binary experiments-multiclass experiments-rotational-bias \
        sensitivity-experiments \
        cloud-bootstrap cloud-run cloud-status cloud-kill cloud-pull
@@ -24,6 +24,9 @@ setup:  ## Install uv and sync dependencies
 	uv sync
 
 experiments: experiments-binary experiments-multiclass experiments-rotational-bias  ## Run all experiment studies
+
+fetch-results:  ## Download the published result files into experiments/results/
+	uv run python -m experiments.fetch_results
 
 tables:  ## Generate LaTeX tables from latest results
 	uv run python -m experiments.analysis.generate_tables
@@ -63,6 +66,9 @@ test-e2e:  ## Run all tests including integration/smoke tests
 
 test-freshness:  ## Check committed tex/tables/ match current code + latest parquet
 	uv run pytest experiments/analysis/freshness_test.py --freshness -v
+
+test-provenance:  ## Check the git metadata of the result parquets against the current code (after a new campaign)
+	uv run pytest experiments/analysis/freshness_test.py --provenance -m provenance -v
 
 test-reproducibility:  ## Run end-to-end determinism tests (same seed -> same output)
 	uv run pytest --reproducibility -m reproducibility -v
