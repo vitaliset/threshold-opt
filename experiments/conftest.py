@@ -23,6 +23,13 @@ def pytest_addoption(parser):
         help="Run reproducibility tests that train a real model twice on"
         " synthetic data and assert identical outputs.",
     )
+    parser.addoption(
+        "--provenance",
+        action="store_true",
+        default=False,
+        help="Run the test that checks the git metadata embedded in the"
+        " result parquets against the current code state.",
+    )
 
 
 def pytest_configure(config):
@@ -39,6 +46,11 @@ def pytest_configure(config):
         "markers",
         "reproducibility: marks end-to-end determinism tests (slower than"
         " unit tests; require --reproducibility to run)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "provenance: marks tests that check the git metadata of the result"
+        " parquets (require --provenance to run)",
     )
 
 
@@ -58,3 +70,8 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if item.get_closest_marker("reproducibility"):
                 item.add_marker(skip_repro)
+    if not config.getoption("--provenance"):
+        skip_prov = pytest.mark.skip(reason="pass --provenance to run")
+        for item in items:
+            if item.get_closest_marker("provenance"):
+                item.add_marker(skip_prov)

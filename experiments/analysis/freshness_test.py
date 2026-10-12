@@ -1,11 +1,16 @@
 """Freshness tests: regenerate artifacts + diff vs. committed copies.
 
-Table tests are opt-in via ``--freshness`` because they depend on a parquet
-that may be absent on a fresh clone.  Figure tests always run — figure
+Table tests are opt-in via ``--freshness`` because they depend on result
+parquets that are absent on a fresh clone; ``make fetch-results`` downloads
+the published ones.  Figure tests always run — figure
 generators are deterministic functions of the source, so staleness is a
 real bug regardless of experiment state.  A failure means the committed
 artifact no longer matches what the current code would produce — run
 ``make tables`` or ``make figures`` to refresh.
+
+Whether a parquet was written by the current code is a separate question,
+answered by the git metadata that the runners embed.  That check is opt-in
+via ``--provenance`` and is meant for right after a new campaign.
 """
 
 from __future__ import annotations
@@ -25,7 +30,7 @@ from experiments.analysis import (
 )
 from experiments.analysis.generate_ci_plots import (
     PLOTS_DIR,
-    write_ci_plots,
+    write_showcase_plots,
 )
 from experiments.analysis.generate_obrien_figure import (
     OUT_A as OBRIEN_FIG_A,
@@ -91,14 +96,34 @@ def _assert_parquet_fresh(parquet: Path) -> None:
         pytest.fail(status.reason)
 
 
-@pytest.mark.freshness
-def test_strategy_tables_fresh(tmp_path):
+@pytest.mark.provenance
+def test_result_parquets_provenance():
+    """The parquets behind the tables were written by the current non-tex
+    code, from a clean tree (see ``check_parquet_freshness``)."""
     try:
-        parquet = _find_latest_parquet()
+        parquets = [
+            _find_latest_parquet(cfg["parquet_pattern"])
+            for cfg in SCOPE_CONFIG.values()
+        ]
     except FileNotFoundError as exc:
         pytest.skip(str(exc))
-    _assert_parquet_fresh(parquet)
-    written = write_strategy_tables(parquet_path=parquet, tables_dir=tmp_path)
+    parquets.extend(
+        sorted(RESULTS_DIR.glob("results_rotational_bias_*.parquet"))[-1:]
+    )
+    for parquet in parquets:
+        _assert_parquet_fresh(parquet)
+
+
+@pytest.mark.freshness
+@pytest.mark.parametrize("scope", sorted(SCOPE_CONFIG))
+def test_strategy_tables_fresh(tmp_path, scope):
+    try:
+        parquet = _find_latest_parquet(SCOPE_CONFIG[scope]["parquet_pattern"])
+    except FileNotFoundError as exc:
+        pytest.skip(str(exc))
+    written = write_strategy_tables(
+        parquet_path=parquet, tables_dir=tmp_path, scope=scope
+    )
     assert written, "write_strategy_tables returned no outputs"
     for generated in written:
         _assert_matches_committed(generated, directory=SUPPLEMENT_TABLES_DIR)
@@ -179,18 +204,12 @@ def _assert_matches_committed_in(directory: Path, generated: Path) -> None:
 @pytest.mark.freshness
 def test_ci_plots_fresh(tmp_path):
     """The inline CI plots embedded in chapters 4 and 8 must match what the
-    current code + latest binary parquet would produce."""
+    current code + latest parquets would produce."""
     try:
-        parquet = _find_latest_parquet(
-            SCOPE_CONFIG["binary"]["parquet_pattern"]
-        )
+        written = write_showcase_plots(plots_dir=tmp_path)
     except FileNotFoundError as exc:
         pytest.skip(str(exc))
-    _assert_parquet_fresh(parquet)
-    written = write_ci_plots(
-        parquet_path=parquet, plots_dir=tmp_path, scope="binary"
-    )
-    assert written, "write_ci_plots returned no outputs"
+    assert written, "write_showcase_plots returned no outputs"
     for generated in written:
         _assert_matches_committed_in(PLOTS_DIR, generated)
 
@@ -210,8 +229,6 @@ def test_win_count_figures_fresh(tmp_path):
         }
     except FileNotFoundError as exc:
         pytest.skip(str(exc))
-    for parquet in parquet_paths.values():
-        _assert_parquet_fresh(parquet)
     written = write_win_count_figures(
         parquet_paths=parquet_paths, plots_dir=tmp_path
     )
@@ -228,7 +245,6 @@ def test_rotational_bias_table_fresh(tmp_path):
             f"No results_rotational_bias_*.parquet files in {RESULTS_DIR}"
         )
     parquet = files[-1]
-    _assert_parquet_fresh(parquet)
     generated = write_rotational_bias_table(
         parquet_path=parquet, tables_dir=tmp_path
     )

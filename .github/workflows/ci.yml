@@ -24,4 +24,8 @@ jobs:
 
       - run: uv run ruff format --check .
 
-      - run: uv run pytest
+      # The published result files, so that the freshness tests can compare
+      # the committed tables and figures with what they regenerate.
+      - run: uv run python -m experiments.fetch_results
+
+      - run: uv run pytest --freshness
