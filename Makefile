@@ -2,6 +2,7 @@
        test test-e2e test-freshness test-provenance lint check-refs clean setup profile timing \
        experiments experiments-binary experiments-multiclass experiments-rotational-bias \
        sensitivity-experiments \
+       lean-setup lean-build lean-audit lean-clean \
        cloud-bootstrap cloud-run cloud-status cloud-kill cloud-pull
 
 STUDY ?= binary
@@ -108,6 +109,23 @@ sensitivity-experiments:  ## Sensitivity sweep: scaling-K (variance + mean-shift
 
 lemma-test:  ## Synthetic verification of dimensional-dilution Lemma: uniform-on-sphere u in V, K-decay exponent of E[(phi(p+u)-phi(p))^2]/E[||g||^2]. Seconds.
 	uv run python -m experiments.sensitivity.lemma_test_runner $(if $(N_SEEDS),--n-seeds $(N_SEEDS))
+
+# Lean formalization (see lean/README.md)
+# Deliberately not wired into `tables`: tex/tables/formalization.tex is
+# committed, so `make pdf` works without a Lean toolchain installed.
+lean-setup:  ## Install elan and fetch the Mathlib build cache (first run, GBs)
+	curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain none
+	cd lean && lake exe cache get
+
+lean-build:  ## Type-check the Lean formalization (lake build)
+	cd lean && lake build
+
+lean-audit: lean-build  ## Axiom provenance -> lean/audit.json + tex/tables/formalization.tex
+	cd lean && lake exe audit
+	uv run python lean/scripts/render_table.py
+
+lean-clean:  ## Remove Lean build artifacts (lake clean)
+	cd lean && lake clean
 
 # Cloud VM helpers (see experiments/cloud/ and AGENTS.md for workflow)
 cloud-bootstrap:  ## Provision a fresh Ubuntu VM (uv + deps + system pkgs)

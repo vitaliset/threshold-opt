@@ -71,6 +71,12 @@ catboost_info/
 # tex audit outputs
 tex/scripts/forward_refs_report.json
 
+# Lean
+# .lake/ is Lake's only output directory (build artifacts + fetched deps).
+# lean-toolchain, lakefile.toml, lake-manifest.json and lean/audit.json are
+# committed: the first three pin the build, the last feeds the Appendix E table.
+lean/.lake/
+
 # LaTeX build artifacts
 *.aux
 *.fdb_latexmk

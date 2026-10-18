@@ -51,7 +51,7 @@ packages = ["src/threshold_opt"]
 exclude = ["*_test.py"]
 
 [tool.pytest.ini_options]
-testpaths = ["src", "experiments"]
+testpaths = ["src", "experiments", "lean/scripts"]
 python_files = ["*_test.py"]
 
 [dependency-groups]

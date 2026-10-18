@@ -1,0 +1,36 @@
+name: Lean
+
+# Separate from ci.yml so Python-only changes do not pay for a Mathlib build.
+on:
+  push:
+    branches: [main]
+    paths: ['lean/**', '.github/workflows/lean.yml']
+  pull_request:
+    branches: [main]
+    paths: ['lean/**', '.github/workflows/lean.yml']
+
+jobs:
+  formalization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: lean
+          build: "true"
+          # No `lake test` driver; the audit step below is the real check.
+          test: "false"
+          lint: "false"
+          use-mathlib-cache: "true"
+      # lake build only warns on `sorry`; the audit is what actually fails on
+      # an incomplete proof, a duplicated label, or a stale audit.json.
+      - name: Audit axiom provenance
+        working-directory: lean
+        run: lake exe audit --check
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: uv sync
+      - name: Check the appendix table is current
+        run: uv run python lean/scripts/render_table.py --check
