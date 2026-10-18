@@ -9,7 +9,7 @@ The decision stage operates on the standard $(K-1)$-simplex
 \begin{equation}
     \Delta^{K-1} = \left\{ \mathbf{p} \in \mathbb{R}^K \mid p_i \geq 0 \,\,\, \forall\, i, \, \|\mathbf{p}\|_1 = 1 \right\},
 \end{equation}
-embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ as shorthand for the Bayes-optimal partition $\mathcal{P}_i^{\delta^*}$.
+embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ for the closed Bayes Optimal decision regions of Chapter~\ref{sec:theory}, which differ from the assigned regions $\mathcal{P}_i^{\delta^*}$ only on ties.
 
 \section{Bayes optimal polyhedral partitions}
 
@@ -70,7 +70,7 @@ Element-wise reasonableness implies admissibility, but not conversely: a class c
             3 & 3 & 5
         \end{bmatrix}.
     \end{equation}
-    This matrix is admissible but not element-wise reasonable (Definition~\ref{def:elementwise}): class~$2$ is a low-stakes hedge whose correct-prediction cost is not the smallest in its row, so it is risk-optimal only in the interior of $\Delta^{K-1}$ and at no vertex. Hedge and abstention cost structures populate exactly this gap between the element-wise condition and admissibility; Appendix~\ref{app:supplementary_proofs} gives the verification.
+    This matrix is admissible but not element-wise reasonable (Definition~\ref{def:elementwise}): class~$2$ is a low-stakes hedge whose correct-prediction cost is not the smallest in its row, so it is risk-optimal at no vertex of $\Delta^{K-1}$, although it is the unique risk-minimizer at the boundary point $(1/2, 1/2, 0)$. Hedge and abstention cost structures populate exactly this gap between the element-wise condition and admissibility; Appendix~\ref{app:supplementary_proofs} gives the verification.
 \end{example}
 
 Proposition~\ref{prop:elementwise_admissible} states this relationship in general.
@@ -79,7 +79,7 @@ Proposition~\ref{prop:elementwise_admissible} states this relationship in genera
     Let $\mathbf{C} \in \mathbb{R}_{\ge 0}^{K \times K}$.
     \begin{enumerate}
         \item Every element-wise reasonable cost matrix (Definition~\ref{def:elementwise}) is admissible (Definition~\ref{def:admissibility}).
-        \item The inclusion is strict for every $K \ge 2$. At $K = 2$ the only admissible matrices outside the element-wise class are obtained by relabeling the two actions; a class that is risk-optimal solely in the interior of $\Delta^{K-1}$ and at no vertex can occur only for $K \ge 3$, as Example~\ref{ex:hedge} exhibits.
+        \item The inclusion is strict for every $K \ge 2$. At $K = 2$ the only admissible matrices outside the element-wise class are obtained by relabeling the two actions; a class that is risk-optimal somewhere in $\Delta^{K-1}$ but at no vertex can occur only for $K \ge 3$, as Example~\ref{ex:hedge} exhibits.
     \end{enumerate}
 \end{proposition}
 
@@ -92,7 +92,7 @@ Our theoretical results are stated under admissibility, the weaker of the two co
 Under admissibility, the minimization in Eq.~(\ref{eq:multiclass_bayes}) induces a polyhedral partition of the simplex whose boundary normals are determined entirely by the cost matrix.
 
 \begin{theorem}[Rigid polyhedral partition]\label{thm:rigid_partition}
-    Given an admissible cost matrix $\mathbf{C}$, the Bayes Optimal decision regions form a convex polyhedral partition of $\Delta^{K-1}$. The boundary separating any two adjacent regions $\mathcal{P}_i$ and $\mathcal{P}_j$ lies on the hyperplane $\mathcal{B}_{ij}$ defined by
+    Given an admissible cost matrix $\mathbf{C}$, the closed Bayes Optimal decision regions are convex polyhedra that cover $\Delta^{K-1}$. They can overlap where conditional risks tie; assigning each tie to its smallest-index minimizer gives a partition. The boundary separating any two adjacent regions $\mathcal{P}_i$ and $\mathcal{P}_j$ lies on the hyperplane $\mathcal{B}_{ij}$ defined by
     \begin{equation}
         \mathcal{B}_{ij} = \{ \mathbf{p} \in \mathbb{R}^K \mid (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} = 0 \}.
     \end{equation}
@@ -100,7 +100,7 @@ Under admissibility, the minimization in Eq.~(\ref{eq:multiclass_bayes}) induces
 \end{theorem}
 
 \begin{proof}
-    A point $\mathbf{p}$ is assigned to region $\mathcal{P}_i$ if the risk of action $i$ is lower than or equal to the risk of any other action $k$. This can be expressed as an intersection of linear inequalities,
+    A point $\mathbf{p}$ belongs to the closed region $\mathcal{P}_i$ if the risk of action $i$ is lower than or equal to the risk of any other action $k$. This can be expressed as an intersection of linear inequalities,
     \begin{equation}\label{eq:region_def}
         \mathcal{P}_i = \bigcap_{k \neq i} \left\{ \mathbf{p} \in \Delta^{K-1} \mid \mathbf{c}_i^\top \mathbf{p} \le \mathbf{c}_k^\top \mathbf{p} \right\}
               = \bigcap_{k \neq i} \left\{ \mathbf{p} \in \Delta^{K-1} \mid (\mathbf{c}_i - \mathbf{c}_k)^\top \mathbf{p} \le 0 \right\}.
@@ -130,7 +130,7 @@ As in the binary case, the standard approach applies the Bayes Optimal projectio
 \begin{equation}
     \hat{h}(x) = \underset{i \in \mathcal{Y}}{\mathrm{argmin}} \,\, \mathbf{c}_i^\top \hat{\mathbf{p}}(x).
 \end{equation}
-This is optimal if and only if $\hat{\mathbf{p}}(x) \to \boldsymbol{\eta}(x)$ almost everywhere. In practice, systematic estimation errors shift the distribution of estimates within the simplex, creating a geometric mismatch between the theoretical boundaries from $\mathbf{C}$ and the effective support of the estimator.
+This rule attains the Bayes risk whenever, for almost every $x$, its selected action minimizes the conditional risk at the true posterior; exact posterior recovery, $\hat{\mathbf{p}}(x) = \boldsymbol{\eta}(x)$ almost everywhere, is sufficient for this but not necessary. In practice, systematic estimation errors shift the distribution of estimates within the simplex, creating a geometric mismatch between the theoretical boundaries from $\mathbf{C}$ and the effective support of the estimator.
 
 \subsection{Systematic estimation error in the probability simplex}
 
@@ -162,7 +162,7 @@ Because $\Psi$ is generically non-linear, $\tilde{\mathcal{B}}_{ij}$ is a curved
 
 \section{Post-hoc calibration in the multiclass setting}\label{sec:multiclass_calibration}
 
-Multiclass perfect calibration requires $\mathbb{P}(Y{=}k \mid \hat{\mathbf{p}}(X) = \mathbf{q}) = q_k$ for all $k$ and all $\mathbf{q} \in \Delta^{K-1}$, a joint condition over the simplex strictly stronger than the per-class binary condition (Definition~\ref{def:calibration}). The calibrators that extend the binary methods to $K > 2$ trade off in how much of this joint structure they attempt to model.
+Multiclass perfect calibration requires $\mathbb{P}(Y{=}k \mid \hat{\mathbf{p}}(X) = \mathbf{q}) = q_k$ for all $k$ and almost every $\mathbf{q} \in \Delta^{K-1}$ under the law of $\hat{\mathbf{p}}(X)$, a joint condition over the simplex strictly stronger than the per-class binary condition (Definition~\ref{def:calibration}). The calibrators that extend the binary methods to $K > 2$ trade off in how much of this joint structure they attempt to model.
 
 \paragraph{Temperature scaling.} The most conservative extension \citep{guo2017calibration} applies a single scalar $T > 0$ to the logit vector before the softmax: $g_T(\hat{\mathbf{p}}) = \mathrm{softmax}(\mathbf{z}/T)$ with $z_k = \log \hat{p}_k$. Like its binary analogue, it preserves the ranking of all $K$ classes and has only one degree of freedom, so it is the most data-efficient option but cannot redistribute mass between classes asymmetrically.
 
@@ -179,4 +179,4 @@ g_{\mathbf{W},\mathbf{b}}(\hat{\mathbf{p}}) = \mathrm{softmax}(\mathbf{W} \log \
 
 The parametric calibrators can be ordered by flexibility. Temperature scaling uses a single parameter and preserves the class ranking, so it can correct global overconfidence but not class-specific distortions. One-vs-rest Platt scaling introduces $2K$ parameters and can correct per-class miscalibration, but because each class is calibrated against the rest independently, it does not model cross-class interactions. Dirichlet calibration is the most expressive of the three: with $K^2+K$ parameters, it applies a log-linear transformation to the full probability vector and can represent interactions among classes. Isotonic regression occupies a separate position in the comparison, since its non-parametric monotone complexity depends on the calibration-set size rather than on a fixed parameter count in $K$.
 
-Each calibrator can be composed with either the cost-blind argmax rule or the analytical cost-sensitive rule in Eq.~\ref{eq:multiclass_bayes}, yielding a \textit{calibrate-then-decide} strategy. As in the binary case, Proposition~\ref{prop:calibrate_then_decide} extends and perfect multiclass calibration would make the analytical rule Bayes-optimal when applied to $g(\hat{\mathbf{p}}(x))$. In practice, calibration is only approximate, and the remaining distortion motivates the direct partition-optimization strategies of Chapter~\ref{sec:partition_optimization}.
+Each calibrator can be composed with either the cost-blind argmax rule or the analytical cost-sensitive rule in Eq.~\ref{eq:multiclass_bayes}, yielding a \textit{calibrate-then-decide} strategy. As in the binary case, the argument of Proposition~\ref{prop:calibrate_then_decide} extends: recovering the true posterior vector, $g(\hat{\mathbf{p}}(x)) = \boldsymbol{\eta}(x)$ almost everywhere, makes the analytical rule applied to $g(\hat{\mathbf{p}}(x))$ attain the Bayes risk. Perfect multiclass calibration alone does not imply this posterior-recovery condition. In practice, calibration is only approximate, and the remaining distortion motivates the direct partition-optimization strategies of Chapter~\ref{sec:partition_optimization}.

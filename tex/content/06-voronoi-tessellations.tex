@@ -1,7 +1,7 @@
 %!TeX root=../carlo_master.tex
 \chapter{Voronoi tessellations as decision hypothesis class}\label{sec:voronoi_tessellation}
 
-The parallel-shift class $\mathcal{H}_{PS}$ is structured but rigid: its boundary normals are fixed at $\mathbf{c}_i-\mathbf{c}_j$, so learning can only translate the partition. The full class $\mathcal{H}_{Full}$ removes this rigidity by freeing every pairwise boundary, but loses the coupling of a coherent multiclass geometry. This chapter studies a candidate intermediate class, the Voronoi one: its boundaries can rotate, but only through the motion of $K$ shared class prototypes. Moving one prototype changes all boundaries involving that class, so the pairwise decisions are regularized by a common geometric representation.
+The parallel-shift class $\mathcal{H}_{PS}$ is structured but rigid: its boundary normals are fixed at $\mathbf{c}_i-\mathbf{c}_j$, so learning can only translate the partition. The full class $\mathcal{H}_{Full}$ removes this rigidity by freeing every pairwise boundary. This chapter studies the Voronoi parameterization: its boundaries rotate through the motion of $K$ shared class prototypes. Moving one prototype changes all boundaries involving that class, so the pairwise decisions share a common geometric representation.
 
 \section{From argmax to the Voronoi parameterization}
 
@@ -11,18 +11,18 @@ Nothing in this construction forces the reference points to sit at the vertices.
 
 \section{The Voronoi decision rule}
 
-Let $\mathcal{M} = \{ \boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \dots, \boldsymbol{\mu}_{K-1} \}$ be a set of $K$ distinct prototypes, where $\boldsymbol{\mu}_k \in \mathbb{R}^K$ is the learnable anchor for class $k$.
+Let $\mathcal{M} = (\boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \dots, \boldsymbol{\mu}_{K-1})$ be a configuration of $K$ prototypes, not necessarily distinct, where $\boldsymbol{\mu}_k \in \mathbb{R}^K$ is the learnable anchor for class $k$.
 
-\begin{definition}[Voronoi decision rule]
+\begin{definition}[Voronoi decision rule]\label{def:voronoi_rule}
     The decision rule $\delta_{\mathcal{M}}: \Delta^{K-1} \to \mathcal{Y}$ assigns a probability vector $\mathbf{p}$ to the class of its nearest prototype,
     \begin{equation}\label{eq:voronoi_rule}
         \delta_{\mathcal{M}}(\mathbf{p}) = \underset{k \in \mathcal{Y}}{\mathrm{argmin}} \, \| \mathbf{p} - \boldsymbol{\mu}_k \|_2.
     \end{equation}
 \end{definition}
 
-This rule induces a Voronoi tessellation of the simplex: the decision region $\mathcal{P}_k^{\mathcal{M}}$ is the convex cell of points in $\Delta^{K-1}$ closer to $\boldsymbol{\mu}_k$ than to any other prototype.
+This rule induces a Voronoi tessellation of the simplex: the decision region $\mathcal{P}_k^{\mathcal{M}}$ is the convex cell of points in $\Delta^{K-1}$ closer to $\boldsymbol{\mu}_k$ than to any other prototype, with ties resolved by the smallest-index convention.
 
-The boundary between classes $i$ and $j$ is the perpendicular bisector of the segment joining $\boldsymbol{\mu}_i$ and $\boldsymbol{\mu}_j$. Equivalently, it is the set of $\mathbf{p}$ satisfying
+For distinct prototypes, the boundary between classes $i$ and $j$ lies on the perpendicular bisector of the segment joining $\boldsymbol{\mu}_i$ and $\boldsymbol{\mu}_j$, the set of $\mathbf{p}$ satisfying
 \begin{equation}
     \|\mathbf{p}-\boldsymbol{\mu}_i\|_2^2 = \|\mathbf{p}-\boldsymbol{\mu}_j\|_2^2,
 \end{equation}
@@ -47,6 +47,22 @@ This prototype view also explains the role of interior anchors. When the estimat
 
 We will use two versions of the class. For expressivity results, prototypes are allowed anywhere in $\mathbb{R}^K$; this unconstrained class is denoted $\mathcal{H}_{Vor}$. For the optimizer, prototypes are restricted to the simplex, giving $\mathcal{H}_{Vor}^{\Delta}$. The restriction matches the interpretation of prototypes as probability-space anchors, but it is not only cosmetic: the containment result for $\mathcal{H}_{PS}$ uses off-simplex prototypes and therefore applies to $\mathcal{H}_{Vor}$, not necessarily to $\mathcal{H}_{Vor}^{\Delta}$.
 
+The unconstrained class has an exact description in the partition-matrix framework of Section~\ref{sec:partition_matrix_framework}.
+
+\begin{proposition}[Equality of the Voronoi and full-matrix classes]\label{prop:voronoi_full_equality}
+    With the Euclidean distance of Definition~\ref{def:voronoi_rule}, as sets of rules on $\Delta^{K-1}$, with ties broken by the smallest index, $\mathcal{H}_{Vor} = \mathcal{H}_{Full}$.
+\end{proposition}
+
+\begin{proof}
+    For $\mathbf{p} \in \Delta^{K-1}$, the identity $\mathbf{1}^\top \mathbf{p} = 1$ gives $\|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + (-2\boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2\,\mathbf{1})^\top \mathbf{p}$, and $\|\mathbf{p}\|_2^2$ is common to all classes. A Voronoi rule is therefore the full-matrix rule with columns $\mathbf{a}_k = -2\boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2\,\mathbf{1}$, ties included. Conversely, given any partition matrix with columns $\mathbf{a}_k$, set $\boldsymbol{\mu}_k = -\tfrac{1}{2}\mathbf{a}_k + \beta_k \mathbf{1}$ with $\beta_k \in \mathbb{R}$ free. The same identity gives
+    \begin{equation*}
+        \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + \mathbf{a}_k^\top \mathbf{p} + \big[\, K\beta_k^2 - (2 + \mathbf{a}_k^\top \mathbf{1})\,\beta_k + \tfrac{1}{4}\|\mathbf{a}_k\|_2^2 \,\big].
+    \end{equation*}
+    Each bracket is a quadratic in $\beta_k$ with positive leading coefficient $K$, so for any common value larger than all their minima every $\beta_k$ can be chosen to make its bracket equal that value. All squared-distance scores then differ from the matrix scores $\mathbf{a}_k^\top \mathbf{p}$ by the same term, so the two rules have the same minimizers and the same smallest-index choice at every $\mathbf{p}$. The per-class component $\beta_k \mathbf{1}$ cancels from every boundary normal $\boldsymbol{\mu}_i - \boldsymbol{\mu}_j$ modulo $\mathbf{1}$, yet supplies an arbitrary per-class offset through $\mathbf{1}^\top \mathbf{p} = 1$; this is what decouples offset from normal inside the Voronoi family.
+\end{proof}
+
+The equality rests on the squared Euclidean distance being affine in $\mathbf{p}$ up to a term common to all classes; for other distances the cells need not be bounded by hyperplanes.
+
 \section{Containment and strict separation from the parallel-shift class}
 
 The preceding paragraphs established the geometry: the parallel-shift normal $\mathbf{n}_{ps} = \mathbf{c}_i - \mathbf{c}_j$ is fixed by the cost matrix, while the Voronoi normal $\mathbf{n}_{vor} = \boldsymbol{\mu}_i - \boldsymbol{\mu}_j$ rotates freely with the prototypes. We now establish what that freedom buys at the population level: $\mathcal{H}_{Vor}$ contains $\mathcal{H}_{PS}$ and represents partitions it cannot (Theorem~\ref{thm:rotational_dominance}, Proposition~\ref{prop:ps_in_vor}), an unconditional property of the function classes. Whether the resulting advantage is realized under a given estimator is a separate, finite-sample question.
@@ -63,30 +79,26 @@ The separation is unconditional. It uses symmetric $0/1$ loss, so the parallel-s
 \end{theorem}
 
 \begin{proof}
-    Take $K = 3$, symmetric $0/1$ loss, and place mass $1/3$ on each of three points $\mathbf{p}_C, \mathbf{p}_A, \mathbf{p}_B$ lying along the simplex altitude $p_1 = p_2$ with true labels $0$, $1$, $2$. Under $0/1$ loss the class-$1$-vs-$2$ parallel-shift score reduces to $s_1(\mathbf{p}) - s_2(\mathbf{p}) = (\alpha_1 - \alpha_2) + (p_2 - p_1)$, which is invariant on the altitude, so any parallel-shift rule assigns $\mathbf{p}_A$ and $\mathbf{p}_B$ a common label and errs on at least one of them, giving $\inf_{\delta \in \mathcal{H}_{PS}} R(\delta) \ge 1/3 > 0$. A DLC-compliant prototype set with $\boldsymbol{\mu}_0 = \mathbf{e}_0$ and $\boldsymbol{\mu}_1, \boldsymbol{\mu}_2$ placed at distinct altitudes resolves the three points correctly through their $p_0$ coordinate, attaining $R = 0$ and exhibiting the strict separation. Appendix~\ref{app:supplementary_proofs} verifies the vertex-consistency condition and the distance computations.
+    Take $K = 3$, symmetric $0/1$ loss, and place mass $1/3$ on each of three points $\mathbf{p}_C, \mathbf{p}_A, \mathbf{p}_B$ lying along the simplex altitude $p_1 = p_2$ with true labels $0$, $1$, $2$. Under $0/1$ loss the class-$1$-vs-$2$ parallel-shift score reduces to $s_1(\mathbf{p}) - s_2(\mathbf{p}) = (\alpha_1 - \alpha_2) + (p_2 - p_1)$, which is invariant on the altitude, so no parallel-shift rule can assign label $1$ to $\mathbf{p}_A$ and label $2$ to $\mathbf{p}_B$ simultaneously, and every such rule errs on at least one of them, giving $\inf_{\delta \in \mathcal{H}_{PS}} R(\delta) \ge 1/3 > 0$. A DLC-compliant prototype set with $\boldsymbol{\mu}_0 = \mathbf{e}_0$ and $\boldsymbol{\mu}_1, \boldsymbol{\mu}_2$ placed at distinct altitudes resolves the three points correctly through their $p_0$ coordinate, attaining $R = 0$ and exhibiting the strict separation. Appendix~\ref{app:supplementary_proofs} verifies the vertex-consistency condition and the distance computations.
 \end{proof}
 
 \begin{proposition}[$\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$ for unconstrained prototypes]\label{prop:ps_in_vor}
-    For any cost matrix and any parallel-shift rule $\delta(\mathbf{p}) = \arg\min_{k \in \mathcal{Y}} (\mathbf{c}_k^\top \mathbf{p} + \alpha_k)$ on $\Delta^{K-1}$, there exist prototypes $\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1} \in \mathbb{R}^K$ whose Voronoi rule induces the same partition. Hence $\mathcal{H}_{PS} \subsetneq \mathcal{H}_{Vor}$.
+    Let $K \geq 2$. For any cost matrix and any parallel-shift rule $\delta(\mathbf{p}) = \arg\min_{k \in \mathcal{Y}} (\mathbf{c}_k^\top \mathbf{p} + \alpha_k)$ on $\Delta^{K-1}$, there exist prototypes $\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1} \in \mathbb{R}^K$ whose Voronoi rule induces the same partition. Hence $\mathcal{H}_{PS} \subsetneq \mathcal{H}_{Vor}$.
 \end{proposition}
 
 \begin{proof}
-    Set $\boldsymbol{\mu}_k = -\tfrac{1}{2}\mathbf{c}_k + \beta_k \mathbf{1}$ with $\beta_k \in \mathbb{R}$ free. Discarding the $k$-independent term $\|\mathbf{p}\|_2^2$, the Voronoi score is $G_k(\mathbf{p}) = -2\boldsymbol{\mu}_k^\top \mathbf{p} + \|\boldsymbol{\mu}_k\|_2^2$. Using $\mathbf{1}^\top \mathbf{p} = 1$ on the simplex,
-    \begin{equation}
-        G_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \big[\, K\beta_k^2 - (2 + \mathbf{c}_k^\top \mathbf{1})\,\beta_k + \tfrac{1}{4}\|\mathbf{c}_k\|_2^2 \,\big].
-    \end{equation}
-    The $\mathbf{p}$-dependent part is exactly the parallel-shift score's, so the partitions agree once the bracketed constants $R_k$ satisfy $R_k = \alpha_k + c$ for a single $c \in \mathbb{R}$ (a constant common to all $k$ does not move $\arg\min_{k \in \mathcal{Y}}$). This is a quadratic in $\beta_k$ with positive leading coefficient $K$; its discriminant $(2 + \mathbf{c}_k^\top \mathbf{1})^2 - K\|\mathbf{c}_k\|_2^2 + 4K(\alpha_k + c)$ is nonnegative for every $k$ once $c > \max_k \big[\tfrac{1}{4K}\big(K\|\mathbf{c}_k\|_2^2 - (2 + \mathbf{c}_k^\top \mathbf{1})^2\big) - \alpha_k\big]$. Any real root $\beta_k$ then yields $G_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \alpha_k + c$, so the Voronoi and parallel-shift partitions of $\Delta^{K-1}$ coincide, boundaries included.
+    Since $\mathbf{1}^\top \mathbf{p} = 1$ on the simplex, the parallel-shift rule is the full-matrix rule with columns $\mathbf{a}_k = \mathbf{c}_k + \alpha_k \mathbf{1}$, so Proposition~\ref{prop:voronoi_full_equality} supplies the prototypes, boundaries included, and $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$.
 
-    The per-class component $\beta_k \mathbf{1}$ cancels from every boundary normal $\boldsymbol{\mu}_i - \boldsymbol{\mu}_j$ modulo $\mathbf{1}$, yet supplies an arbitrary per-class offset through $\mathbf{1}^\top \mathbf{p} = 1$; this is what decouples offset from normal inside the Voronoi family. The inclusion is proper because the vertical-stack partition of Theorem~\ref{thm:rotational_dominance} lies in $\mathcal{H}_{Vor}$ but not in $\mathcal{H}_{PS}$.
+    For strictness, compare classes $0$ and $1$ at the vertices $\mathbf{e}_0$ and $\mathbf{e}_1$, where the parallel-shift scores are $C_{0k} + \alpha_k$ and $C_{1k} + \alpha_k$. Write $D_0 = C_{00} - C_{01}$, $D_1 = C_{10} - C_{11}$, and $w = \alpha_0 - \alpha_1$. Under the smallest-index rule, labeling $\mathbf{e}_0$ as $0$ and $\mathbf{e}_1$ as $1$ requires $D_0 + w \leq 0 < D_1 + w$, hence $D_0 < D_1$; labeling $\mathbf{e}_0$ as $1$ and $\mathbf{e}_1$ as $0$ requires $D_1 + w \leq 0 < D_0 + w$, hence $D_1 < D_0$. For a fixed $\mathbf{C}$, the two labelings cannot both be realized within $\mathcal{H}_{PS}$. Full-matrix rules realize both: in rows $0$ and $1$ of $\mathbf{A}$, put entry $0$ at the desired label and $1$ elsewhere. By Proposition~\ref{prop:voronoi_full_equality} these are Voronoi rules, and at least one of them is not in $\mathcal{H}_{PS}$. For $K = 3$ under $0/1$ loss, the vertical-stack partition of Theorem~\ref{thm:rotational_dominance} is a further example in $\mathcal{H}_{Vor}$ but not in $\mathcal{H}_{PS}$.
 \end{proof}
 
-Two scopes must be separated. The population inequality $\inf_{\delta \in \mathcal{H}_{Vor}} R(\delta) \leq \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$ is immediate from the inclusion $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$ (Proposition~\ref{prop:ps_in_vor}) and holds for every cost matrix. The strictness is exhibited on a symmetric-$0/1$ witness, chosen so that the parallel-shift normals reduce to $\mathbf{e}_i - \mathbf{e}_j$ and the strict gap cannot be charged to a cost-induced inductive bias. Combined with $\mathcal{H}_{Vor}^{\mathrm{DLC}} \subseteq \mathcal{H}_{Vor}$, Theorem~\ref{thm:rotational_dominance} also gives a strict separation between $\mathcal{H}_{Vor}$ and $\mathcal{H}_{PS}$ on that witness. This population inequality does not transfer to finite samples: the larger class is estimated from the same validation budget, and the finite-sample comparison, not this inequality, is what determines whether the parallel-shift restriction is the better operational choice despite the inclusion.
+Two scopes must be separated. The population inequality $\inf_{\delta \in \mathcal{H}_{Vor}} R(\delta) \leq \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$ is immediate from the inclusion $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$ (Proposition~\ref{prop:ps_in_vor}) and holds for every cost matrix. The strict risk gap is exhibited on a symmetric-$0/1$ witness, chosen so that the parallel-shift normals reduce to $\mathbf{e}_i - \mathbf{e}_j$ and the strict gap cannot be charged to a cost-induced inductive bias. Combined with $\mathcal{H}_{Vor}^{\mathrm{DLC}} \subseteq \mathcal{H}_{Vor}$, Theorem~\ref{thm:rotational_dominance} also gives a strict separation between $\mathcal{H}_{Vor}$ and $\mathcal{H}_{PS}$ on that witness. This population inequality does not transfer to finite samples: the larger class is estimated from the same validation budget, and the finite-sample comparison, not this inequality, is what determines whether the parallel-shift restriction is the better operational choice despite the inclusion.
 
 \section{Stochastic search over Voronoi prototypes}
 
 The Voronoi training problem is empirical risk minimization over the prototype configuration,
 \begin{equation}
-    \mathcal{M}^* = \underset{\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1} \in \Delta^{K-1}}{\mathrm{argmin}} \frac{1}{|\mathcal{V}|} \sum_{(x, y) \in \mathcal{V}} C_{\delta_{\mathcal{M}}(\hat{\mathbf{p}}(x)),\, y},
+    \mathcal{M}^* = \underset{\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1} \in \Delta^{K-1}}{\mathrm{argmin}} \frac{1}{|\mathcal{V}|} \sum_{(x, y) \in \mathcal{V}} C_{y,\, \delta_{\mathcal{M}}(\hat{\mathbf{p}}(x))},
 \end{equation}
 so the optimizer searches the simplex-restricted class $\mathcal{H}_{Vor}^{\Delta}$.
 
@@ -105,7 +117,7 @@ A configuration $\mathcal{M} = (\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-
 \end{equation}
 \end{definition}
 
-Equivalently, $\delta_{\mathcal{M}}(\mathbf{e}_k) = k$ for every $k$: on pure-class inputs the Voronoi decoder agrees with the argmax rule used by the Default strategy, so the Voronoi search refines Default at the simplex corners rather than relabelling them. The condition is the one used in Theorem~\ref{thm:rotational_dominance} (Equation~\eqref{eq:thm_vertex_consistency}). It is the prototype-space analogue of element-wise reasonableness (Definition~\ref{def:elementwise}): that condition makes the cost-induced decoder map every simplex vertex to its own class, and the DLC asks exactly this of the Voronoi decoder. Its relationship to the non-emptiness of all cells mirrors Proposition~\ref{prop:elementwise_admissible}: the DLC implies every induced Voronoi cell is non-empty, the prototype-space analogue of admissibility (Definition~\ref{def:admissibility}), but the converse fails, since a configuration can leave all cells non-empty while permuting the labels at the corners. The singleton-argmin formulation is strict: if $\boldsymbol{\mu}_i = \boldsymbol{\mu}_j$ for some $i \neq j$, the argmin at $\mathbf{e}_i$ is not a singleton, so~\eqref{eq:dlc} already rules out coincident prototypes.
+In particular, $\delta_{\mathcal{M}}(\mathbf{e}_k) = k$ for every $k$: on pure-class inputs the Voronoi decoder agrees with the argmax rule used by the Default strategy, so the Voronoi search refines Default at the simplex corners rather than relabelling them. The condition is the one used in Theorem~\ref{thm:rotational_dominance} (Equation~\eqref{eq:thm_vertex_consistency}). It is the prototype-space analogue of element-wise reasonableness (Definition~\ref{def:elementwise}): that condition makes the cost-induced decoder map every simplex vertex to its own class, and the DLC asks exactly this of the Voronoi decoder. Its relationship to the non-emptiness of all cells mirrors Proposition~\ref{prop:elementwise_admissible}: the DLC implies every induced Voronoi cell is non-empty, the prototype-space analogue of admissibility (Definition~\ref{def:admissibility}), but the converse fails, since a configuration can leave all cells non-empty while permuting the labels at the corners. The converse of the vertex property can fail on ties, since the DLC requires a unique nearest prototype. The singleton-argmin formulation is strict: if $\boldsymbol{\mu}_i = \boldsymbol{\mu}_j$ for some $i \neq j$, the argmin at $\mathbf{e}_i$ is not a singleton, so~\eqref{eq:dlc} already rules out coincident prototypes.
 
 \section{Sampling DLC-preserving prototype configurations}\label{sec:voronoi_samplers}\label{sec:voronoi_comparison}
 
@@ -189,7 +201,7 @@ Swap-max and Concentrated Dirichlet enforce only a per-centroid marginal of~\eqr
 \end{equation}
 which involves the off-diagonal entries $\boldsymbol{\mu}_j[k]$ and the squared norms $\|\boldsymbol{\mu}_j\|_2^2$ that swap-max leaves uncontrolled, so it cannot hold~\eqref{eq:voronoi_invariant_expanded} as $K$ grows, consistent with the observed decay; Concentrated Dirichlet's per-centroid marginal bias breaks~\eqref{eq:dlc} for the same reason.
 
-A broader observation cuts against the Voronoi family as a whole: the two vector-tuned baselines, MultidimensionalThreshold ($\mathcal{H}_{PS}$) and ThresholdRatio ($\mathcal{H}_{Sc}$), achieve sampling-variety metrics competitive with sequential $d^2$ (and in the middle panel of Figure~\ref{fig:sampler_metrics_vs_k}, MultidimensionalThreshold attains the highest disagreement entropy across the entire sweep) without needing any invariant-preserving construction. FullMatrix, the unconstrained $K^2$-parameter family, behaves the same way: it reaches a comparable partition-deviation footprint at zero exhaustion, having no diagonal-dominance invariant to preserve. The DLC machinery of this section is therefore the price of the strictly richer $\mathcal{H}_{Vor}$; staying within $\mathcal{H}_{PS}$ removes the sampling problem entirely.
+A broader observation cuts against the Voronoi family as a whole: the two vector-tuned baselines, MultidimensionalThreshold ($\mathcal{H}_{PS}$) and ThresholdRatio ($\mathcal{H}_{Sc}$), achieve sampling-variety metrics competitive with sequential $d^2$ (and in the middle panel of Figure~\ref{fig:sampler_metrics_vs_k}, MultidimensionalThreshold attains the highest disagreement entropy across the entire sweep) without needing any invariant-preserving construction. FullMatrix, the unconstrained $K^2$-parameter family, behaves the same way: it reaches a comparable partition-deviation footprint at zero exhaustion, having no diagonal-dominance invariant to preserve. The sampling machinery of this section is therefore the price of enforcing the DLC; staying within $\mathcal{H}_{PS}$ removes the sampling problem entirely.
 
 With sequential $d^2$ as the chosen sampler, Algorithm~\ref{alg:voronoi_tuning} wraps it in an outer random-search loop: initialize at the argmax prototypes, propose a new configuration each iteration, and keep it when it improves the validation score.
 
@@ -227,7 +239,7 @@ The production implementation sets the retry budget to $M = 500$ as headroom, we
 
 Proposition~\ref{prop:ps_in_vor} states an expressivity inclusion: the best rule in $\mathcal{H}_{Vor}$ has population risk no higher than the best rule in $\mathcal{H}_{PS}$. It does not say when the gap is strict, how large it is, or what survives finite-sample tuning. This section exhibits one regime where the population gap is strict and recoverable.
 
-The mechanism. When the true class-conditional covariances $\Sigma_k$ differ across classes but the probability estimator does not model per-class second-order structure, the Bayes-optimal boundary between classes $i$ and $j$ picks up a quadratic term $\propto \mathbf{x}^\top (\Sigma_i^{-1} - \Sigma_j^{-1})\, \mathbf{x}$ that rotates the pairwise boundary in a direction that depends on $(i, j)$. Parallel shifts ($\mathcal{H}_{PS}$) cannot rotate boundaries at all. Column scaling ($\mathcal{H}_{Sc}$) does rotate the pairwise normals (Proposition~\ref{prop:column_rotation}), but with only $K-1$ free parameters its rotations are coupled across all $\binom{K}{2}$ pairs and need not match the per-pair quadratic. The Voronoi class has $K(K-1)$ parameters and places each pairwise normal as $\boldsymbol{\mu}_j - \boldsymbol{\mu}_i$, the full-matrix class has $K^2$ parameters; both can match the per-pair rotation that $(\Sigma_i^{-1} - \Sigma_j^{-1})$ induces.
+The mechanism. When the true class-conditional covariances $\Sigma_k$ differ across classes but the probability estimator does not model per-class second-order structure, the Bayes-optimal boundary between classes $i$ and $j$ picks up a quadratic term $\propto \mathbf{x}^\top (\Sigma_i^{-1} - \Sigma_j^{-1})\, \mathbf{x}$ that rotates the pairwise boundary in a direction that depends on $(i, j)$. Parallel shifts ($\mathcal{H}_{PS}$) cannot rotate boundaries at all. Column scaling ($\mathcal{H}_{Sc}$) does rotate the pairwise normals (Proposition~\ref{prop:column_rotation}), but with only $K-1$ free parameters its rotations are coupled across all $\binom{K}{2}$ pairs and need not match the per-pair quadratic. The simplex-restricted Voronoi class has $K(K-1)$ parameters and places each pairwise normal as $\boldsymbol{\mu}_j - \boldsymbol{\mu}_i$, the full-matrix class has $K^2$ parameters; both can match the per-pair rotation that $(\Sigma_i^{-1} - \Sigma_j^{-1})$ induces.
 
 The construction. Three Gaussian classes live in $\mathbb{R}^3$ with means
 \begin{equation*}
@@ -257,7 +269,7 @@ Figure~\ref{fig:simplex_regions} shows the probability simplex under each strate
 
 \input{tables/results_rotational_bias.tex}
 
-Table~\ref{tab:results-rotational-bias} quantifies the outcome. Default and the two restricted tuners sit at $0.852$ accuracy and $0.699$--$0.709$ Macro-F1, indistinguishable from one another: MultidimensionalThreshold offers no rotation at all, and the rotation ThresholdRatio can produce is not enough here, so column scaling collapses to the cost-blind baseline rather than helping. Both unconstrained rotators close most of the gap. FullMatrixPartitioning reaches $0.872 \pm 0.003$ accuracy and $0.731 \pm 0.007$ Macro-F1, and Voronoi $0.874 \pm 0.002$ and $0.735 \pm 0.006$; their confidence intervals overlap on both metrics. The gap is closed by boundary rotation in general, not by the Voronoi parameterization specifically: the unconstrained matrix recovers statistically the same risk. The gap over the restricted classes is statistically clear but small, about $2$ accuracy points and $2$ to $3$ Macro-F1 points, and this is the favorable case: the regime was constructed to expose the rotational limitation, so it upper-bounds what the expressivity advantage buys in realized risk.
+Table~\ref{tab:results-rotational-bias} quantifies the outcome. Default and the two restricted tuners sit at $0.852$ accuracy and $0.699$--$0.709$ Macro-F1, indistinguishable from one another: MultidimensionalThreshold offers no rotation at all, and the rotation ThresholdRatio can produce is not enough here, so column scaling collapses to the cost-blind baseline rather than helping. VoronoiTuning and FullMatrixPartitioning close most of the gap. FullMatrixPartitioning reaches $0.872 \pm 0.003$ accuracy and $0.731 \pm 0.007$ Macro-F1, and Voronoi $0.874 \pm 0.002$ and $0.735 \pm 0.006$; their confidence intervals overlap on both metrics. The gap is closed by boundary rotation in general, not by the Voronoi parameterization specifically: the unconstrained matrix recovers statistically the same risk. The gap over the restricted classes is statistically clear but small, about $2$ accuracy points and $2$ to $3$ Macro-F1 points, and this is the favorable case: the regime was constructed to expose the rotational limitation, so it upper-bounds what the expressivity advantage buys in realized risk.
 
 The experiment instantiates the rotated-boundary mechanism above, and the Voronoi advantage is specific to $0/1$-style metrics. Under asymmetric cost matrices the parallel-shift class incorporates the cost matrix into its boundary normals by construction, which can outweigh the rotational limitation tested here.
 
@@ -280,12 +292,16 @@ Empirical optimization of the decision rule, the multiclass instance of the deci
     The Natarajan dimension $d_{Nat}(\mathcal{H})$ is the maximum cardinality of a set $S$ that can be shattered by $\mathcal{H}$.
 \end{definition}
 
-\begin{remark}[Generalization bound]
-    For $|\mathcal{Y}| = K$, losses in $[0, C_{max}]$, validation-set size $m$, and confidence $\nu$, with probability at least $1 - \nu$ over the validation draw,
+\begin{remark}[Generalization bound]\label{rem:natarajan_gen_bound}
+    Let $|\mathcal{Y}| = K \geq 2$ and $0 \leq C_{ij} \leq C_{max}$. Let $\mathcal{H}_{dec}$ be a class of decision rules and $\mathcal{H}_0$ a countable class of measurable rules that approximates every $\delta \in \mathcal{H}_{dec}$ pointwise in the sense of Proposition~\ref{prop:gen_bound}, and let $d \geq \max\{d_{Nat}(\mathcal{H}_0), 1\}$ be an integer. For $m \geq 1$ i.i.d.\ validation observations independent of the estimator fit and $0 < \nu \leq 1$, with probability at least $1 - \nu$ over the validation draw, simultaneously for all $\delta \in \mathcal{H}_{dec}$,
     \begin{equation}
-        R(\delta) \leq \hat{R}(\delta) + c\, C_{max} \sqrt{\frac{d_{Nat}(\mathcal{H}_{dec})}{m}},
+        R(\delta) \leq \hat{R}(\delta) + c_{Nat}\, C_{max} \sqrt{\frac{d}{m}},
     \end{equation}
-    with $c$ the universal constant of~\eqref{eq:clean_gen_bound}, which here absorbs the logarithmic factors in $K$, $m$, and $1/\nu$ \citep{natarajan1989learning}; \citep[Theorem~6]{daniely2015multiclass}.
+    where
+    \begin{equation*}
+        c_{Nat} = c_{Nat}(K,d,m,\nu) = \sqrt{4\bigl(\lceil\log_2(dK^2)\rceil+1\bigr)\log(em)} + \sqrt{\frac{\log(K^2/\nu)}{2}}.
+    \end{equation*}
+    The bound follows the proof of Proposition~\ref{prop:gen_bound}, with at most $K^2$ loss levels and failure probability $\nu/K^2$ per level. By Natarajan's growth-function argument \citep{natarajan1989learning}, each level class over $\mathcal{H}_0$ has VC dimension at most $2d(\lceil\log_2(dK^2)\rceil+1)$; if this exceeds $m$, the additive term is at least $C_{max}$ and the conclusion is immediate. Theorem~6 of \citet{daniely2015multiclass} gives a sharper logarithmic dependence for the misclassification loss; the cost-sensitive form above follows from the level-set argument.
 \end{remark}
 
 \subsection{Capacity of the parallel-shift, scaling, and full classes}
@@ -293,7 +309,7 @@ Empirical optimization of the decision rule, the multiclass instance of the deci
 Recall the parallel-shift class $\mathcal{H}_{PS}$ (Eq.~\ref{eq:hps_def}), which fixes the boundary normals at the cost-matrix differences; its column-scaling sibling $\mathcal{H}_{Sc}$ (Eq.~\ref{eq:hsc_def}) at the same $K-1$ parameter budget but with rotating normals; and the unconstrained class $\mathcal{H}_{Full}$ (Eq.~\ref{eq:hfull_def}).
 
 \begin{theorem}[Complexity of $\mathcal{H}_{PS}$]\label{thm:ps_complexity}
-    The Natarajan dimension of the vector-param\-eterized hypothesis class is linear in the number of classes,
+    Let $\mathbf{C}$ be admissible. The Natarajan dimension of the vector-param\-eterized hypothesis class is linear in the number of classes,
     \begin{equation}
         d_{Nat}(\mathcal{H}_{PS}) = K - 1.
     \end{equation}
@@ -321,7 +337,7 @@ Recall the parallel-shift class $\mathcal{H}_{PS}$ (Eq.~\ref{eq:hps_def}), which
 \end{theorem}
 
 \begin{proof}
-    The gauge $\beta_0 = 1$ pins the multiplicative scaling invariance of the $\mathrm{argmin}$ rule and leaves the $K-1$ free parameters $\beta_1, \ldots, \beta_{K-1}$. With $\beta_0 = 1$ fixed, the per-class score decomposes as
+    The weights in Eq.~\eqref{eq:hsc_def} are positive, so dividing all of them by $\beta_0$ leaves every decision unchanged. The gauge $\beta_0 = 1$ pins the multiplicative scaling invariance of the $\mathrm{argmin}$ rule and leaves the $K-1$ free parameters $\beta_1, \ldots, \beta_{K-1}$. With $\beta_0 = 1$ fixed, the per-class score decomposes as
     \begin{equation*}
         s_i(\mathbf{p};\boldsymbol{\beta}) = \sum_{k=0}^{K-1} C_{ki}\,\beta_k\,p_k = C_{0i}\,p_0 \;+\; \sum_{k=1}^{K-1} C_{ki}\,\beta_k\,p_k,
     \end{equation*}
@@ -340,45 +356,45 @@ Recall the parallel-shift class $\mathcal{H}_{PS}$ (Eq.~\ref{eq:hps_def}), which
 
     For the upper bound, the scores $s_k(\mathbf{p}) = \mathbf{a}_k^\top \mathbf{p}$ are linear in the $W = K^2$ free entries of $\mathbf{A}$ with no parameter-free term, so Lemma~\ref{lem:linear_embedding} (Appendix~\ref{app:complexity}) gives $d_{Nat}(\mathcal{H}_{Full}) \leq K^2$.
 
-    For the lower bound, observe that $\mathcal{H}_{Full}$ contains the parallel-shift hypothesis class $\mathcal{H}_{PS}$ as a special case, obtained by choosing $\mathbf{a}_k = \mathbf{c}_k + v_k \mathbf{1}$ for any fixed $\mathbf{C}$. Since $d_{Nat}(\mathcal{H}_{PS}) = K - 1$ (Theorem~\ref{thm:ps_complexity}), it follows that $d_{Nat}(\mathcal{H}_{Full}) \geq K - 1$. The embedding gives the upper bound $\leq K^2$ of the theorem; we do not establish a matching quadratic lower bound, so the dimension is reported only as $\leq K^2$.
+    For the lower bound, observe that $\mathcal{H}_{Full}$ contains the parallel-shift hypothesis class $\mathcal{H}_{PS}$ as a special case, obtained by choosing $\mathbf{a}_k = \mathbf{c}_k + v_k \mathbf{1}$ for any fixed admissible $\mathbf{C}$. Since $d_{Nat}(\mathcal{H}_{PS}) = K - 1$ (Theorem~\ref{thm:ps_complexity}), it follows that $d_{Nat}(\mathcal{H}_{Full}) \geq K - 1$. The embedding gives the upper bound $\leq K^2$ of the theorem; we do not establish a matching quadratic lower bound, so the dimension is reported only as $\leq K^2$.
 \end{proof}
 
-To guarantee a gap at most $\epsilon$, a validation set of size proportional to $K^2/\epsilon^2$ (that is, $m \geq c\, K^2/\epsilon^2$) suffices.
+Remark~\ref{rem:natarajan_gen_bound} applies to $\mathcal{H}_{PS}$ and $\mathcal{H}_{Full}$ through rational approximants perturbed by vanishing amounts ordered by class index: for parallel shifts, take rational offsets $v_k^{(n)} \in (v_k + k t_n,\, v_k + (k+1) t_n)$ with $t_n \downarrow 0$; for full matrices, take rational entries with $A^{(n)}_{jk} - A_{jk} \in (k t_n,\, (k+1) t_n)$, so that $(\mathbf{a}_k^{(n)} - \mathbf{a}_k)^\top \mathbf{p} \in (k t_n,\, (k+1) t_n)$ for every $\mathbf{p} \in \Delta^{K-1}$. Ties are then resolved in favor of the smallest index and strict margins are eventually preserved, so the approximants agree with the original rule eventually at every input. They belong to $\mathcal{H}_{PS}$ and $\mathcal{H}_{Full}$, so Theorems~\ref{thm:ps_complexity} and~\ref{thm:full_complexity} supply $d = K-1$ and $d = K^2$. For $\mathcal{H}_{Full}$, a validation set with $m \geq c_{Nat}^2\, C_{max}^2\, K^2/\epsilon^2$ guarantees a gap at most $\epsilon$, where $c_{Nat}$ depends on $m$, $K$, and $1/\nu$ through logarithms.
 
-Substituting $d_{Nat}(\mathcal{H}_{PS}) = K - 1$ into the generalization bound gives, for any $\delta \in \mathcal{H}_{PS}$,
+Substituting $d = K - 1$ gives, with probability at least $1-\nu$, simultaneously for all $\delta \in \mathcal{H}_{PS}$,
 \begin{equation}
-    R(\delta) \leq \hat{R}(\delta) + c\, C_{max} \sqrt{\frac{K-1}{m}},
+    R(\delta) \leq \hat{R}(\delta) + c_{Nat}\, C_{max} \sqrt{\frac{K-1}{m}},
 \end{equation}
-about a factor of $\sqrt{K}$ tighter than the bound for $\mathcal{H}_{Full}$; equivalently, a validation set of size proportional to $K/\epsilon^2$ (that is, $m \geq c\, K/\epsilon^2$) guarantees a gap at most $\epsilon$. The $1/\epsilon^2$ factor and the universal constant $c$ mean the validation sample must still be sizeable for the bound to bite, so the parallel-shift capacity advantage is necessary but not sufficient: when the held-out partition is small relative to $K$, the realized decision-layer benefit is governed by the label budget rather than by the capacity gap.
+whose capacity term is about a factor of $\sqrt{K}$ smaller than that of the bound for $\mathcal{H}_{Full}$ (the factor $c_{Nat}$ depends on $d$ only logarithmically); equivalently, $m \geq c_{Nat}^2\, C_{max}^2 (K-1)/\epsilon^2$ guarantees a gap at most $\epsilon$. The $1/\epsilon^2$ factor and the factor $c_{Nat}$ mean the validation sample must still be sizeable for the bound to bite, so the parallel-shift capacity advantage is necessary but not sufficient: when the held-out partition is small relative to $K$, the realized decision-layer benefit is governed by the label budget rather than by the capacity gap.
 
 \subsection{Capacity of the Voronoi classes}
 
 \begin{theorem}[Complexity of the Voronoi classes]\label{thm:voronoi_complexity}
     The Natarajan dimensions satisfy
     \begin{equation}
-        d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K, \qquad d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2.
+        d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2, \qquad d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2.
     \end{equation}
 \end{theorem}
 
 \begin{proof}
-    Since $\|\mathbf{p}\|_2^2$ is independent of $k$, the rule $\mathrm{argmin}_{k \in \mathcal{Y}} \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2$ equals $\mathrm{argmax}_{k \in \mathcal{Y}} (2\boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2)$. The per-class score is affine in the lifted pair $(\mathbf{w}_k, b_k) = (2\boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$, with the squared-norm bias coupling $b_k$ to $\mathbf{w}_k$ through the prototype $\boldsymbol{\mu}_k$. The prototypes carry $K^2$ free coordinates for $\mathcal{H}_{Vor}$, and $K(K-1)$ for $\mathcal{H}_{Vor}^{\Delta}$ (the simplex constraint $\sum_j [\boldsymbol{\mu}_k]_j = 1$ removes one per prototype). Applying the coupled case of Lemma~\ref{lem:linear_embedding} with Lemma~\ref{lem:nat_monotone} (Appendix~\ref{app:complexity}) gives $d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K$ and $d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2$, the additive $K$ for $\mathcal{H}_{Vor}$ coming from the per-class bias terms (Table~\ref{tab:partition_natarajan}).
+    Since $\|\mathbf{p}\|_2^2$ is independent of $k$, the rule $\mathrm{argmin}_{k \in \mathcal{Y}} \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2$ equals $\mathrm{argmax}_{k \in \mathcal{Y}} (2\boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2)$. The per-class score is affine in the lifted pair $(\mathbf{w}_k, b_k) = (2\boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$, with the squared-norm bias coupling $b_k$ to $\mathbf{w}_k$ through the prototype $\boldsymbol{\mu}_k$. The prototypes carry $K^2$ free coordinates for $\mathcal{H}_{Vor}$, and $K(K-1)$ for $\mathcal{H}_{Vor}^{\Delta}$ (the simplex constraint $\sum_j [\boldsymbol{\mu}_k]_j = 1$ removes one per prototype). Applying the coupled case of Lemma~\ref{lem:linear_embedding} with Lemma~\ref{lem:nat_monotone} (Appendix~\ref{app:complexity}) gives $d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K$ and $d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2$, the additive $K$ for $\mathcal{H}_{Vor}$ coming from the per-class bias terms (Table~\ref{tab:partition_natarajan}). For $\mathcal{H}_{Vor}$ the bound improves to $K^2$: by Proposition~\ref{prop:voronoi_full_equality}, $\mathcal{H}_{Vor} = \mathcal{H}_{Full}$, so $d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$ by Theorem~\ref{thm:full_complexity}.
 \end{proof}
 
-The clean bound~\eqref{eq:clean_gen_bound} follows from Proposition~\ref{prop:gen_bound}. For the simplex-restricted class that the optimizer searches, for any $\delta \in \mathcal{H}_{Vor}^{\Delta}$,
+The rational full-matrix approximants used above for Remark~\ref{rem:natarajan_gen_bound} also approximate every rule of $\mathcal{H}_{Vor}$, $\mathcal{H}_{Vor}^{\Delta}$, and $\mathcal{H}_{Vor}^{\mathrm{DLC}}$, since these are full-matrix rules. For the simplex-restricted class that the optimizer searches, the remark therefore gives, with probability at least $1-\nu$, simultaneously for all $\delta \in \mathcal{H}_{Vor}^{\Delta}$,
 \begin{equation}
-    R(\delta) \leq \hat{R}(\delta) + c\, C_{max} \sqrt{\frac{K(K-1)}{m}},
+    R(\delta) \leq \hat{R}(\delta) + c_{Nat}\, C_{max} \sqrt{\frac{K^2}{m}},
 \end{equation}
-while the unconstrained class carries the rate $c\, C_{max} \sqrt{(K^2+K)/m}$, of the same order in $K$ as the full-matrix upper bound. For fixed $K$ neither Voronoi upper bound is smaller in $K$ than the full-matrix bound $\leq K^2$; the simplex constraint improves only the constant, and the prototype parameterization provides implicit regularization that the unconstrained matrix does not. The containment of Proposition~\ref{prop:ps_in_vor} is a population statement about $\mathcal{H}_{Vor}$, whereas the class actually fit is the smaller $\mathcal{H}_{Vor}^{\Delta}$, trading the containment guarantee for the tighter capacity. Relative to $\mathcal{H}_{PS}$ at Natarajan dimension $K-1$, the $\leq K(K-1)$ capacity bound is larger by a factor of order $K$, so on a shared validation partition the Voronoi class needs proportionally more labels than the parallel-shift class to reach the same generalization error; a constant-factor improvement over the unconstrained matrix does not by itself buy finite-sample parity with the parallel-shift class.
+the same bound as for $\mathcal{H}_{Full}$. These upper bounds alone do not establish a capacity reduction from the simplex restriction or from the DLC. The containment of Proposition~\ref{prop:ps_in_vor} is a population statement about $\mathcal{H}_{Vor}$, whereas the class actually fit is the smaller $\mathcal{H}_{Vor}^{\Delta}$ (in fact its DLC subclass), to which the containment need not apply. Relative to $\mathcal{H}_{PS}$ at Natarajan dimension $K-1$, the $\leq K^2$ capacity bound is larger by a factor of order $K$, so on a shared validation partition the guarantee for the Voronoi classes needs proportionally more labels than the guarantee for the parallel-shift class to reach the same generalization error.
 
 \subsection{Comparison with calibration complexity}
 
 The pseudo-dimension analysis from the binary case (Section~\ref{sec:calibration}) carries over to multiclass calibration on a per-class basis. For $K \geq 3$, softmax is not a scalar strictly monotone transform of any single affine score, so Proposition~\ref{prop:calibrator_complexity} does not lift coordinate-wise to a single joint $d_P$ of the vector-valued output; Theorem~11.4 of \citet{anthony1999neural} is therefore applied to the pre-softmax score class for a fixed class $k$, and the joint capacity is reported through the total parameter count $W$.
 
 \begin{remark}[Multiclass calibration complexity]\label{rem:multiclass_calibration}
-    For $K > 2$ classes, the three parametric calibrators form a nested family in increasing parameter count $W$:
+    For $K > 2$ classes, the three parametric calibrators have the following parameter counts $W$ and per-class pseudo-dimension bounds:
     \begin{enumerate}
         \item Temperature Scaling. A single shared parameter ($W = 1$) regardless of $K$. Writing $\beta = 1/T$, the per-class pre-softmax score $\beta\, z_k(x)$ lies in a one-dimensional linear class, so $d_P \leq 1$ per class by \citet[Theorem~11.4]{anthony1999neural}. This is why it is the preferred calibrator when the validation budget is limited.
-        \item Platt Scaling (One-vs-Rest). $K$ independent sigmoid calibrators, each with $W = 2$ parameters, with per-class $d_P \leq 2$ by Proposition~\ref{prop:calibrator_complexity}. The per-class fits are independent; subsequent renormalization to $\Delta^{K-1}$ is a deterministic post-processing step that does not increase complexity. Total parameter count: $W = 2K$.
+        \item Platt Scaling (One-vs-Rest). $K$ independent sigmoid calibrators, each with $W = 2$ parameters, with per-class $d_P \leq 2$ by Proposition~\ref{prop:calibrator_complexity}. The per-class fits are independent, and the bound applies to each sigmoid before renormalization to $\Delta^{K-1}$, not to the renormalized coordinates. Total parameter count: $W = 2K$.
         \item Dirichlet Calibration. The native multiclass parameterization uses $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$, totaling $W = K^2 + K$ free parameters. The pre-softmax score for class $k$ is $\mathbf{w}_k^\top \log\mathbf{p} + b_k$, affine in the $K+1$ parameters $(\mathbf{w}_k, b_k)$, so $d_P \leq K + 1$ per class by \citet[Theorem~11.4]{anthony1999neural}.
     \end{enumerate}
 \end{remark}
@@ -389,4 +405,4 @@ Table~\ref{tab:calibrator_vs_decision_complexity} compares the calibration and d
 
 \input{tables/calibrator_vs_decision_complexity.tex}
 
-Dirichlet calibration and Voronoi decision optimization both have capacity quadratic in $K$; per-class Platt scaling and the parallel-shift class $\mathcal{H}_{PS}$ both have capacity linear in $K$. The difference is in what they optimize: decision methods target the operational cost directly, while calibration methods minimize a surrogate (the negative log-likelihood) and then rely on the analytical threshold being correct after recalibration.
+Dirichlet calibration and Voronoi decision optimization both have parameter counts quadratic in $K$; one-vs-rest Platt scaling ($2K$) and the parallel-shift class $\mathcal{H}_{PS}$ ($K-1$) both have parameter counts linear in $K$. The comparison is by parameter count only, because the per-class pseudo-dimension of a calibrator score and the Natarajan dimension of a joint decision rule measure different objects. The two families differ in what they optimize: decision methods target the operational cost directly, while calibration methods minimize a surrogate (the negative log-likelihood) and then rely on the analytical threshold being correct after recalibration.

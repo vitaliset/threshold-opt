@@ -84,11 +84,11 @@ For the Bayes Optimal Decision Rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}
 Every $h \in \mathcal{H}_{all}$ satisfies the pointwise bound $\mathcal{R}(h(x) \mid x) \geq \min_{\hat{y}} \mathcal{R}(\hat{y} \mid x)$, and $h^*$ attains this minimum at every $x$, so monotonicity of the integral gives $R(h^*) = \mathbb{E}_X[\min_{\hat{y}} \mathcal{R}(\hat{y} \mid X)] = R^*$. The measurability of $h^*$ and finiteness of the integral are verified in Appendix~\ref{app:supplementary_proofs}.
 \end{proof}
 
-Geometrically, $\delta^*$ partitions the probability simplex $\Delta^{K-1}$ into $K$ decision regions $\mathcal{P}_0^*, \dots, \mathcal{P}_{K-1}^*$, where $\mathcal{P}_i^* = \{ \mathbf{p} \in \Delta^{K-1} \mid \delta^*(\mathbf{p}) = i \}$. Let $\mathbf{c}_i \in \mathbb{R}_{\geq 0}^K$ denote the $i$-th column of $\mathbf{C}$, i.e., the cost vector for predicting class $i$ across all possible true labels. Since the risk is linear in $\mathbf{p}$ ($\mathcal{R}(i \mid x) = \mathbf{c}_i^\top \boldsymbol{\eta}(x)$ when $\mathbf{p} = \boldsymbol{\eta}(x)$), these regions are convex polytopes defined by the intersection of linear half-spaces
+Geometrically, $\delta^*$ partitions the probability simplex $\Delta^{K-1}$ into the $K$ assigned regions $\{ \mathbf{p} \in \Delta^{K-1} \mid \delta^*(\mathbf{p}) = i \}$. Let $\mathbf{c}_i \in \mathbb{R}_{\geq 0}^K$ denote the $i$-th column of $\mathbf{C}$, i.e., the cost vector for predicting class $i$ across all possible true labels. Since the risk is linear in $\mathbf{p}$ ($\mathcal{R}(i \mid x) = \mathbf{c}_i^\top \boldsymbol{\eta}(x)$ when $\mathbf{p} = \boldsymbol{\eta}(x)$), the closed region $\mathcal{P}_i^*$ on which action $i$ minimizes the conditional risk is a convex polytope defined by the intersection of linear half-spaces
 \begin{equation}
     \mathcal{P}_i^* = \{ \mathbf{p} \in \Delta^{K-1} \mid (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} \leq 0, \forall j \neq i \}.
 \end{equation}
-The boundaries between these regions are hyperplanes defined by the set of probability vectors where the conditional risks of two or more classes are equal. This geometric structure is analyzed in detail for the binary case in Section~\ref{sec:analytical_threshold} and for the multiclass case in Section~\ref{sec:geometry}.
+The closed regions $\mathcal{P}_0^*, \dots, \mathcal{P}_{K-1}^*$ cover the simplex and overlap where conditional risks tie; the assigned region of action $i$ is $\mathcal{P}_i^*$ without the points at which a smaller index also minimizes the conditional risk, so the assigned regions form a partition but need not be closed. The boundaries between these regions are hyperplanes defined by the set of probability vectors where the conditional risks of two or more classes are equal. This geometric structure is analyzed in detail for the binary case in Section~\ref{sec:analytical_threshold} and for the multiclass case in Section~\ref{sec:geometry}.
 
 \section{The plug-in principle}
 
@@ -129,7 +129,7 @@ The term $\|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty$ represents the max
 Taking the expectation over $X$ yields the final result.
 \end{proof}
 
-The bound is linear in the $L_1$ estimation error with proportionality constant $C_{max}$, and both factors are worst-case. Pointwise, the conditional regret $\Delta\mathcal{R}(x)$ vanishes whenever $\hat{\mathbf{p}}(x)$ and $\boldsymbol{\eta}(x)$ lie in the same decision region $\mathcal{P}_i^*$, equivalently whenever the plug-in selects the Bayes-optimal action $\hat{h}(x) = h^*(x)$, so estimation error that does not cross a decision boundary contributes nothing to the excess risk, regardless of $C_{max}$. Sensitivity to estimation error is therefore concentrated near the boundaries between decision regions, where competing conditional risks are nearly equal and small perturbations of $\hat{\mathbf{p}}(x)$ can flip the argmin; the cost incurred when such a flip occurs is bounded by $\|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \leq C_{max}$. When $C_{max} \gg 1$, even minor estimation errors that cross a boundary can produce substantial regret.
+The bound is linear in the $L_1$ estimation error with proportionality constant $C_{max}$, and both factors are worst-case. Pointwise, the conditional regret $\Delta\mathcal{R}(x)$ vanishes whenever $\hat{\mathbf{p}}(x)$ and $\boldsymbol{\eta}(x)$ lie in the same assigned region of $\delta^*$, that is, whenever the plug-in selects the Bayes-optimal action $\hat{h}(x) = h^*(x)$, so estimation error that does not cross a decision boundary contributes nothing to the excess risk, regardless of $C_{max}$. Sensitivity to estimation error is therefore concentrated near the boundaries between decision regions, where competing conditional risks are nearly equal and small perturbations of $\hat{\mathbf{p}}(x)$ can flip the argmin; the cost incurred when such a flip occurs is bounded by $\|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \leq C_{max}$. When $C_{max} \gg 1$, even minor estimation errors that cross a boundary can produce substantial regret.
 
 \section{Excess risk under probability miscalibration}\label{sec:excess_risk_miscalibration}
 
@@ -154,7 +154,7 @@ This viewpoint makes statistical learning theory applicable to the decision laye
 
 \subsection{Generalization guarantees for decision optimization}
 
-The capacity of the decision-stage hypothesis class is denoted by $d_{dec}$. In the binary case, this capacity is measured by the VC dimension (Definition~\ref{def:vc_dimension}); in the multiclass setting, the corresponding capacity notion is introduced in the later multiclass chapters.
+The capacity of the decision-stage hypothesis class, or an integer upper bound on it, is denoted by $d_{dec}$. In the binary case, this capacity is measured by the VC dimension (Definition~\ref{def:vc_dimension}); in the multiclass setting, the corresponding capacity notion is introduced in the later multiclass chapters.
 
 \begin{definition}[VC dimension]\label{def:vc_dimension}
     Let $\mathcal{H} \subseteq \{0,1\}^{\mathcal{X}}$.
@@ -165,16 +165,15 @@ The capacity of the decision-stage hypothesis class is denoted by $d_{dec}$. In 
     shattered set.
 \end{definition}
 
-\begin{proposition}[Generalization bound for decision optimization]\label{prop:gen_bound}
-Let the loss function be bounded in $[0, C_{max}]$, and assume the validation sample $\mathcal{V}=\{(x_i,y_i)\}_{i=1}^m$ is drawn i.i.d.\ from $\mathbb{P}$ and independently of the sample used to fit $\hat{\mathbf{p}}$. For any decision rule $\delta \in \mathcal{H}_{dec}$, with probability at least $1-\nu$ over the random draw of the validation sample, the true risk $R(\delta)$ is bounded by the empirical risk $\hat{R}(\delta)$ as
+\begin{proposition}[Generalization bound for binary decision optimization]\label{prop:gen_bound}
+Let $K = 2$ and $0 \leq C_{ij} \leq C_{max}$. Let $\mathcal{H}_{dec}$ be a class of binary decision rules with a countable subclass $\mathcal{H}_0$ of measurable rules that approximates every $\delta \in \mathcal{H}_{dec}$ pointwise: there is a sequence $(\delta_n)$ in $\mathcal{H}_0$ with $\delta_n(z) = \delta(z)$ for all sufficiently large $n$, at every input $z$. Let $d_{dec}$ be an integer with $d_{VC}(\mathcal{H}_{dec}) \leq d_{dec}$ and $1 \leq d_{dec} \leq m$, let $0 < \nu \leq 1$, and assume the validation sample $\mathcal{V}=\{(x_i,y_i)\}_{i=1}^m$ is drawn i.i.d.\ from $\mathbb{P}$ and independently of the sample used to fit $\hat{\mathbf{p}}$. With probability at least $1-\nu$ over the random draw of the validation sample, simultaneously for all $\delta \in \mathcal{H}_{dec}$, the true risk $R(\delta)$ is bounded by the empirical risk $\hat{R}(\delta)$ as
 \begin{equation}\label{eq:generic_decision_gen_bound}
     R(\delta) \leq \hat{R}(\delta) + C_{max}\,\varepsilon(m,d_{dec},\nu),
 \end{equation}
-where $d_{dec}$ is the relevant capacity of the decision class and $\varepsilon(m,d_{dec},\nu)$ is the corresponding uniform-convergence rate. In the VC-specialized binary case, one may take, up to universal constants,
+where one may take
 \begin{equation}\label{eq:vc_decision_rate}
-    \varepsilon(m,d_{dec},\nu)=\sqrt{\frac{d_{dec}\log\frac{2em}{d_{dec}}+\log\frac{4}{\nu}}{m}},
+    \varepsilon(m,d_{dec},\nu)=2\sqrt{\frac{d_{dec}\log\frac{2em}{d_{dec}}+\log\frac{4}{\nu}}{m}}.
 \end{equation}
-with $d_{dec}=d_{VC}(\mathcal{H}_{dec})$.
 \end{proposition}
 
 \begin{proof}
@@ -182,26 +181,28 @@ Condition on the fitted estimator $\hat{\mathbf{p}}$, which is fixed with respec
 \begin{equation}\label{eq:decision_loss}
     \ell_\delta(z,y)=C_{y,\delta(z)}.
 \end{equation}
-Normalize the loss to $[0,1]$ by defining
-\begin{equation}\label{eq:normalized_decision_loss}
-    \tilde{\ell}_\delta(z,y)=\frac{\ell_\delta(z,y)}{C_{max}}=\frac{C_{y,\delta(z)}}{C_{max}}.
-\end{equation}
-Applying a standard uniform-convergence bound to the normalized decision-loss class gives, simultaneously for all $\delta\in\mathcal{H}_{dec}$,
-\begin{equation}\label{eq:normalized_uniform_convergence}
-    \mathbb{E}[\tilde{\ell}_\delta(Z,Y)] \leq \frac{1}{m}\sum_{i=1}^m \tilde{\ell}_\delta(z_i,y_i) + \varepsilon(m,d_{dec},\nu).
-\end{equation}
-In the binary VC-specialized case, this is the VC uniform-convergence bound of \citet[Corollary~3.19]{mohri2018foundations}, applied after the normalization above. Multiplying Eq.~(\ref{eq:normalized_uniform_convergence}) by $C_{max}$ yields
-\begin{equation}
-    R(\delta) \leq \hat{R}(\delta) + C_{max}\,\varepsilon(m,d_{dec},\nu),
-\end{equation}
-which is Eq.~(\ref{eq:generic_decision_gen_bound}).
+This loss is not the $0/1$ loss of a binary classifier, so we decompose it into level sets. List its distinct positive values as $0 < v_1 < \cdots < v_q \leq C_{max}$, with $q \leq 4$, and set $v_0 = 0$; if there is no positive value the conclusion is immediate. Then
+\begin{equation*}
+    \ell_\delta(z,y)=\sum_{a=1}^{q}(v_a-v_{a-1})\,\mathbb{I}\{\ell_\delta(z,y)\geq v_a\}.
+\end{equation*}
+For each fixed level $v_a$, the binary class $(z,y)\mapsto\mathbb{I}\{C_{y,\delta(z)}\geq v_a\}$, $\delta \in \mathcal{H}_{dec}$, has VC dimension at most $d_{dec}$: a shattered sample cannot repeat an input $z$, because each such input has only two possible predictions, so at every sample point the level indicator must take different values for the two predictions, and the rules of $\mathcal{H}_{dec}$ must therefore realize every binary labeling of the distinct inputs.
+
+Restrict first to $\mathcal{H}_0$. Apply the VC uniform-convergence bound of \citet[Corollary~3.19]{mohri2018foundations} to each level, with failure probability $\nu/4$, viewing the indicator as the $0/1$ loss of a classifier on examples relabelled with the constant label $0$. A union bound over the at most four levels gives, simultaneously for every level and every rule of $\mathcal{H}_0$, a population-minus-empirical gap at most
+\begin{equation*}
+    \sqrt{\frac{2d_{dec}\log(em/d_{dec})}{m}}+\sqrt{\frac{\log(4/\nu)}{2m}}.
+\end{equation*}
+The coefficients $v_a - v_{a-1}$ are nonnegative and sum to at most $C_{max}$, so multiplying and summing gives the same gap times $C_{max}$. Finally, $\sqrt{a}+\sqrt{b}\leq\sqrt{2(a+b)}$ and $\log(em/d_{dec})\leq\log(2em/d_{dec})$ bound this expression by Eq.~(\ref{eq:vc_decision_rate}). On the same event the bound extends to every $\delta\in\mathcal{H}_{dec}$: along its approximating sequence, bounded costs and eventual pointwise agreement give convergence of the population risks by dominated convergence, and the empirical risks on the fixed sample are eventually equal to that of $\delta$. Passing to the limit gives Eq.~(\ref{eq:generic_decision_gen_bound}).
 \end{proof}
 
-We will use a clean form of this guarantee in the chapters that follow. For a decision class of capacity $d_{dec}$, the bound of Proposition~\ref{prop:gen_bound} reads
+We will use a clean form of this guarantee in the chapters that follow. Under the hypotheses of Proposition~\ref{prop:gen_bound} without the restriction $d_{dec} \leq m$, with probability at least $1-\nu$, simultaneously for all $\delta \in \mathcal{H}_{dec}$,
 \begin{equation}\label{eq:clean_gen_bound}
-    R(\delta) \leq \hat{R}(\delta) + c\, C_{max} \sqrt{\frac{d_{dec}}{m}},
+    R(\delta) \leq \hat{R}(\delta) + c_{bin}(m,\nu)\, C_{max} \sqrt{\frac{d_{dec}}{m}},
 \end{equation}
-where $c$ is a universal constant that absorbs the logarithmic factors in $m$, $K$, and $1/\nu$; equivalently, a validation set of size proportional to $d_{dec}/\epsilon^2$ makes the gap at most $\epsilon$. In the binary case $d_{dec}=d_{VC}(\mathcal{H}_{dec})$, while in the multiclass case $d_{dec}$ is given by the multiclass capacity measure introduced later.
+where
+\begin{equation*}
+    c_{bin}(m,\nu)=\sqrt{2\log(em)}+\sqrt{\frac{\log(4/\nu)}{2}}.
+\end{equation*}
+For $m \geq d_{dec}$ this follows from the two-term gap in the proof, since $d_{dec} \geq 1$; for $m < d_{dec}$ the additive term exceeds $C_{max}$ and the bound is immediate. The factor $c_{bin}$ depends on $m$ and $1/\nu$ through logarithms, so the sufficient condition $m \geq c_{bin}(m,\nu)^2 C_{max}^2\, d_{dec}/\epsilon^2$ for a gap at most $\epsilon$ retains that dependence. In the multiclass case $d_{dec}$ is given by the multiclass capacity measure introduced later.
 
 \subsection{Hypothesis-class complexity of decision rules}
 
@@ -216,6 +217,8 @@ Let $\mathcal{H}_{thresh} = \{ \delta_\tau : [0,1] \to \{0,1\} \mid \tau \in [0,
 \begin{proof}
 The class shatters a single point, since varying $\tau$ around it realizes both labels, but no set of two points $z_1 < z_2$, since $\delta_\tau$ cannot label the smaller point positive and the larger negative ($z_1 \geq \tau > z_2$ contradicts $z_1 < z_2$). Hence $d_{VC}(\mathcal{H}_{thresh}) = 1$. Appendix~\ref{app:supplementary_proofs} gives the full argument.
 \end{proof}
+
+The threshold class satisfies the approximation hypothesis of Proposition~\ref{prop:gen_bound}. For each $\tau \in [0,1]$, rational thresholds in $[0,1]$ approaching $\tau$ from below, or the constant sequence $0$ when $\tau = 0$, give decisions that agree with $\delta_\tau$ eventually at every $z$, including $z = \tau$.
 
 In the multiclass setting ($K>2$), the decision rule partitions $\Delta^{K-1}$ into $K$ regions, and the relevant combinatorial complexity depends on the chosen parameterization of $\delta$. Subsequent chapters introduce the specific multiclass partition families and bound their capacity using the appropriate multiclass notions; the resulting bounds are at most quadratic in $K$.
 

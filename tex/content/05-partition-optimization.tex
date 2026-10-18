@@ -111,7 +111,7 @@ where $\boldsymbol{\tau} \in \mathbb{R}_{>0}^K$ is a per-class threshold vector.
     Under 0/1 loss, the risk of predicting class $i$ given $\mathbf{p}$ is $\mathcal{L}_i(\mathbf{p}) = \sum_{j \neq i} p_j = 1 - p_i$. The standard analytical rule is $\mathrm{argmin}_{k \in \mathcal{Y}}(1 - p_k) = \mathrm{argmax}_{k \in \mathcal{Y}}\, p_k$. Applying linear scaling with $\boldsymbol{\beta}$ gives $\mathrm{argmin}_{k \in \mathcal{Y}}\sum_{j \neq k} \beta_j p_j = \mathrm{argmin}_{k \in \mathcal{Y}}(\sum_j \beta_j p_j - \beta_k p_k)$. Since $\sum_j \beta_j p_j$ is independent of $k$, this reduces to $\mathrm{argmax}_{k \in \mathcal{Y}}\, \beta_k p_k$. Setting $\beta_k = 1/\tau_k$ yields $\mathrm{argmax}_{k \in \mathcal{Y}}\, p_k / \tau_k$, which is exactly Eq.~\ref{eq:threshold_ratio}.
 \end{proof}
 
-Linear scaling and probability-ratio thresholding thus parameterize the same hypothesis class, the column-scaling counterpart of $\mathcal{H}_{PS}$, which we denote
+Under $0/1$ loss, linear scaling and probability-ratio thresholding thus parameterize the same hypothesis class, the column-scaling counterpart of $\mathcal{H}_{PS}$, which we denote
 \begin{equation}\label{eq:hsc_def}
     \mathcal{H}_{Sc} = \left\{ \delta(\mathbf{p}) = \underset{i \in \mathcal{Y}}{\mathrm{argmin}} \sum_{k=0}^{K-1} C_{ki}\, \beta_k\, p_k \;\middle|\; \boldsymbol{\beta} \in \mathbb{R}_{>0}^K,\; \beta_0 = 1 \right\}.
 \end{equation}
@@ -130,7 +130,7 @@ parameterized by a threshold vector $\boldsymbol{\tau} \in \Delta^{K-1}$, with t
 Unlike probability-ratio thresholding, which rescales the simplex coordinates and rotates the induced boundaries, multidimensional thresholding translates the argmax partition: the pairwise boundaries remain hyperplanes with normals $\mathbf{n}_{ij} = \mathbf{e}_i - \mathbf{e}_j$, but their common intersection is moved away from the barycenter (Figure~\ref{fig:marchetti_thresholding}).
 
 \begin{proposition}[Equivalence to parallel-shift regularization]\label{prop:marchetti_equivalence}
-    Multidimensional thresholding is equivalent to the parallel-shift strategy applied to the $0/1$ loss matrix.
+    With the threshold vector allowed to range over $\mathbb{R}^K$, multidimensional thresholding is equivalent to the parallel-shift strategy applied to the $0/1$ loss matrix.
 \end{proposition}
 
 \begin{proof}
@@ -149,7 +149,7 @@ The equivalence is exact only under $0/1$ loss; for asymmetric cost matrices the
     \caption{Effect of the threshold vector $\boldsymbol{\tau}$ on Marchetti's Multidimensional Thresholding. The decision rule $\delta(\mathbf{p}) = \operatorname{argmax}_{k \in \mathcal{Y}} (p_k - \tau_k)$ produces boundaries parallel to the argmax medians (dashed gray), with the intersection point shifted from the barycenter $G$ to $\boldsymbol{\tau}$ (black dot). A larger $\tau_k$ penalizes class~$k$, shrinking $\mathcal{P}_k^{\boldsymbol{\tau}}$: \textbf{(a)}~equal thresholds recover the standard argmax partition; \textbf{(b)}~$\tau_0 = 0.5$ shrinks $\mathcal{P}_0^{\boldsymbol{\tau}}$; \textbf{(c)}~$\tau_2 = 0.60$ shrinks $\mathcal{P}_2^{\boldsymbol{\tau}}$, expanding $\mathcal{P}_0^{\boldsymbol{\tau}}$.}\label{fig:marchetti_thresholding}
 \end{figure}
 
-\citeauthor{obrien2008costsensitive}'s parallel shifts and \citeauthor{marchetti2025multidimensional}'s multidimensional thresholding are thus the same restricted class, in which boundaries are parameterized by a single vector $\mathbf{v} \in \mathbb{R}^K$ (either the bias $\boldsymbol{\alpha}$ or the threshold $\boldsymbol{\tau}$),
+\citeauthor{obrien2008costsensitive}'s parallel shifts and \citeauthor{marchetti2025multidimensional}'s multidimensional thresholding are thus the same restricted class when $\boldsymbol{\tau}$ ranges over $\mathbb{R}^K$, in which boundaries are parameterized by a single vector $\mathbf{v} \in \mathbb{R}^K$ (either the bias $\boldsymbol{\alpha}$ or the threshold $\boldsymbol{\tau}$),
 \begin{equation}\label{eq:hps_def}
     \mathcal{H}_{PS} = \left\{ \delta(\mathbf{p}) = \underset{k \in \mathcal{Y}}{\mathrm{argmin}} \,\, (\mathbf{c}_k^\top \mathbf{p} + v_k) \mid \mathbf{v} \in \mathbb{R}^{K}, \sum v_k = 0 \right\}.
 \end{equation}
@@ -170,7 +170,7 @@ The first class in the priority ordering whose probability exceeds its threshold
 
 The decision regions induced by Eq.~\ref{eq:sequential_selection} differ qualitatively from those of every preceding method: they are \emph{not} convex polytopes, and they depend on the evaluation order $\mathrm{ord}$. Because a class is selected as soon as its own threshold is met, a class placed earlier in the ordering can claim an instance even when a later class has larger estimated probability. The cascade therefore implements an explicit priority rule, and under the frequency-based ordering it ensures that rare classes are considered before common ones. Figure~\ref{fig:sequential_selection} shows the resulting non-convex, order-dependent regions.
 
-The rule has $K$ free parameters, one threshold per class, the same count as the vector-tuned classes of Section~\ref{sec:partition_optimization}. Its capacity is not directly comparable to theirs: the non-convex, order-dependent regions do not admit the Natarajan-dimension argument used for the convex-polytope classes, so the method carries no analogous sample-complexity guarantee.
+The rule has $K$ free parameters, one threshold per class, compared with $K-1$ for the vector-tuned classes of Section~\ref{sec:partition_optimization}. Its capacity is not directly comparable to theirs: the non-convex, order-dependent regions do not admit the Natarajan-dimension argument used for the convex-polytope classes, so the method carries no analogous sample-complexity guarantee.
 
 \begin{figure}[H]
     \centering
@@ -188,4 +188,4 @@ When the estimator's error has directional structure that is not aligned with th
 \subsection{Non-linear calibration bias}
 When the systematic distortion $\Psi$ of Section~\ref{sec:analytical_fragility} is non-linear (for example the saturation of softmax outputs in deep networks, or the prior shrinkage of in-context predictors), the pre-image $\Psi^{-1}(\mathcal{B}_{ij})$ of the analytical boundary is in general a curved manifold in estimate space rather than a hyperplane. A flat parallel-shift boundary can only approximate it, with an approximation error that grows with the local curvature of $\Psi$ and that $\mathcal{H}_{PS}$ has no parameter to reduce.
 
-Both regimes motivate a hypothesis class whose boundary normals can rotate, which $\mathcal{H}_{PS}$ forbids, while retaining a structured parameterization rather than the fully free matrix of $\mathcal{H}_{Full}$. The Voronoi partition class of Chapter~\ref{sec:voronoi_tessellation} provides this, with $K(K-1)$ prototype parameters and boundary rotations that $\mathcal{H}_{PS}$ cannot represent.
+Both regimes motivate a hypothesis class whose boundary normals can rotate, which $\mathcal{H}_{PS}$ forbids. The Voronoi partition class of Chapter~\ref{sec:voronoi_tessellation} provides this, with $K(K-1)$ prototype parameters and boundary rotations that $\mathcal{H}_{PS}$ cannot represent.
