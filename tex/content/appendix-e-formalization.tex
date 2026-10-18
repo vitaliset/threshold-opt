@@ -1,0 +1,28 @@
+%!TeX root=../carlo_master.tex
+\chapter{Machine-checked proofs}\label{app:formalization}
+
+The mathematical statements of this dissertation are also stated and proved in Lean~4 \citep{demoura2021lean4}, a proof assistant whose kernel accepts a proof only if every inference step is valid, using its mathematical library Mathlib \citep{mathlib2020}. The development is in the folder \texttt{lean/} of the accompanying repository. This appendix reports what it covers, how each formal statement is linked to the text, and what it does not establish. Verification concerns the stated mathematical results; it does not establish the correctness of the experimental software or of the empirical conclusions.
+
+\section{Scope and method}\label{sec:formalization_method}
+
+The development covers every theorem-like environment of the dissertation (definitions, assumptions, examples, lemmas, propositions, theorems, corollaries, and remarks) and nine displayed equations. It includes the decision-risk identities, conditional calibration, the simplex geometry of the decision regions, the capacity of the hypothesis classes, the generalization bounds, the Gaussian Kullback--Leibler computations, the moments of the uniform distribution on a sphere, and the invariant of the sequential sampler.
+
+Each formal statement carries the \LaTeX{} label of the statement it represents as a Lean attribute. An audit program traverses the tagged declarations and records the axioms on which each proof depends. A script joins that record with the theorem-like environments of the dissertation source and generates the status table reproduced below. The audit rejects incomplete proofs and duplicate tags; the script rejects tags without a corresponding label and axioms outside the registered list. Whether a Lean statement says what its printed counterpart says is not checked by these programs; it rests on an AI-assisted comparison of each tagged statement with the text. The formal proof of a statement need not follow the printed argument.
+
+\section{Proofs of cited results}\label{sec:formalization_axioms}
+
+No result is assumed as an axiom. The uniform-convergence bound for classes of finite VC dimension \citep[Corollary~3.19]{mohri2018foundations}, which Proposition~\ref{prop:gen_bound} applies, is itself proved in the development through McDiarmid's inequality, symmetrization, Massart's lemma, and Sauer's lemma. The capacity results for pseudo-dimension and for multiclass linear-score classes are also proved. Every tagged proof depends only on the three standard axioms of Lean: propositional extensionality, the axiom of choice, and the soundness of quotients.
+
+Hypotheses that the text states explicitly remain explicit in the formal statements: admissibility of the cost matrix, a common smoothness radius, and the approximation of a rule class by a countable class of measurable rules. The formal statements of the risk identities also assume that $\eta$ is the conditional law of the label given the input; such a conditional law exists for every data distribution in the formal setting.
+
+\section{Status of each result}\label{sec:formalization_table}
+
+A statement is \emph{Verified} when a Lean theorem proves it, or proves a stronger statement that implies it, with only the three standard axioms. A definition or assumption is \emph{Formalized} when it is transcribed and used by the development; it is not a proved result. Of the $40$ theorem-like environments, $30$ are verified statements and $10$ are formalized definitions or assumptions; none is verified only in part, and none lacks a Lean counterpart. Together with the nine displayed equations, there are $49$ tagged declarations and no incomplete proofs.
+
+\input{tables/formalization.tex}
+
+Table~\ref{tab:formalization} is generated from the checked declarations and the dissertation source.
+
+\section{Reproducing the check}\label{sec:formalization_repro}
+
+The development pins Lean~4.33.0 and the matching Mathlib release through the committed toolchain and manifest files. From the repository root, \texttt{make lean-setup} installs the toolchain manager and downloads the Mathlib build cache, \texttt{make lean-build} checks every proof, and \texttt{make lean-audit} regenerates the axiom record and Table~\ref{tab:formalization}. The table is committed, so compiling the dissertation does not require a Lean installation.

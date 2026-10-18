@@ -110,4 +110,5 @@ The workflow checks that the tag matches the version, builds the package and upl
 src/threshold_opt/     Library: strategies, calibration, metrics, optimization
 experiments/           Experiment pipeline, analysis, cloud scripts
 tex/                   LaTeX dissertation source
+lean/                  Lean 4 + Mathlib formalization of the dissertation's proofs
 ```
