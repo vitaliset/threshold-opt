@@ -60,7 +60,7 @@ Each dataset is split stratified $80/20$ into a training pool (\emph{train-full}
 
 The data budget consumed by each strategy depends on whether tuning requires a held-out signal. Argmax and Analytical use no tuning and fit the base estimator on the full $80\%$ train-full pool. The calibrate-then-decide pipelines and Empirical fit the estimator on the $70\%$ training split and tune the decision layer (calibrator parameters or threshold) on the $10\%$ validation split. EmpiricalCV fits and tunes jointly via $5$-fold stratified cross-validation over the full $80\%$ pool, matching the estimator's data budget to that of Argmax and Analytical.
 
-The reported metric is the objective value (average cost or target metric) computed on the held-out test set, averaged over $5$ independent seeds that resample the data partition; each base estimator's own \texttt{random\_state} is held fixed across seeds, so the reported variance reflects partition resampling alone.
+The reported metric is the objective value (average cost or target metric) computed on the held-out test set, averaged over $10$ independent seeds that resample the data partition; each base estimator's own \texttt{random\_state} is held fixed across seeds, so the reported variance reflects partition resampling alone.
 
 \section{Results and discussion}
 
@@ -88,7 +88,7 @@ The two empirical strategies differ only in the data used to choose the threshol
 
 Empirical tunes on the $10\%$ validation partition. Its cost win-or-tie rate is $42\%$, the lowest among the non-cost-blind strategies and below the bare analytical rule's $69\%$. The parametric calibrate-then-analytical pipelines (Platt, Temperature, Dirichlet) sit between, with win-or-tie rates of $65$, $73$, and $70\%$.
 
-EmpiricalCV selects the threshold by five-fold cross-validation over the full $80\%$ pool, roughly seven times the label budget of the validation split. Its cost win-or-tie rate is $87\%$, the highest in the suite. On the Asymmetric $100\times$ objective, where heavy class skew makes single-split tuning least reliable, the pooled mean-loss gap between Empirical and EmpiricalCV is widest on small datasets ($+1.90$ on $n < 10^3$ data), narrowing on medium ($+0.32$) and large ($+0.11$) data. This pattern is consistent with the validation-budget reading but does not isolate it from other dataset-size confounds.
+EmpiricalCV selects the threshold by five-fold cross-validation over the full $80\%$ pool, eight times the label budget of the validation split. Its cost win-or-tie rate is $87\%$, the highest in the suite. On the Asymmetric $100\times$ objective, where heavy class skew makes single-split tuning least reliable, the pooled mean-loss gap between Empirical and EmpiricalCV is widest on small datasets ($+1.90$ on $n < 10^3$ data), narrowing on medium ($+0.32$) and large ($+0.11$) data. This pattern is consistent with the validation-budget reading but does not isolate it from other dataset-size confounds.
 
 Within the non-tuning strategies under decomposable cost objectives, the parametric calibrate-then-analytical pipelines (Platt, Temperature, Dirichlet) achieve the next-highest win-or-tie rates after EmpiricalCV\@. On individual (dataset, model) cells the parametric calibrators can match or beat EmpiricalCV\@; the per-cell numbers vary and are reported in the companion supplement.
 

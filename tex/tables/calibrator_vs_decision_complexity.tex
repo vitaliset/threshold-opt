@@ -11,10 +11,10 @@
         \midrule
         $\mathcal{H}_{PS}$ (O'Brien/Marchetti) & Decision & $K-1$ & $K-1$ \\
         $\mathcal{H}_{Sc}$ (Linear scaling / ratio thresholding) & Decision & $K-1$ & $\leq K-1$ \\
-        $\mathcal{H}_{Vor}$ (Voronoi) & Decision & $K(K-1)$ & $\leq K(K-1)$ \\
+        $\mathcal{H}_{Vor}^{\Delta}$ (Voronoi) & Decision & $K(K-1)$ & $\leq K^2$ \\
         $\mathcal{H}_{Full}$ (Full matrix) & Decision & $K^2$ & $\leq K^2$ \\
         \bottomrule
     \end{tabular}%
     }
-    \caption{Sample complexity comparison of calibration and decision hypothesis classes. The first block lists the three parametric calibrators in increasing parameter count $W$. Calibrator complexity is reported as per-class pseudo-dimension ($d_P$) of the pre-softmax score; for $K \geq 3$ softmax is not a scalar strictly monotone transform, so a single joint $d_P$ is not directly available and the joint capacity is summarized by $W$. Decision complexity is the Natarajan dimension ($d_{Nat}$).}\label{tab:calibrator_vs_decision_complexity}
+    \caption{Sample complexity comparison of calibration and decision hypothesis classes. The first block lists the three parametric calibrators in increasing parameter count $W$. Calibrator complexity is reported as per-class pseudo-dimension ($d_P$) of the pre-softmax score; for $K \geq 3$ softmax is not a scalar strictly monotone transform, so a single joint $d_P$ is not directly available and the joint capacity is summarized by $W$. Decision complexity is the Natarajan dimension ($d_{Nat}$); the parallel-shift equality assumes an admissible cost matrix.}\label{tab:calibrator_vs_decision_complexity}
 \end{table}

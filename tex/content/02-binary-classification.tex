@@ -68,7 +68,7 @@ The core issue of the plug-in rule is that $\hat{p}(x)$ does not faithfully repr
 \begin{definition}[Perfect calibration]\label{def:calibration}
 An estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ is perfectly calibrated with respect to $\mathbb{P}$ if
 \begin{equation}\label{eq:perfect_calibration}
-    \mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q, \quad \text{for all } q \in [0,1].
+    \mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q, \quad \text{for } \mathbb{P}_{\hat{p}(X)}\text{-almost every } q \in [0,1].
 \end{equation}
 \end{definition}
 
@@ -115,10 +115,10 @@ where $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$
 The calibration methods above can be composed with the analytical threshold to form a two-stage decision pipeline: (1)~fit a calibrator $g$ on held-out data, then (2)~apply the cost-derived threshold $p^*$ from Equation~(\ref{eq:elkan_threshold}) to the recalibrated scores $g(\hat{p}(x))$.
 
 \begin{proposition}[Optimality of calibrate-then-decide]\label{prop:calibrate_then_decide}
-Let $g: [0,1] \to [0,1]$ be a post-hoc calibrator and define the composite decision rule $\delta_g(x) = \mathbb{I}(g(\hat{p}(x)) \geq p^*)$. If $g$ achieves perfect calibration in the sense that $g(\hat{p}(x)) = \eta(x)$ for $\mathbb{P}_X$-almost every $x$, then $\delta_g$ coincides with the Bayes-optimal decision rule $h^*$ (Eq.~\ref{eq:bayes_optimal}).
+Assume the reasonableness conditions (Eq.~\ref{eq:reasonableness}), let $g: [0,1] \to [0,1]$ be a measurable post-hoc calibrator, and define the composite decision rule $\delta_g(x) = \mathbb{I}(g(\hat{p}(x)) \geq p^*)$. If $g(\hat{p}(x)) = \eta(x)$ for $\mathbb{P}_X$-almost every $x$, a condition that implies perfect calibration, then $\delta_g$ attains the Bayes risk, $R(\delta_g) = R^*$, and agrees with the Bayes-optimal decision rule $h^*$ (Eq.~\ref{eq:bayes_optimal}) almost everywhere off the tie set $\{x : \eta(x) = p^*\}$.
 \end{proposition}
 \begin{proof}
-Immediate from perfect calibration, which gives $\delta_g(x) = \mathbb{I}(\eta(x) \geq p^*)$, and Lemma~\ref{lem:threshold_optimality}; see Appendix~\ref{app:supplementary_proofs}.
+Immediate from the premise, which gives $\delta_g(x) = \mathbb{I}(\eta(x) \geq p^*)$ almost everywhere, and Lemma~\ref{lem:threshold_optimality}; on the tie set both actions minimize the conditional risk, although $\delta_g$ selects $1$ and $h^*$ selects $0$. See Appendix~\ref{app:supplementary_proofs}.
 \end{proof}
 
 In practice, perfect calibration is unattainable: the residual error after post-hoc correction, combined with the calibrator's own finite-sample variance, leaves the analytical threshold on recalibrated scores an approximation. The next subsection bypasses calibration entirely and optimizes the threshold against the operational objective.
@@ -171,7 +171,7 @@ Since the VC dimension of threshold functions is $d_{VC}=1$ (Lemma~\ref{lem:vc_t
 \begin{equation}
     R(\tau_{emp}) \leq \hat{R}(\tau_{emp}) + c\, C_{max} \sqrt{\frac{1}{m}},
 \end{equation}
-with $c$ the universal constant of~\eqref{eq:clean_gen_bound}. Provided $m$ is large enough relative to $C_{max}$, the empirical optimization converges to the optimal operating point for the fixed estimator $\hat{p}$, effectively re-calibrating the decision boundary to account for estimation errors. The proviso is binding in practice: on a small dedicated validation split the $\sqrt{1/m}$ term need not be negligible, and the empirical threshold can fail to improve on the analytical plug-in. The low VC dimension is therefore necessary but not sufficient; the binding constraint is the label budget of the held-out partition, which the cross-validated variant enlarges.
+with probability at least $1-\nu$, where $c = c_{bin}(m,\nu)$ is the logarithmic factor of~\eqref{eq:clean_gen_bound}; the bound holds simultaneously over all thresholds, and in particular for the data-dependent $\tau_{emp}$. Provided $m$ is large enough relative to $C_{max}$, the empirical optimization converges to the optimal operating point for the fixed estimator $\hat{p}$, effectively re-calibrating the decision boundary to account for estimation errors. The proviso is binding in practice: on a small dedicated validation split the $\sqrt{1/m}$ term need not be negligible, and the empirical threshold can fail to improve on the analytical plug-in. The low VC dimension is therefore necessary but not sufficient; the binding constraint is the label budget of the held-out partition, which the cross-validated variant enlarges.
 
 \subsection{Calibrator complexity}
 
