@@ -157,7 +157,7 @@ For each fold $k$, the estimator $\hat{p}_{-k}$ is trained on $\mathcal{D}_{trai
 \[ \hat{R}_{CV}(\tau) = \frac{1}{F} \sum_{k=1}^F \hat{R}_k(\tau), \]
 and the selected threshold minimizes this average,
 \[ \tau_{emp} = \underset{\tau \in \mathcal{T}}{\mathrm{argmin}} \,\, \hat{R}_{CV}(\tau). \]
-Averaging across splits reduces sensitivity to any single held-out fold. Once $\tau_{emp}$ is determined, the final estimator $\hat{p}$ is retrained on all of $\mathcal{D}_{train}$.
+Averaging across splits reduces sensitivity to any single held-out fold. Once $\tau_{emp}$ is determined, the final estimator $\hat{p}$ is retrained on all of $\mathcal{D}_{train}$. A cross-validated threshold tuner of this kind is available in scikit-learn as \texttt{TunedThresholdClassifierCV} (added in version 1.5) \citep{pedregosa2011scikit}, which selects the decision threshold of a binary classifier against a user-supplied scoring function, with $5$-fold stratified cross-validation by default.
 
 \section{Capacity of the binary decision and calibration classes}\label{sec:binary_sample_complexity}
 
