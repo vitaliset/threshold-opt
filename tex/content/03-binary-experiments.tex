@@ -94,7 +94,7 @@ Within the non-tuning strategies under decomposable cost objectives, the paramet
 
 \subsection{Non-decomposable objectives}
 
-The five maximization metrics ($F_1$, $F_{0.5}$, $F_2$, MCC, and G-Mean) have no closed-form optimal threshold, so the empirical family is the only one that targets them directly.
+For the five maximization metrics ($F_1$, $F_{0.5}$, $F_2$, MCC, and G-Mean) no threshold can be computed from the metric definition alone. For $F_\beta$, for instance, the optimal classifier thresholds the conditional class probability at $F_\beta^*/(1+\beta^2)$, where $F_\beta^*$ is the optimal value of the metric and depends on the data distribution \citep{koyejo2014consistent}; for $F_1$ the threshold is $F_1^*/2$ \citep{lipton2014optimal}. The empirical family, which selects the threshold on held-out data as the consistent plug-in procedures of \citet{koyejo2014consistent} and \citet{narasimhan2014statistical} do, is therefore the only family here that targets these metrics directly.
 
 Pooled across maximization metrics, EmpiricalCV wins or ties $99.9\%$ of cells, Empirical $73\%$, and Argmax $45\%$. Calibrate-then-Argmax strategies sit near Argmax ($28$ to $38\%$): a monotone calibrator does not move the $\arg\max$ of a symmetric-threshold decision.
 
