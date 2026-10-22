@@ -23,6 +23,7 @@ Key targets:
 - `make test` / `make lint` — pytest and pre-commit. Use these as the "does it still work" check; experiment runners are long-running even with `--n-seeds 1`.
 - `make fetch-results` — download the published result parquets into `experiments/results/`. On a fresh clone, run it before `make tables` or `make test-freshness`.
 - `make tables` / `make figures` / `make pdf` / `make all` — regenerate LaTeX tables, figures, and build the dissertation.
+- `make slides-html` / `make slides-html-check` — build and check the HTML defense deck in `slides/` (reveal.js, MathJax, interactive figures; see `slides/README.md`). `make slides-figures` regenerates its win-rate bar sources from the latest results.
 - `make profile` — cProfile harness for `threshold_opt` hot paths ([experiments/profiling/profile_threshold_opt.py](experiments/profiling/profile_threshold_opt.py)).
 - `make timing` — per-model / per-strategy timing breakdown ([experiments/profiling/timing_analysis.py](experiments/profiling/timing_analysis.py)).
 - `make experiments` — runs all three studies. **Long-running. Do not launch without explicit user approval.** Individual studies: `make experiments-binary` / `-multiclass` / `-rotational-bias`.

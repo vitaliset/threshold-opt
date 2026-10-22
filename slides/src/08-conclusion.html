@@ -1,0 +1,95 @@
+<!--@section Conclusion-->
+
+<section data-contrib="5">
+<h2>The threshold_opt library</h2>
+<div class="body">
+<div class="editor">
+<div class="editor-bar"><span class="dots"><i></i><i></i><i></i></span><span>example.py</span><span class="shell">pip install threshold-opt</span></div>
+<pre class="code"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestClassifier
+<span class="kw">from</span> threshold_opt <span class="kw">import</span> metrics, multiclass_strategies <span class="kw">as</span> ms
+C = np.<span class="fn">array</span>([[ <span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">1</span>],       <span class="cm"># C[i, j]: cost of predicting j when the truth is i</span>
+              [<span class="nu">10</span>, <span class="nu">0</span>, <span class="nu">1</span>],       <span class="cm"># missing class 1 costs 10</span>
+              [ <span class="nu">5</span>, <span class="nu">5</span>, <span class="nu">0</span>]])
+model = <span class="fn">RandomForestClassifier</span>().<span class="fn">fit</span>(X_train, y_train)
+rule = ms.<span class="fn">FullMatrixPartitioningStrategy</span>(model, use_cv=<span class="kw">True</span>)   <span class="cm"># 5-fold CV</span>
+rule.<span class="fn">fit</span>(X_train, y_train, C)
+<span class="kw">for</span> y_pred <span class="kw">in</span> (model.<span class="fn">predict</span>(X_test), rule.<span class="fn">predict</span>(X_test)):     <span class="cm"># argmax, then tuned</span>
+    <span class="fn">print</span>(metrics.<span class="fn">calculate_empirical_risk</span>(y_test, y_pred, C))</pre>
+</div>
+<div class="columns top">
+<div class="col" style="--cw:.49"><ul>
+<li>It follows the scikit-learn interface: <code>fit</code>, then <code>predict</code>.</li>
+<li>It adds the multiclass partition strategies; scikit-learn tunes binary thresholds only (<a class="bk" href="#/B7">B7</a>).</li>
+</ul></div>
+<div class="col" style="--cw:.49"><ul>
+<li>Every experiment of the dissertation uses it, and its tests run in continuous integration.</li>
+<li>It is open source, on <a class="ext" href="https://pypi.org/project/threshold-opt/" target="_blank" rel="noopener">PyPI</a> and <a class="ext" href="https://github.com/vitaliset/threshold-opt" target="_blank" rel="noopener">GitHub</a>: <code>vitaliset/threshold-opt</code>.</li>
+</ul></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Every strategy of the dissertation is one <code>pip install</code> away.</li>
+<li>One interface: fit the decision layer on held-out data, then predict.</li>
+<li>The multiclass partition layer is what scikit-learn does not have.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Machine-checked proofs</h2>
+<div class="body">
+<p>The mathematical results of the dissertation are stated and proved in <strong>Lean 4</strong> with Mathlib (Appendix E). The Lean kernel checks every proof, and the proofs use only the three standard axioms.</p>
+<p>The formalization was generated with AI assistants (Appendix F). No program checks that each formal statement matches the printed one; that match was checked with AI assistance.</p>
+<p>Stating the results formally revealed errors in the committee version; the next slide lists them.</p>
+</div>
+<aside class="notes"><ul>
+<li>Every result of the text has a formal counterpart in Lean.</li>
+<li>The kernel checks the proofs; the match with the text rests on an AI-assisted comparison.</li>
+<li>The formalization found errors in the version the committee received.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Corrections since the committee version</h2>
+<div class="body">
+<ul>
+<li><strong>Theory</strong> (<a class="bk" href="#/B20">B20</a>, <a class="bk" href="#/B21">B21</a>). Unconstrained Voronoi rules are exactly the full-matrix rules; the committee version described them as an intermediate class. The bounds now state their logarithmic factors and conditions.</li>
+<li><strong>Descriptions</strong> (<a class="bk" href="#/B22">B22</a>). The text now describes the G-Mean that the code computes. For $K \neq 3$ the Custom cost is Asymmetric $10\times$, so that matrix is counted twice. The text now says that the relative excess risk falls with $K$.</li>
+<li><strong>Numbers in the prose.</strong> Some win rates in the text of Chapters 8 to 10 differ by one to four points from the charts; no ranking changes.</li>
+</ul>
+<p>No experiment was rerun. Pull requests in the public repository apply the corrections step by step. The final version will rerun the Custom cost for every $K$ and recompute the win rates with one rounding rule.</p>
+</div>
+<aside class="notes"><ul>
+<li>Theory: Voronoi equals the full matrix; the bounds are stated correctly.</li>
+<li>Descriptions now match what was run; the prose numbers will be recomputed.</li>
+<li>Details on B20 to B22.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Limitations and next steps</h2>
+<div class="body">
+<div class="columns top">
+<div class="col" style="--cw:.44"><p><strong>Limitations</strong></p>
+<ul>
+<li>One protocol, default hyperparameters, tabular data with $K \leq 10$, and a descriptive comparison.</li>
+<li>The split proportions are arbitrary, and they favour the cross-validated tuners: calibrators are fitted on the $10\%$ split and the cross-validated tuners use the $80\%$ pool.</li>
+</ul></div>
+<div class="col" style="--cw:.54"><p><strong>Next steps</strong></p>
+<ul>
+<li>Data beyond tables: images, text.</li>
+<li>Costs that depend on the instance, such as a payment amount.</li>
+<li>Tuning the base classifiers.</li>
+<li>The effect of the class imbalance, varied with the rest fixed.</li>
+<li>Cross-validated calibrators.</li>
+<li>The computational cost of each method.</li>
+</ul></div>
+</div>
+<p class="center">We plan to organize some of these into a paper.</p>
+</div>
+<aside class="notes"><ul>
+<li>Main limits: one protocol, default hyperparameters, a descriptive comparison, arbitrary split proportions.</li>
+<li>Next: other data, instance-dependent costs, tuned classifiers, the imbalance ratio, cross-validated calibrators, compute cost.</li>
+<li>A paper should organize these.</li>
+</ul></aside>
+</section>

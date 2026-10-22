@@ -1,0 +1,42 @@
+<!--@subsection Benchmark-->
+
+<section data-contrib="3">
+<h2>Multiclass costs: the rules built on $\mathbf{C}$ lead</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_multiclass_cost" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
+<p>The three cross-validated tuners built on the cost matrix have the highest shares: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical ($70\%$). Tuned on the $10\%$ split, the same three reach $30\%$ to $36\%$.</p>
+<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B34">B34</a>), $10$ classifiers and $7$ cost matrices give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The rules that start from the cost matrix lead: $79$ to $81\%$.</li>
+<li>The rules that ignore it are below the untuned analytical rule.</li>
+<li>VoronoiTuningCV is at $38\%$.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>Multiclass metrics: cross-validated rules rank first</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_multiclass_max" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_max.svg" alt="win bars multiclass max"></figure>
+<p>Over the $525$ metric cells with results (of $11 \times 10 \times 5
+  = 550$), all five cross-validated rules are ahead of Argmax ($60\%$) and all five single-split versions are behind it. The Voronoi and vector-tuned families are compared cell by cell on <a class="bk" href="#/B17">B17</a>.</p>
+</div>
+<aside class="notes"><ul>
+<li>Every cross-validated rule is ahead of argmax; every single-split version is behind.</li>
+<li>ThresholdRatioCV leads at $90\%$.</li>
+<li>Unlike the binary study, single-split tuning does not beat argmax.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>What to do in practice</h2>
+<div class="body">
+<figure class="fig" data-fig="recipe_flowchart" style="--h:.52;"><img src="figures/static/recipe_flowchart.svg" alt="recipe flowchart"></figure>
+<p>On cost objectives, tuning on a single small split wins or ties fewer cells than the untuned analytical rule in both studies. A larger partition class gave a clear gain only in the scenario built for rotation.</p>
+</div>
+<aside class="notes"><ul>
+<li>Cost objective and a well-calibrated estimator: the analytical rule.</li>
+<li>Otherwise: tune by cross-validation.</li>
+<li>Avoid tuning on a single small split.</li>
+</ul></aside>
+</section>

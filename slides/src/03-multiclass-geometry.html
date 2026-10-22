@@ -1,0 +1,30 @@
+<!--@section Multiclass classification-->
+
+<!--@subsection Geometry of the Bayes rule-->
+
+<section>
+<h2>From a threshold to a partition</h2>
+<div class="body">
+<p>For $K &gt; 2$ the estimate $\hat{\mathbf{p}}(x)$ lies in the simplex $\Delta^{K-1}$, whose vertex $\mathbf{e}_k$ puts probability $1$ on class $k$. A rule $\delta$ splits it into <strong>decision regions</strong> $\mathcal{P}_i = \delta^{-1}(\{i\})$. The risk of predicting $i$ at $\mathbf{p}$ is <span class="dm">\[
+    \mathcal{L}_i(\mathbf{p}) = \sum_{j} C_{ji} \, p_j = \mathbf{c}_i^\top \mathbf{p} ,
+    \qquad \mathcal{R}(i \mid x) = \mathcal{L}_i(\boldsymbol{\eta}(x)) .
+  \]</span> The Bayes rule predicts the class of smallest risk, and its regions are the <strong>Bayes regions</strong> $\mathcal{P}_i^*$.</p>
+<figure class="fig" data-fig="risk_bars_simplex"></figure>
+</div>
+<aside class="notes"><ul>
+<li>For $K &gt; 2$ a decision rule is a partition of the simplex.</li>
+<li>Each prediction has a risk linear in $\mathbf{p}$: bar $i$ is column $i$ of $\mathbf{C}$ times $\mathbf{p}$. Drag the point, and the smallest bar decides.</li>
+<li>At $(0.5, 0.2, 0.3)$ the Bayes rule predicts $2$ where argmax predicts $0$.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>From a threshold to a partition</h2>
+<div class="body">
+<figure class="fig" data-fig="simplex_cost_partition" style="--h:.66;"><img src="figures/static/simplex_cost_partition.svg" alt="simplex cost partition"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Left: each risk is a plane over the simplex; the lowest plane decides, and its shadow is the partition.</li>
+<li>$0/1$ loss: the argmax partition. Errors on true class $2$ cost more: its region expands.</li>
+</ul></aside>
+</section>

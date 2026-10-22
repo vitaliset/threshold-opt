@@ -1,0 +1,1599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argmax is not enough</title>
+<link rel="stylesheet" href="vendor/reveal/reset.css">
+<link rel="stylesheet" href="vendor/reveal/reveal.css">
+<link rel="stylesheet" href="theme/ime.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section data-n="1" data-total="63" data-part-name="" class="title-slide">
+<img class="title-bg" src="figures/static/bg-ime.svg" alt="">
+<div class="title-box">
+<h1>Argmax is not enough</h1>
+<p class="subtitle">Empirical threshold and partition optimization<br>for binary and multiclass classification</p>
+<p class="author">Carlo Domenico Longo de Lemos</p>
+<p class="date">São Paulo, 2026</p>
+<p class="institute"><strong>Advisor:</strong> Prof. Dr. Renato Vicente<br>Graduate Program in Probability and Statistics<br>IME-USP</p>
+<p class="logos"><img class="logo-ime" src="figures/static/ime-logo.svg" alt="IME"><img class="logo-usp" src="figures/static/usp-logo.svg" alt="USP"></p>
+</div>
+<img class="logo-cc" src="figures/static/cc-by.svg" alt="CC BY">
+</section>
+
+<section data-n="2" data-total="63" data-part-name="" class="added">
+<h2>Errors do not cost the same</h2>
+<div class="body">
+<p>A classifier's output triggers an action, and its two kinds of error rarely cost the same.</p>
+<div class="cards">
+<div><strong>Medical diagnosis</strong>A missed disease, against an unnecessary biopsy or operation.</div>
+<div><strong>Fraud detection</strong>A fraud that goes through, against a blocked legitimate payment.</div>
+<div><strong>Industrial fault monitoring</strong>An undetected fault, against an unnecessary stop.</div>
+</div>
+<p>A false negative often costs orders of magnitude more than a false positive, and the default rule, which predicts the most probable class, treats them as equal.</p>
+</div>
+<aside class="notes"><ul>
+<li>Three settings where a missed positive costs far more than a false alarm.</li>
+<li>The default rule ignores the costs; the talk is about what to use in its place.</li>
+</ul></aside>
+</section>
+
+<section data-n="3" data-total="63" data-part-name="" class="added">
+<h2>A threshold in binary, argmax in multiclass</h2>
+<div class="body">
+<div class="columns top">
+<div class="col center" style="--cw:.49">
+<p><strong>Two classes</strong></p>
+<svg class="motive" viewBox="0 0 300 150" width="620" role="img" aria-label="A threshold on the probability of class 1">
+<rect x="20" y="52" width="170" height="44" fill="#142D69"/>
+<rect x="190" y="52" width="90" height="44" fill="#82143C"/>
+<text x="105" y="80" font-size="17" fill="#ffffff" text-anchor="middle">predict 0</text>
+<text x="235" y="80" font-size="17" fill="#ffffff" text-anchor="middle">predict 1</text>
+<line x1="190" y1="38" x2="190" y2="110" stroke="#E6AF3C" stroke-width="5"/>
+<text x="190" y="30" font-size="20" fill="#232830" text-anchor="middle" font-style="italic">τ</text>
+<text x="20" y="128" font-size="16" fill="#666666" text-anchor="middle">0</text>
+<text x="280" y="128" font-size="16" fill="#666666" text-anchor="middle">1</text>
+<text x="150" y="146" font-size="16" fill="#666666" text-anchor="middle">estimated probability of class 1</text>
+</svg>
+<p>scikit-learn tunes the threshold $\tau$ on held-out data with <code>TunedThresholdClassifierCV</code>.</p>
+</div>
+<div class="col center" style="--cw:.49">
+<p><strong>Three classes</strong></p>
+<figure class="fig" data-fig="simplex_3d"></figure>
+<p>The rule is a partition of the probability triangle, with no single number to tune, and argmax is the usual choice.</p>
+</div>
+</div>
+<p class="center"><strong>This dissertation asks how to parametrize the multiclass partition and how to learn it from held-out data.</strong></p>
+</div>
+<aside class="notes"><ul>
+<li>In binary, the decision is one threshold, and tuning it is common practice.</li>
+<li>Three probabilities that sum to $1$ lie on a triangle in space; a rule is a partition of it, with no single knob, so practitioners keep argmax. Drag the figure to turn it.</li>
+<li>How to parametrize that search is what started this work.</li>
+</ul></aside>
+</section>
+
+<section data-n="4" data-total="63" data-part-name="" class="added">
+<h2>Contributions</h2>
+<div class="body">
+<p>The decision rule is a component to be learned from held-out data.</p>
+<ol class="contrib">
+<li><strong>A common framework for multiclass decision rules.</strong> We write published multiclass rules as partition matrices and bound the capacity of each class.</li>
+<li><strong>Voronoi prototypes for the partition.</strong> The rule assigns each input to the nearest of $K$ prototypes. On a constructed distribution it has strictly lower risk than every shift of the Bayes boundaries. We also give a sampler for them.</li>
+<li><strong>A benchmark of decision strategies.</strong> 14 binary and 11 multiclass datasets, 10 classifiers, 10 binary and 12 multiclass objectives.</li>
+<li><strong>Sensitivity to the number of classes.</strong> Relative to the best achievable risk, the untuned rule loses less as the number of classes grows.</li>
+<li><strong>An open-source library.</strong> The <code>threshold_opt</code> library, available on <a class="ext" href="https://pypi.org/project/threshold-opt/" target="_blank" rel="noopener">PyPI</a>, implements every strategy and the benchmark.</li>
+</ol>
+</div>
+<aside class="notes"><ul>
+<li>Five contributions; a slide that presents one carries its name in the title bar.</li>
+<li>The first third of the talk is the setting they build on.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="5" data-total="63" data-part-name="" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section>
+
+<section data-n="6" data-total="63" data-part-name="Binary classification">
+<h2>Classification in two stages</h2>
+<div class="body">
+<p>Let <span class="nb">$(X, Y) \sim \mathbb{P}$,</span> with features $X \in \mathcal{X}$ and label <span class="nb">$Y \in \mathcal{Y} = \{0, \dots, K-1\}$.</span> A classifier $h \colon \mathcal{X} \to \mathcal{Y}$ is a composition $h(x) = \delta(\hat{\mathbf{p}}(x))$ of two stages.</p>
+<div class="center"><figure class="fig" data-fig="pipeline_diagram" style="--w:.46;"><img src="figures/static/pipeline_diagram.svg" alt="pipeline diagram"></figure></div>
+<ul>
+<li><strong>Inference.</strong> An estimator $\hat{\mathbf{p}} \colon \mathcal{X} \to \Delta^{K-1}$ of the conditional class probabilities <span class="nb">$\eta_k(x) = \mathbb{P}(Y = k \mid X = x)$,</span> where $\Delta^{K-1} = \{\mathbf{p} \in \mathbb{R}^K \mid p_k \geq 0, \,
+      \sum_k p_k = 1\}$ is the simplex.</li>
+<li><strong>Decision.</strong> A decision rule <span class="nb">$\delta \colon \Delta^{K-1} \to \mathcal{Y}$.</span> The default is <strong>argmax</strong>, <span class="nb">$\delta(\mathbf{p}) = \arg\max_k p_k$.</span> The costs of errors enter only at this stage.</li>
+</ul>
+</div>
+<aside class="notes"><ul>
+<li>Two stages: estimate the probabilities, then decide.</li>
+<li>The second stage is usually left at its default, argmax.</li>
+<li>The dissertation is about the second stage.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="7" data-total="63" data-part-name="Binary classification">
+<h2>Cost-sensitive risk</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Cost matrix, expected risk)</div><div class="block-body"><p>A <strong>cost matrix</strong> $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$ has entry $C_{ij}$ equal to the cost of predicting class $j$ when the true class is <span class="nb">$i$.</span> The <strong>expected risk</strong> of a classifier $h$ is <span class="nb">$R(h) = \mathbb{E} \left[ C_{Y, h(X)} \right]$.</span></p></div></div>
+<p>At a single input, with <span class="nb">$\boldsymbol{\eta}(x) = (\eta_0(x), \dots, \eta_{K-1}(x))$,</span> the <strong>conditional risk</strong> of predicting $\hat{y}$ is <span class="nb">$\mathcal{R}(\hat{y} \mid x) = \sum_k C_{k \hat{y}} \, \eta_k(x) = \mathbf{c}_{\hat{y}}^\top \boldsymbol{\eta}(x)$,</span> with $\mathbf{c}_{\hat{y}}$ the column $\hat{y}$ of <span class="nb">$\mathbf{C}$.</span></p>
+<figure class="fig" data-fig="risk_patient"></figure>
+</div>
+<aside class="notes"><ul>
+<li><span class="nb">$C_{ij}$:</span> cost of predicting $j$ when the truth is <span class="nb">$i$;</span> the risk to minimize is the expected cost.</li>
+<li>At one input, each prediction has a conditional risk.</li>
+<li>The patient: a treatment costs <span class="nb">$1$,</span> sick or not, and a missed disease costs <span class="nb">$10$;</span> at <span class="nb">$\eta = 0.2$,</span> predicting "sick" has the smaller risk.</li>
+</ul></aside>
+</section>
+
+<section data-n="8" data-total="63" data-part-name="Binary classification">
+<h2>The Bayes rule</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Bayes risk)</div><div class="block-body"><p>The <strong>Bayes risk</strong> is $R^* = \inf_{h} R(h)$ over measurable classifiers.</p></div></div>
+<p>The <strong>Bayes rule</strong> picks the class of smallest conditional risk, with ties to the smallest index: <span class="dm">\[
+    \delta^*(\mathbf{p}) = \arg\min_{\hat{y} \in \mathcal{Y}} \mathbf{c}_{\hat{y}}^\top \mathbf{p} ,
+  \]</span> and $h^* = \delta^* \circ \boldsymbol{\eta}$ attains $R^*$ (Proposition 2.3.1; proof: <a class="bk" href="#/P1">P1</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>The best achievable risk, and the rule that attains it: the smallest conditional risk at each point.</li>
+<li>It needs the true probabilities.</li>
+</ul></aside>
+</section>
+
+<section data-n="9" data-total="63" data-part-name="Binary classification">
+<h2>Threshold rules</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Threshold rule)</div><div class="block-body"><p>Let <span class="nb">$K = 2$,</span> $\eta = \eta_1$ and <span class="nb">$\hat{p} = \hat{p}_1$.</span> For <span class="nb">$\tau \in [0, 1]$,</span> the <strong>threshold rule</strong> $\delta_\tau \colon [0,1] \to \{0,1\}$ is $\delta_\tau(z) = 1$ if $z \geq \tau$ and $\delta_\tau(z) = 0$ if <span class="nb">$z &lt; \tau$.</span></p></div></div>
+<figure class="fig" data-fig="threshold_step"></figure>
+</div>
+<aside class="notes"><ul>
+<li>For two classes, a rule that predicts $1$ above a cut is a threshold rule.</li>
+<li>Move <span class="nb">$\tau$:</span> the step moves, and so does the split of <span class="nb">$[0, 1]$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="10" data-total="63" data-part-name="Binary classification">
+<h2>The Elkan threshold</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Reasonable costs)</div><div class="block-body"><p>For <span class="nb">$K = 2$,</span> the costs are <strong>reasonable</strong> if $C_{01} &gt; C_{00}$ and $C_{10} &gt; C_{11}$ <span class="cite" data-key="elkan2001foundations">(Elkan, 2001)</span>.</p></div></div>
+<div class="block lemma"><div class="block-title">Lemma (3.2.1, optimality of threshold policies; proof: <a class="bk" href="#/P4">P4</a>)</div><div class="block-body"><p>Under reasonable costs, the Bayes classifier $h^*$ is equivalent to $x \mapsto \delta_\tau(\eta(x))$ for a unique <span class="nb">$\tau \in [0, 1]$,</span> namely <span class="dm">\[
+      p^* = \frac{C_{01} - C_{00}}{(C_{01} - C_{00}) + (C_{10} - C_{11})} .
+    \]</span></p></div></div>
+<p>The <strong>analytical rule</strong> applies this threshold to the estimate: it predicts $1$ when <span class="nb">$\hat{p}(x) \geq p^*$.</span> Under the $0/1$ loss, where every error costs <span class="nb">$1$,</span> $p^* = 0.5$ and the analytical rule is argmax.</p>
+</div>
+<aside class="notes"><ul>
+<li>For $K = 2$ the Bayes rule is a threshold on <span class="nb">$\eta$.</span></li>
+<li>$p^*$ depends only on the cost matrix; the analytical rule uses it on <span class="nb">$\hat{p}$.</span></li>
+<li>For the patient, <span class="nb">$C_{00} = 0$,</span> <span class="nb">$C_{01} = 1$,</span> <span class="nb">$C_{10} = 10$,</span> <span class="nb">$C_{11} = 1$:</span> <span class="nb">$p^* = 1/(1 + 9) = 1/10$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="11" data-total="63" data-part-name="Binary classification" class="added">
+<h2>The Elkan threshold</h2>
+<div class="body">
+<p class="center fs-footnotesize">$C_{ij}$ is the cost of predicting $j$ when the true class is <span class="nb">$i$.</span></p>
+<figure class="fig" data-fig="elkan_threshold"></figure>
+<div class="note-box"><p>The analytical rule is optimal when $\hat{p}(x) = \eta(x)$ almost everywhere. Otherwise, the best threshold on $\hat{p}$ depends on the estimator.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The two conditional risks are lines in <span class="nb">$\eta$;</span> the threshold is where they cross, and the diagonal entries move it.</li>
+<li>Break a condition, for instance <span class="nb">$C_{10} &lt; C_{11}$:</span> the lines no longer cross as a threshold rule needs.</li>
+<li>The box is the point of the next slides: $p^*$ is right only for a correct estimate.</li>
+</ul></aside>
+</section>
+
+<section data-n="12" data-total="63" data-part-name="Binary classification">
+<h2>The plug-in rule</h2>
+<div class="body">
+<p>The Bayes rule needs <span class="nb">$\boldsymbol{\eta}$,</span> which is unknown. The <strong>plug-in classifier</strong> <span class="cite" data-key="devroye1996probabilistic">(Devroye et al., 1996)</span> applies it to the estimate: <span class="nb">$\hat{h}(x) = \delta^*(\hat{\mathbf{p}}(x))$.</span></p>
+<div class="block proposition"><div class="block-title">Proposition (2.4.1, bound on excess risk; proof: <a class="bk" href="#/P2">P2</a>)</div><div class="block-body"><p>With <span class="nb">$C_{max} = \max_{i,j} C_{ij}$,</span> <span class="dm">\[
+      \underbrace{R(\hat{h}) - R(h^*)}_{\text{excess risk}}
+      \leq C_{max} \cdot
+      \underbrace{\mathbb{E}_X \left[ \| \hat{\mathbf{p}}(X)
+        - \boldsymbol{\eta}(X) \|_1 \right]}_{\text{estimation error}} .
+    \]</span></p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Replace $\boldsymbol{\eta}$ by the estimate; in binary, this is the analytical rule.</li>
+<li>The excess risk is bounded by the $L_1$ estimation error.</li>
+</ul></aside>
+</section>
+
+<section data-n="13" data-total="63" data-part-name="Binary classification">
+<h2>Calibration is not discrimination</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.58"><div class="block definition"><div class="block-title">Definition (2, perfect calibration)</div><div class="block-body"><p>For <span class="nb">$K = 2$,</span> an estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ of $\eta_1$ is perfectly calibrated with respect to $\mathbb{P}$ if $\mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q$ for almost every $q$ under the distribution of <span class="nb">$\hat{p}(X)$.</span></p></div></div>
+<p>The definition constrains the values of $\hat{p}$ and says nothing about how it ranks instances. The constant $\hat{p}(x) = \mathbb{P}(Y = 1)$ is perfectly calibrated and uninformative, and a classifier can rank correctly and emit distorted values <span class="cite" data-key="guo2017calibration">(Guo et al., 2017)</span>.</p></div>
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="calibration_sketch" style="--w:.88;"><img src="figures/static/calibration_sketch.svg" alt="calibration sketch"></figure>
+<div class="fs-footnotesize"><p>In this schematic, a threshold of $0.09$ on the overconfident estimate selects points of true frequency about <span class="nb">$0.22$.</span></p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Calibration constrains the values, not the ranking.</li>
+<li>A classifier that ranks well can still be miscalibrated.</li>
+<li>Then a threshold computed from the costs lands in the wrong place.</li>
+</ul></aside>
+</section>
+
+<section data-n="14" data-total="63" data-part-name="Binary classification" class="added">
+<h2>Calibrate, then decide</h2>
+<div class="body">
+<p>A <strong>calibrator</strong> is a map $g \colon [0,1] \to [0,1]$ that corrects <span class="nb">$\hat{p}$,</span> and calibrate-then-decide predicts $1$ when <span class="nb">$g(\hat{p}(x)) \geq p^*$.</span> Platt scaling uses <span class="nb">$g(\hat{p}) = \sigma\bigl(a \, \mathrm{logit}(\hat{p}) + b\bigr)$,</span> with $\sigma$ the logistic function.</p>
+<figure class="fig" data-fig="platt_calibration"></figure>
+<div class="fs-footnotesize"><p>In practice, $a$ and $b$ are learned from held-out data.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>First option when <span class="nb">$\hat{p} \neq \eta$:</span> repair the probabilities, keep <span class="nb">$p^*$.</span></li>
+<li>Red: the calibrator; dashed diagonal: no correction; gold: $p^*$ on the calibrated scale.</li>
+<li>Black: where calibrate-then-decide cuts the raw estimate. Grey: where the analytical rule cuts it without the calibrator.</li>
+<li>Move $a$ or <span class="nb">$b$:</span> the black cut moves, the grey one stays at <span class="nb">$p^*$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="15" data-total="63" data-part-name="Binary classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part current"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li class="sub-current">Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="16" data-total="63" data-part-name="Binary classification">
+<h2>The decision rule as a learner</h2>
+<div class="body">
+<ul>
+<li>Fix <span class="nb">$\hat{\mathbf{p}}$,</span> fitted on a training sample <span class="nb">$\mathcal{S}$.</span> The validation sample $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ is drawn i.i.d. from <span class="nb">$\mathbb{P}$,</span> disjoint from <span class="nb">$\mathcal{S}$,</span> so the pairs <span class="nb">$(z_i, y_i)$,</span> with <span class="nb">$z_i = \hat{\mathbf{p}}(x_i)$,</span> are i.i.d.</li>
+<li>The decision learner picks the $\delta \in \mathcal{H}_{dec}$ that minimizes <span class="nb">$\hat{R}(\delta) = \frac{1}{m} \sum_{i=1}^m C_{y_i, \delta(z_i)}$,</span> the empirical counterpart of <span class="nb">$R(\delta) := R(\delta \circ \hat{\mathbf{p}})$.</span></li>
+<li>For $K = 2$ and <span class="nb">$\mathcal{H}_{thresh} = \{\delta_\tau : \tau \in [0,1]\}$,</span> the minimizer over a uniform grid is the <strong>empirical threshold</strong> $\tau_{emp}$ <span class="cite" data-key="sheng2006thresholding">(Sheng and Ling, 2006)</span>.</li>
+</ul>
+<figure class="fig" data-fig="decision_learner_binary"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Second option after calibration: learn the threshold directly.</li>
+<li>With the estimator frozen, choosing $\delta$ is a learning problem, and the validation set is its training sample.</li>
+<li>For thresholds: move <span class="nb">$\tau$,</span> count the errors with their costs, keep the minimum.</li>
+</ul></aside>
+</section>
+
+<section data-n="17" data-total="63" data-part-name="Binary classification">
+<h2>Generalization bound for the decision stage</h2>
+<div class="body">
+<div class="block proposition"><div class="block-title">Proposition (2.6.1 for <span class="nb">$K = 2$,</span> Remark 7.7.1 for <span class="nb">$K &gt; 2$;</span> proof: <a class="bk" href="#/P3">P3</a>)</div><div class="block-body"><p>Let $\mathcal{V}$ be drawn i.i.d. from <span class="nb">$\mathbb{P}$,</span> independently of the sample used to fit <span class="nb">$\hat{\mathbf{p}}$,</span> and let the rules of $\mathcal{H}_{dec}$ be pointwise limits of a countable class of measurable rules. With probability at least <span class="nb">$1 - \nu$,</span> for all $\delta \in \mathcal{H}_{dec}$ simultaneously, <span class="dm">\[
+      R(\delta) \leq \hat{R}(\delta)
+        + c \, C_{max} \sqrt{\frac{d_{dec}}{m}} ,
+    \]</span> where $d_{dec}$ bounds the capacity of <span class="nb">$\mathcal{H}_{dec}$,</span> its VC dimension for $K = 2$ and its Natarajan dimension for $K &gt; 2$ (definitions: <a class="bk" href="#/B8">B8</a>), and $c$ depends on <span class="nb">$m$,</span> $K$ and $1/\nu$ only through logarithms.</p></div></div>
+<div class="block lemma"><div class="block-title">Lemma (2.6.2; proof: <a class="bk" href="#/P3">P3</a>)</div><div class="block-body"><p>The class $\mathcal{H}_{thresh}$ has VC dimension <span class="nb">$1$.</span></p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>A standard uniform bound, applied to the decision class; the gap shrinks as <span class="nb">$\sqrt{d_{dec}/m}$.</span></li>
+<li>For thresholds, <span class="nb">$d_{dec} = 1$:</span> a gap of order <span class="nb">$\sqrt{1/m}$,</span> with $m$ the size of the validation split.</li>
+<li>The held-out sample must be independent of the estimator's training data.</li>
+</ul></aside>
+</section>
+
+<section data-n="18" data-total="63" data-part-name="Binary classification" class="added">
+<h2>The empirical threshold</h2>
+<div class="body">
+<figure class="fig" data-fig="empirical_threshold"></figure>
+<div class="fs-footnotesize"><p>In this constructed example, $\hat{p}(X)$ is uniform on $[0, 1]$ and miscalibrated, with <span class="nb">$\mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = 0.42 + 0.5 \, q$.</span> The costs are $C_{01} = 4$ and <span class="nb">$C_{10} = 2$,</span> so <span class="nb">$p^* = 2/3$.</span> The size $8m$ matches the label budget of the $80\%$ pool when a $10\%$ split has $m$ labels. The figure does not model the refitting of cross-validation.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The estimate is miscalibrated, so the analytical threshold is in the wrong place: a fixed error, and no data needed.</li>
+<li>The empirical threshold aims at the right place and misses it by chance; the histogram is that chance.</li>
+<li>Small sample: it often does worse than the analytical rule. Eight times the labels: it nearly always does better.</li>
+</ul></aside>
+</section>
+
+<section data-n="19" data-total="63" data-part-name="Binary classification">
+<h2>The cross-validated threshold</h2>
+<div class="body">
+<p>EmpiricalCV splits the training data into $F = 5$ folds. For each fold $k$ the estimator is fitted on the other folds and scored on fold <span class="nb">$k$,</span> which gives <span class="nb">$\hat{R}_k(\tau)$;</span> the threshold minimizes <span class="nb">$\hat{R}_{CV}(\tau) = \frac{1}{F} \sum_k \hat{R}_k(\tau)$,</span> and the estimator is then refitted on all the training data. In scikit-learn it is <code>TunedThresholdClassifierCV</code>.</p>
+<figure class="fig" data-fig="cv_folds"></figure>
+</div>
+<aside class="notes"><ul>
+<li>No data set aside: every training label scores the threshold once.</li>
+<li>In the benchmark that is the $80\%$ pool, eight times the $10\%$ split.</li>
+<li>Cross-validated tuning leads in both studies.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="20" data-total="63" data-part-name="Binary classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part current"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li class="sub-current">Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="21" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>Binary benchmark</h2>
+<div class="body">
+<div class="columns top">
+<div class="col" style="--cw:.5">
+<p><strong>Datasets.</strong> Fourteen from OpenML, $208$ to $48{,}842$ samples; ten seeds.</p>
+<figure class="fig" data-fig="dataset_sizes_binary"></figure>
+</div>
+<div class="col" style="--cw:.48">
+<p><strong>Classifiers.</strong> Ten, default hyperparameters:</p>
+<div class="chips">
+<div><span class="grp">linear</span><span class="chip">Logistic regression <b>LogReg</b></span></div>
+<div><span class="grp">generative</span><span class="chip">Gaussian naive Bayes <b>NB</b></span></div>
+<div><span class="grp">boosted trees</span><span class="chip">LightGBM <b>LGBM</b></span><span class="chip">XGBoost <b>XGB</b></span><span class="chip">CatBoost <b>Cat</b></span></div>
+<div><span class="grp">bagged trees</span><span class="chip">Random forest <b>RF</b></span><span class="chip">Extra trees <b>ET</b></span></div>
+<div><span class="grp">deep tabular</span><span class="chip">TabM</span></div>
+<div><span class="grp">in-context transformers</span><span class="chip">TabPFN</span><span class="chip">TabICL</span></div>
+</div>
+</div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>$14$ datasets, $10$ classifiers, ten seeds.</li>
+<li>Default hyperparameters throughout.</li>
+</ul></aside>
+</section>
+
+<section data-n="22" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>Binary benchmark</h2>
+<div class="body">
+<p><strong>Strategies.</strong> Twelve, ten untuned and two tuned:</p>
+<div class="chips wide">
+<div><span class="grp">untuned</span><span class="chip">Argmax <b>$\tau = 0.5$</b></span><span class="chip">Analytical <b>$\tau = p^*$</b></span><span class="times">each on</span><span class="chip">the raw estimate</span><span class="chip">temperature</span><span class="chip">Platt</span><span class="chip">isotonic</span><span class="chip">Dirichlet</span><span class="count">$2 \times 5$</span></div>
+<div><span class="grp">tuned</span><span class="chip">Empirical <b>$\tau_{emp}$ on a validation split</b></span><span class="chip">EmpiricalCV <b>$\tau_{emp}$ by cross-validation</b></span><span class="count">$2$</span></div>
+</div>
+<p><strong>Objectives.</strong> Ten, defined on <a class="bk" href="#/B3">B3</a> and <a class="bk" href="#/B15">B15</a>:</p>
+<div class="chips wide">
+<div><span class="grp">five cost matrices</span><span class="chip">Symmetric</span><span class="chip">Asymmetric $10\times$</span><span class="chip">Asymmetric $100\times$</span><span class="chip">Non-Zero Diagonal</span><span class="chip">Balanced Error</span></div>
+<div><span class="grp">five metrics</span><span class="chip">$F_1$</span><span class="chip">$F_{0.5}$</span><span class="chip">$F_2$</span><span class="chip">MCC <b>Matthews correlation coefficient</b></span><span class="chip">G-Mean <b>geometric mean of the class recalls</b></span></div>
+</div>
+<p>The untuned strategies fit the estimator on the whole $80\%$ pool. The calibrated ones and Empirical fit it on $70\%$ and tune on the $10\%$ split. EmpiricalCV tunes on the pool by cross-validation. All are scored on the same $20\%$ test set (<a class="bk" href="#/B32">B32</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>$12$ strategies: ten untuned, two tuned; a calibrated strategy is named after its calibrator, as in PlattScalingAnalytical.</li>
+<li>$10$ objectives: five cost matrices and five metrics. In the asymmetric matrices a false positive costs $10$ or $100$ false negatives, so $p^* = 10/11$ and <span class="nb">$100/101$.</span></li>
+<li>Untuned strategies train on the full <span class="nb">$80\%$;</span> single-split ones give up $10\%$ for tuning; EmpiricalCV tunes on the whole $80\%$ by cross-validation.</li>
+</ul></aside>
+</section>
+
+<section data-n="23" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>The win-or-tie rule</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.44"><p>A <strong>cell</strong> is a (dataset, classifier, objective) triple. In each cell a strategy <strong>wins or ties</strong> if its mean $\pm 1$ standard error (SE) over the ten seeds overlaps that of the best strategy.</p>
+<div class="medskip"></div>
+<p>We report the share of cells each strategy wins or ties, with $95\%$ bootstrap intervals over cells. The rule is descriptive (limits: <a class="bk" href="#/B4">B4</a>).</p></div>
+<div class="col center" style="--cw:.54"><figure class="fig" data-fig="adult_mcc" style="--h:.6;"><img src="figures/static/adult_mcc.svg" alt="adult mcc"></figure>
+<div class="fs-footnotesize"><p>The cell shown is dataset <em>adult</em>, classifier TabM, metric MCC. Italic rows win or tie.</p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>One cell: one dataset, one classifier, one objective.</li>
+<li>A strategy wins or ties if its interval overlaps that of the best.</li>
+<li>The rule is descriptive; its limits are on <a class="bk" href="#/B4">B4</a>.</li>
+</ul></aside>
+</section>
+
+<section data-n="24" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>Binary costs: cross-validated tuning leads</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_binary_cost" style="--w:0.642;"><img src="figures/static/win_bars_binary_cost.svg" alt="win bars binary cost"></figure>
+<p>EmpiricalCV wins or ties $87\%$ of the cost cells. Empirical, the same threshold tuned on the $10\%$ validation split, wins or ties <span class="nb">$42\%$,</span> below the untuned Analytical at <span class="nb">$69\%$.</span> By dataset size, the gap is consistent with overfitting of the $10\%$ split (<a class="bk" href="#/B25">B25</a>).</p>
+<div class="fs-footnotesize"><p>The $14$ datasets, $10$ classifiers and $5$ cost matrices give $700$ cost cells, $670$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+</div>
+<aside class="notes"><ul>
+<li>Cross-validated tuning leads, at <span class="nb">$87\%$.</span></li>
+<li>The analytical rule is at <span class="nb">$69\%$;</span> calibrating first moves it between $51\%$ and <span class="nb">$73\%$.</span></li>
+<li>Single-split tuning, at <span class="nb">$42\%$,</span> is below the untuned analytical rule.</li>
+</ul></aside>
+</section>
+
+<section data-n="25" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>Binary metrics: EmpiricalCV wins or ties 99.9%</h2>
+<div class="body">
+<p><span class="nb">$F_\beta$,</span> MCC and G-Mean are not averages of a per-instance cost, so the analytical threshold does not apply and the untuned baseline is Argmax.</p>
+<figure class="fig" data-fig="win_bars_binary_max" style="--w:0.652;"><img src="figures/static/win_bars_binary_max.svg" alt="win bars binary max"></figure>
+<p>EmpiricalCV wins or ties $99.9\%$ of the $670$ metric cells (the same datasets and classifiers, with the five metrics). Single-split Empirical <span class="nb">($73\%$)</span> is ahead of Argmax <span class="nb">($45\%$).</span></p>
+</div>
+<aside class="notes"><ul>
+<li>No threshold follows from these metrics alone; for $F_\beta$ it depends on the optimal $F_\beta$ itself.</li>
+<li>EmpiricalCV wins or ties nearly every cell.</li>
+<li>Here even single-split tuning is ahead of argmax.</li>
+</ul></aside>
+</section>
+
+<section data-n="26" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<h2>The analytical rule by base classifier</h2>
+<div class="body">
+<p>Share of cost cells won or tied, by base classifier <span class="nb">($\%$):</span></p>
+<div class="center fs-footnotesize"><figure class="fig" data-fig="dumbbell_models"><div class="static"><table>
+<tr><th class="l"></th><th class="c">LGBM</th><th class="c">XGB</th><th class="c">Cat</th><th class="c">RF</th><th class="c">ET</th><th class="c">LogReg</th><th class="c">NB</th><th class="c">TabM</th><th class="c">TabPFN</th><th class="c">TabICL</th></tr>
+<tr><td class="l">Analytical</td><td class="c">76</td><td class="c">69</td><td class="c">83</td><td class="c">76</td><td class="c">63</td><td class="c">74</td><td class="c">19</td><td class="c">56</td><td class="c">95</td><td class="c">88</td></tr>
+<tr><td class="l">EmpiricalCV</td><td class="c">89</td><td class="c">89</td><td class="c">90</td><td class="c">87</td><td class="c">90</td><td class="c">94</td><td class="c">57</td><td class="c">94</td><td class="c">95</td><td class="c">88</td></tr>
+</table></div></figure>
+<p>Bootstrap half-widths are $5$ to $12$ points.</p></div>
+<p>On TabPFN and TabICL the analytical threshold wins or ties as many cells as EmpiricalCV and uses no held-out data.</p>
+</div>
+<aside class="notes"><ul>
+<li>The gap depends on the base classifier.</li>
+<li>TabPFN and TabICL: the analytical rule matches EmpiricalCV.</li>
+<li>The analytical rule needs no held-out data; tuning pays when the estimate is distorted.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="27" data-total="63" data-part-name="Multiclass classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="28" data-total="63" data-part-name="Multiclass classification">
+<h2>From a threshold to a partition</h2>
+<div class="body">
+<p>For $K &gt; 2$ the estimate $\hat{\mathbf{p}}(x)$ lies in the simplex <span class="nb">$\Delta^{K-1}$,</span> whose vertex $\mathbf{e}_k$ puts probability $1$ on class <span class="nb">$k$.</span> A rule $\delta$ splits it into <strong>decision regions</strong> <span class="nb">$\mathcal{P}_i = \delta^{-1}(\{i\})$.</span> The risk of predicting $i$ at $\mathbf{p}$ is <span class="dm">\[
+    \mathcal{L}_i(\mathbf{p}) = \sum_{j} C_{ji} \, p_j = \mathbf{c}_i^\top \mathbf{p} ,
+    \qquad \mathcal{R}(i \mid x) = \mathcal{L}_i(\boldsymbol{\eta}(x)) .
+  \]</span> The Bayes rule predicts the class of smallest risk, and its regions are the <strong>Bayes regions</strong> <span class="nb">$\mathcal{P}_i^*$.</span></p>
+<figure class="fig" data-fig="risk_bars_simplex"></figure>
+</div>
+<aside class="notes"><ul>
+<li>For $K &gt; 2$ a decision rule is a partition of the simplex.</li>
+<li>Each prediction has a risk linear in <span class="nb">$\mathbf{p}$:</span> bar $i$ is column $i$ of $\mathbf{C}$ times <span class="nb">$\mathbf{p}$.</span> Drag the point, and the smallest bar decides.</li>
+<li>At $(0.5, 0.2, 0.3)$ the Bayes rule predicts $2$ where argmax predicts <span class="nb">$0$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="29" data-total="63" data-part-name="Multiclass classification">
+<h2>From a threshold to a partition</h2>
+<div class="body">
+<figure class="fig" data-fig="simplex_cost_partition" style="--h:.66;"><img src="figures/static/simplex_cost_partition.svg" alt="simplex cost partition"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Left: each risk is a plane over the simplex; the lowest plane decides, and its shadow is the partition.</li>
+<li>$0/1$ loss: the argmax partition. Errors on true class $2$ cost more: its region expands.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="30" data-total="63" data-part-name="Multiclass classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li class="sub-current">Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="31" data-total="63" data-part-name="Multiclass classification">
+<h2>Learning the partition</h2>
+<div class="body">
+<p>A <strong>partition matrix</strong> $\mathbf{A}$ takes the place of $\mathbf{C}$ in the Bayes rule <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>: <span class="dm">\[
+    \delta_{\mathbf{A}}(\mathbf{p}) = \arg\min_{i} \sum_j A_{ji} \, p_j .
+  \]</span> It is chosen like the threshold, among $301$ random candidates. Three classes:</p>
+<figure class="fig" data-fig="partition_classes" style="margin-bottom:0;"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Separate the matrix that decides, <span class="nb">$\mathbf{A}$,</span> from the one that evaluates, <span class="nb">$\mathbf{C}$,</span> and fit $\mathbf{A}$ on held-out data.</li>
+<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $301$ random draws.</li>
+<li>Shift: $K - 1$ offsets, no turning. Scaling: $K - 1$ weights, the boundaries turn. Full matrix: $K^2$ entries, any convex polyhedral partition.</li>
+</ul></aside>
+</section>
+
+<section data-n="32" data-total="63" data-part-name="Multiclass classification" class="added">
+<h2>The sequential cascade</h2>
+<div class="body">
+<p>A rule used with class-imbalanced data tests the classes in a priority order, rarest first, and predicts the first whose probability reaches its threshold, or the argmax if none does. It is a decision list <span class="cite" data-key="rivest1987decision">(Rivest, 1987)</span>: <span class="dm">\[
+    \delta_{\mathrm{ord}, \boldsymbol{\tau}}(\mathbf{p}) = \mathrm{ord}(j^*) , \quad
+    j^* = \min \{ j \mid p_{\mathrm{ord}(j)} \geq \tau_{\mathrm{ord}(j)} \} .
+  \]</span></p>
+<figure class="fig" data-fig="sequential_selection"></figure>
+<p>Its regions are not convex and depend on the order of the tests.</p>
+</div>
+<aside class="notes"><ul>
+<li>One-vs-rest tests in a priority order, rarest class first; argmax only as the default.</li>
+<li>A class tested early can claim points where another class has the larger probability.</li>
+<li>Non-convex, order-dependent regions; in the benchmark it is SequentialSelection.</li>
+</ul></aside>
+</section>
+
+<section data-n="33" data-total="63" data-part-name="Multiclass classification" class="added">
+<h2>Two multiclass threshold rules</h2>
+<div class="body">
+<figure class="fig" data-fig="threshold_rules"></figure>
+<p>For $K = 3$ under $0/1$ loss, with the argmax boundaries dashed. Multidimensional thresholding keeps every boundary parallel to its argmax position; under probability-ratio thresholding the boundary between two classes is a line through the vertex of the third.</p>
+</div>
+<aside class="notes"><ul>
+<li>Two rules from the literature, one threshold per class; the next table places them.</li>
+<li>Thresholds in differences: the boundaries translate. Thresholds in ratios: they turn around a vertex.</li>
+<li>Neither turns each boundary on its own.</li>
+</ul></aside>
+</section>
+
+<section data-n="34" data-total="63" data-part-name="Multiclass classification" data-contrib="1">
+<h2>Five tunable rules</h2>
+<div class="body">
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Method</th><th class="l">Rule, one parameter per class</th><th class="l">Class</th></tr>
+<tr><td class="l">Parallel shift <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span></td><td class="l">$\arg\min_k \, (\mathbf{c}_k^\top \mathbf{p} + \alpha_k)$</td><td class="l">$\mathcal{H}_{PS}$</td></tr>
+<tr><td class="l">Multidimensional thresholding <span class="cite" data-key="legnaro2025multiclass">(Legnaro et al., 2025)</span></td><td class="l">$\arg\max_k \, (p_k - \tau_k)$</td><td class="l">$\mathcal{H}_{PS}$ at $0/1$ loss</td></tr>
+<tr><td class="l">Linear scaling <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span></td><td class="l">$\arg\min_i \sum_k C_{ki} \, \beta_k \, p_k$</td><td class="l">$\mathcal{H}_{Sc}$</td></tr>
+<tr><td class="l">Probability-ratio thresholding <span class="cite" data-key="lachiche2003improving">(Lachiche and Flach, 2003)</span></td><td class="l">$\arg\max_k \, p_k / \tau_k$</td><td class="l">$\mathcal{H}_{Sc}$ at $0/1$ loss</td></tr>
+<tr><td class="l">Sequential cascade <span class="cite" data-key="rivest1987decision">(Rivest, 1987)</span></td><td class="l">first <span class="nb">$p_k \geq \tau_k$,</span> by priority</td><td class="l">&mdash;</td></tr>
+</table></div>
+<div class="block proposition"><div class="block-title">Proposition (6.2.3 and 6.2.4; proof: <a class="bk" href="#/P5">P5</a>)</div><div class="block-body"><p>Under $0/1$ loss, probability-ratio thresholding with thresholds $\tau_k &gt; 0$ is equivalent to linear scaling with <span class="nb">$\beta_k = 1/\tau_k$,</span> and multidimensional thresholding with $\boldsymbol{\tau} \in \mathbb{R}^K$ to the parallel shift with <span class="nb">$\alpha_k = \tau_k$.</span></p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Five rules in use; four fall into the two matrix classes, the cascade into none, so no capacity analysis covers it.</li>
+<li>Shifts translate the cost boundaries; weights also turn them, through $K - 1$ coupled parameters.</li>
+<li>None turns each boundary on its own: that is what the prototypes add.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="35" data-total="63" data-part-name="Multiclass classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li class="sub-current">Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="36" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>Argmax as a nearest-vertex rule</h2>
+<div class="body">
+<p>Argmax sends each $\mathbf{p}$ to its nearest vertex. A <strong>Voronoi rule</strong> sends it to the nearest of $K$ prototypes under a distance; this work uses the Euclidean one, $\delta_{\mathcal{M}}(\mathbf{p}) = \arg\min_{k} \| \mathbf{p} - \boldsymbol{\mu}_k \|_2$ (Definition 6; <a class="bk" href="#/B29">B29</a>).</p>
+<figure class="fig" data-fig="voronoi_metrics"></figure>
+</div>
+<aside class="notes"><ul>
+<li><span class="nb">$\|\mathbf{p} - \mathbf{e}_i\|_2^2 = \|\mathbf{p}\|_2^2 - 2 p_i + 1$:</span> argmax is the nearest-vertex rule. Move the reference points and you get a Voronoi rule with prototypes.</li>
+<li>At the vertices every distance gives argmax. Euclidean: straight boundaries, which turn with the prototypes. Manhattan: bent boundaries. Hellinger: curved ones.</li>
+<li>Prototypes in the simplex have $K(K-1)$ parameters.</li>
+</ul></aside>
+</section>
+
+<section data-n="37" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>Learning the prototypes</h2>
+<div class="body">
+<p>The prototypes are fitted like the partition matrix, by random search on the validation sample $\mathcal{V}$ (Section 7.4):</p>
+<ol>
+<li>start from the argmax prototypes, <span class="nb">$\boldsymbol{\mu}_k = \mathbf{e}_k$;</span></li>
+<li>draw a new configuration $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1}$ (free prototypes can send a pure-class input $\mathbf{e}_k$ to another class);</li>
+<li>keep it if it lowers $\hat{R}$ on <span class="nb">$\mathcal{V}$,</span> and repeat for a fixed number of draws.</li>
+</ol>
+</div>
+<aside class="notes"><ul>
+<li>Same recipe as for the partition matrix: draw, score on the validation sample, keep the best.</li>
+<li>The question is which configurations to draw.</li>
+</ul></aside>
+</section>
+
+<section data-n="38" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>The dominant label constraint</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.6">
+<p>A cost matrix is <strong>element-wise reasonable</strong> if $C_{jj} &lt; C_{ji}$ for every $j$ and all $i \neq j$ <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>. Then the Bayes rule sends each vertex $\mathbf{e}_k$ to class <span class="nb">$k$.</span> The <strong>dominant label constraint</strong> (DLC) requires the same property of the prototypes.</p>
+<div class="block definition"><div class="block-title">Definition (7, dominant label constraint)</div><div class="block-body"><p style="text-align:left">A configuration $\mathcal{M} =(\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1})$ of points of $\Delta^{K-1}$ satisfies the DLC if $\arg\min_{j \in \mathcal{Y}} \|\mathbf{e}_k - \boldsymbol{\mu}_j\|_2
+    = \{k\}$ for every <span class="nb">$k \in \mathcal{Y}$.</span></p></div></div>
+</div>
+<div class="col center" style="--cw:.38"><figure class="fig" data-fig="dlc_region" data-state='{"plain": true}' style="--w:1;"></figure></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>With an element-wise reasonable matrix, every vertex goes to its own class.</li>
+<li>The DLC asks the prototypes for the same: on pure-class inputs the Voronoi rule agrees with argmax.</li>
+<li>Drag <span class="nb">$\boldsymbol{\mu}_0$:</span> the shaded area is where the constraint still holds.</li>
+</ul></aside>
+</section>
+
+<section data-n="39" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<p>The random search draws configurations that must satisfy the DLC and still cover the simplex (six samplers: <a class="bk" href="#/B33">B33</a>, <a class="bk" href="#/B10">B10</a>). A uniform draw usually violates the DLC. Moving the largest coordinate of the $k$-th draw to position $k$ restores it in almost every draw at <span class="nb">$K = 3$,</span> and in fewer as $K$ grows.</p>
+<div class="columns top">
+<div class="col center" style="--cw:.46"><figure class="fig" data-fig="sampler_story" data-state='{"modes": ["uniform", "swap"]}' style="--w:1;"></figure></div>
+<div class="col center" style="--cw:.52"><figure class="fig" data-fig="sampler_dlc_vs_k" style="--w:1;"></figure></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>The same three draws twice: uniform, they send vertices to other classes; after the swap, each prototype lies where its own coordinate is largest.</li>
+<li>The swap fixes each prototype alone, not the pairs: swap-max keeps the DLC in $61\%$ of the draws at <span class="nb">$K = 100$.</span></li>
+<li>The sampler adds a test against the earlier prototypes.</li>
+</ul></aside>
+</section>
+
+<section data-n="40" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<p>The sequential $d^2$ sampler keeps the swap and adds a test against the earlier prototypes. With $d^2$ the squared distance, for <span class="nb">$i = 0, \dots, K - 1$:</span></p>
+<div class="columns top">
+<div class="col" style="--cw:.5">
+<ul>
+<li>draw $\mathbf{p}$ uniformly on the simplex, its largest coordinate swapped into position <span class="nb">$i$;</span></li>
+<li>accept it as $\boldsymbol{\mu}_i$ if $d^2(\mathbf{e}_k, \mathbf{p}) &gt; d^2(\mathbf{e}_k, \boldsymbol{\mu}_k)$ and $d^2(\mathbf{e}_i, \mathbf{p}) &lt; d^2(\mathbf{e}_i, \boldsymbol{\mu}_k)$ for every <span class="nb">$k &lt; i$;</span> else draw again.</li>
+</ul>
+<p>Every configuration it returns satisfies the DLC (Proposition 7.5.1; <a class="bk" href="#/P8">P8</a>).</p>
+</div>
+<div class="col center" style="--cw:.48">
+<figure class="fig" data-fig="sampler_story" data-state='{"modes": ["sequential"]}' style="--w:1;"></figure>
+</div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Dashed disc: the new prototype must stay out of it, or it would take an earlier vertex. Dotted disc: it must enter it, so that its own vertex is nearest to it.</li>
+<li>Shaded: where a draw is kept; crosses: rejected draws, rare at <span class="nb">$K = 3$.</span></li>
+<li>Of the six samplers compared, it is the only one that keeps the DLC for every $K$ up to $100$ and still explores the interior (B10).</li>
+</ul></aside>
+</section>
+
+<section data-n="41" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<figure class="fig" data-fig="sampler_dlc_four" style="--w:1;"><img src="figures/static/sampler_dlc_four.png" alt="four samplers"></figure>
+<p class="center">The shade at $\mathbf{p}$ is <span class="nb">$1 - H(\mathbf{f}(\mathbf{p})) / \log 3$,</span> with $\mathbf{f}(\mathbf{p})$ the share of $300$ draws that send $\mathbf{p}$ to each class.</p>
+<div class="fs-footnotesize"><p class="center">The samplers are described on <a class="bk" href="#/B33">B33</a>, and all six panels are on <a class="bk" href="#/B10">B10</a>.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>White: all $300$ draws agree on the class of the point. Black: the three classes are equally frequent.</li>
+<li>Rejection and Hungarian: grey corners, so some draws break the DLC.</li>
+<li>Shrink: white corners, little variation inside. Sequential <span class="nb">$d^2$:</span> white corners, and the interior still varies.</li>
+</ul></aside>
+</section>
+
+<section data-n="42" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>Expressivity of the Voronoi class</h2>
+<div class="body">
+<ul>
+<li><span class="nb">$\mathcal{H}_{Vor}$,</span> the Voronoi rules with prototypes anywhere in <span class="nb">$\mathbb{R}^K$,</span> strictly contains the parallel-shift class: $\mathcal{H}_{PS} \subsetneq \mathcal{H}_{Vor}$ (Proposition 7.3.2; <a class="bk" href="#/B31">B31</a>).</li>
+<li><span class="nb">$\mathcal{H}_{Vor}^{\mathrm{DLC}}$,</span> with prototypes in the simplex under the DLC, is the class of the experiments. Its containment is not proved, so the theorem compares the best risks.</li>
+</ul>
+<div class="block theorem"><div class="block-title">Theorem (7.3.1, strict risk separation from the parallel-shift class; proof: <a class="bk" href="#/P7">P7</a>)</div><div class="block-body"><p>There exist a data distribution $\mathbb{P}$ and a cost matrix $\mathbf{C}$ such that <span class="nb">$\inf_{\delta \in \mathcal{H}_{Vor}^{\mathrm{DLC}}} R(\delta)
+      &lt; \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$.</span></p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Unconstrained prototypes contain every parallel shift; the experiments use constrained ones.</li>
+<li>For the constrained class: a distribution where it has strictly lower risk than every shift.</li>
+</ul></aside>
+</section>
+
+<section data-n="43" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>Expressivity of the Voronoi class</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="voronoi_witness" style="--w:1;"><img src="figures/static/voronoi_witness.svg" alt="voronoi witness"></figure></div>
+<div class="col" style="--cw:.58"><p>Take <span class="nb">$K = 3$,</span> $0/1$ loss, and mass $1/3$ on each of <span class="nb">$\mathbf{p}_C = (0.8, 0.1, 0.1)$,</span> $\mathbf{p}_A = (0.4, 0.3, 0.3)$ and <span class="nb">$\mathbf{p}_B = (0, 0.5, 0.5)$,</span> with labels <span class="nb">$0$,</span> <span class="nb">$1$,</span> <span class="nb">$2$.</span></p>
+<div class="medskip"></div>
+<p>A parallel-shift rule picks the smallest score <span class="nb">$s_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \alpha_k$.</span> On the altitude <span class="nb">$p_1 = p_2$,</span> $s_1 - s_2$ is the constant <span class="nb">$\alpha_1 - \alpha_2$,</span> so no such rule labels $\mathbf{p}_A$ as $1$ and $\mathbf{p}_B$ as <span class="nb">$2$,</span> and its risk is at least <span class="nb">$1/3$.</span></p>
+<div class="medskip"></div>
+<p>The prototypes <span class="nb">$\boldsymbol{\mu}_0 = \mathbf{e}_0$,</span> <span class="nb">$\boldsymbol{\mu}_1 = (0.4, 0.5, 0.1)$,</span> $\boldsymbol{\mu}_2 = (0.1, 0.4, 0.5)$ satisfy the DLC and classify all three points, with risk <span class="nb">$0$.</span></p></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Three points on one altitude of the simplex.</li>
+<li>No parallel shift labels $\mathbf{p}_A$ as $1$ and $\mathbf{p}_B$ as <span class="nb">$2$.</span></li>
+<li>The Voronoi rule classifies all three: risk $0$ against at least <span class="nb">$1/3$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="44" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<h2>A scenario built for rotation</h2>
+<div class="body">
+<figure class="fig" data-fig="simplex_regions" style="--h:.43;"><img src="figures/static/simplex_regions.svg" alt="simplex regions"></figure>
+<ul>
+<li>The scenario of Section 7.6 is built to need rotation. Classes $0$ and $1$ have correlations $+0.8$ and $-0.8$ between the first two features, and class $2$ has $0.8$ between the first and the third. Naive Bayes ignores correlations, so its error turns the boundaries in different directions.</li>
+<li>A shift (c) translates the boundaries without turning them, and a scaling (b) turns them through coupled parameters. The prototypes (d) and the full matrix (e) can turn each boundary separately.</li>
+<li>Both improve accuracy over argmax (a) by about $2$ points (<a class="bk" href="#/B19">B19</a>).</li>
+</ul>
+</div>
+<aside class="notes"><ul>
+<li>What makes the case special: it is constructed so that each boundary needs its own rotation.</li>
+<li>That is when prototypes help; under $0/1$-type objectives, and as an existence example.</li>
+<li>In the benchmark the Voronoi rule does not lead.</li>
+</ul></aside>
+</section>
+
+<section data-n="45" data-total="63" data-part-name="Multiclass classification" data-contrib="1">
+<h2>Capacity of the hypothesis classes</h2>
+<div class="body">
+<p>For $K$ classes the bound uses the Natarajan dimension $d_{Nat}$ <span class="cite" data-key="natarajan1989learning,daniely2015multiclass">(Daniely, Sabato, et al., 2015; Natarajan, 1989)</span>: $R(\delta) \leq \hat{R}(\delta) + c \, C_{max} \sqrt{d_{Nat}(\mathcal{H}_{dec}) / m}$ (Remark 7.7.1; definition on <a class="bk" href="#/B8">B8</a>). With prototypes anywhere, the Voronoi rules are exactly the full-matrix rules (Proposition 7.2.1; <a class="bk" href="#/P6">P6</a>). $\mathcal{H}_{Vor}^{\Delta}$ denotes those with prototypes in the simplex.</p>
+<div class="block theorem"><div class="block-title">Theorem (7.7.2 to 7.7.5; proofs: <a class="bk" href="#/P9">P9</a>, <a class="bk" href="#/P10">P10</a>)</div><div class="block-body"><p><span class="dm">\begin{align*}
+      d_{Nat}(\mathcal{H}_{PS}) &amp;= K - 1 , &amp;
+      d_{Nat}(\mathcal{H}_{Sc}) &amp;\leq K - 1 , \\
+      d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) &amp;\leq K^2 , &amp;
+      d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) &amp;\leq K^2 .
+    \end{align*}</span></p></div></div>
+<p>The parallel-shift value is exact for an <strong>admissible</strong> <span class="nb">$\mathbf{C}$,</span> one where every class is the unique risk minimizer at some point of the simplex (<a class="bk" href="#/B30">B30</a>); the other values are upper bounds (against <span class="nb">$K$:</span> <a class="bk" href="#/B18">B18</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>Parallel shift: exactly <span class="nb">$K - 1$.</span></li>
+<li>The others are upper bounds of order <span class="nb">$K^2$.</span></li>
+<li>No capacity argument favours Voronoi over the full matrix: with free prototypes they are the same class.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="46" data-total="63" data-part-name="Multiclass classification" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li class="sub-current">Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="47" data-total="63" data-part-name="Multiclass classification" data-contrib="3">
+<h2>Multiclass costs: the rules built on $\mathbf{C}$ lead</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_multiclass_cost" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
+<p>The three cross-validated tuners built on the cost matrix have the highest shares: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical <span class="nb">($70\%$).</span> Tuned on the $10\%$ split, the same three reach $30\%$ to <span class="nb">$36\%$.</span></p>
+<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B34">B34</a>), $10$ classifiers and $7$ cost matrices give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The rules that start from the cost matrix lead: $79$ to <span class="nb">$81\%$.</span></li>
+<li>The rules that ignore it are below the untuned analytical rule.</li>
+<li>VoronoiTuningCV is at <span class="nb">$38\%$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="48" data-total="63" data-part-name="Multiclass classification" data-contrib="3">
+<h2>Multiclass metrics: cross-validated rules rank first</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_multiclass_max" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_max.svg" alt="win bars multiclass max"></figure>
+<p>Over the $525$ metric cells with results (of <span class="nb">$11 \times 10 \times 5
+  = 550$),</span> all five cross-validated rules are ahead of Argmax <span class="nb">($60\%$)</span> and all five single-split versions are behind it. The Voronoi and vector-tuned families are compared cell by cell on <a class="bk" href="#/B17">B17</a>.</p>
+</div>
+<aside class="notes"><ul>
+<li>Every cross-validated rule is ahead of argmax; every single-split version is behind.</li>
+<li>ThresholdRatioCV leads at <span class="nb">$90\%$.</span></li>
+<li>Unlike the binary study, single-split tuning does not beat argmax.</li>
+</ul></aside>
+</section>
+
+<section data-n="49" data-total="63" data-part-name="Multiclass classification">
+<h2>What to do in practice</h2>
+<div class="body">
+<figure class="fig" data-fig="recipe_flowchart" style="--h:.52;"><img src="figures/static/recipe_flowchart.svg" alt="recipe flowchart"></figure>
+<p>On cost objectives, tuning on a single small split wins or ties fewer cells than the untuned analytical rule in both studies. A larger partition class gave a clear gain only in the scenario built for rotation.</p>
+</div>
+<aside class="notes"><ul>
+<li>Cost objective and a well-calibrated estimator: the analytical rule.</li>
+<li>Otherwise: tune by cross-validation.</li>
+<li>Avoid tuning on a single small split.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="50" data-total="63" data-part-name="Sensitivity across K" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part current"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="51" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<h2>The lead narrows with $K$</h2>
+<div class="body">
+<p>Share of cost cells won or tied:</p>
+<div class="center fs-small"><table>
+<tr><th class="l"></th><th class="c">Best strategy</th><th class="c">Analytical</th><th class="c">Lead</th></tr>
+<tr><td class="l">Binary</td><td class="c">$87\%$</td><td class="c">$69\%$</td><td class="c">$18$ points</td></tr>
+<tr><td class="l">Multiclass</td><td class="c">$81\%$</td><td class="c">$70\%$</td><td class="c">$11$ points</td></tr>
+</table></div>
+<p>The smaller lead may come from multiclass validation data that carry less signal for tuning, or from an analytical rule that loses less to estimation error when $K$ is larger. A synthetic study with an error of controlled size tests the second explanation.</p>
+</div>
+<aside class="notes"><ul>
+<li>Lead over the analytical rule: $18$ points in binary, $11$ in multiclass.</li>
+<li>Two explanations; the synthetic study tests the second.</li>
+</ul></aside>
+</section>
+
+<section data-n="52" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<h2>Synthetic check</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="scaling_setup_geometry" style="--w:1;"><img src="figures/static/scaling_setup_geometry.svg" alt="scaling setup geometry"></figure></div>
+<div class="col" style="--cw:.58"><p>The reference $\mathbb{P}_1$ has $K$ Gaussian classes in <span class="nb">$\mathbb{R}^2$,</span> with means on a regular $K$-gon and variance $\sigma^2$ (solid). The data come from <span class="nb">$\mathbb{P}_\lambda$,</span> with variance $\lambda \sigma^2$ (dashed).</p>
+<p>The Bayes rule $h^*_1$ of $\mathbb{P}_1$ is an analytical rule built on a wrong estimate. Under <span class="nb">$\mathbb{P}_\lambda$,</span> with Bayes rule $h^*_\lambda$ and expected risk <span class="nb">$R_\lambda$,</span> we measure the <strong>relative excess risk</strong> for $K$ from $2$ to <span class="nb">$20$:</span> <span class="dm">\[
+        \frac{R_\lambda(h^*_1) - R_\lambda(h^*_\lambda)}
+             {R_\lambda(h^*_\lambda)} .
+      \]</span></p>
+<div class="fs-footnotesize"><p>With the Asymmetric $10\times$ cost, an error on class $K - 1$ costs $10$ and any other error <span class="nb">$1$.</span> Under the $0/1$ loss, scaling the variance does not change the Bayes rule.</p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>The reference assumes variance <span class="nb">$\sigma^2$;</span> the data have <span class="nb">$\lambda \sigma^2$.</span></li>
+<li>So the Bayes rule of the reference is a plug-in rule with a wrong estimate.</li>
+<li>We measure how much it loses, relative to the best risk, for each <span class="nb">$K$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="53" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<h2>Synthetic check</h2>
+<div class="body">
+<div class="center"><figure class="fig" data-fig="scaling_variance" style="--w:0.918;--h:.43;"><img src="figures/static/scaling_variance.svg" alt="scaling variance"></figure></div>
+<p>The relative excess risk is highest for $K = 2$ and $7$ to $8$ times lower for <span class="nb">$K = 20$;</span> random shifts of the class means give the same ordering, also under the $0/1$ loss. The ratio divides by a Bayes risk that also changes with <span class="nb">$K$,</span> since the classes on the $K$-gon get closer as $K$ grows.</p>
+</div>
+<aside class="notes"><ul>
+<li>Highest at <span class="nb">$K = 2$,</span> seven to eight times lower at <span class="nb">$K = 20$.</span></li>
+<li>Same ordering with random mean shifts, also under the $0/1$ loss.</li>
+<li>It is relative to a Bayes risk that changes with <span class="nb">$K$.</span></li>
+</ul></aside>
+</section>
+
+<section data-n="54" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<h2>Dimensional dilution</h2>
+<div class="body">
+<p>A perturbation $\boldsymbol{\epsilon}$ of a probability vector lies in <span class="nb">$V = \{\mathbf{v} \in \mathbb{R}^K : \sum_k v_k = 0\}$,</span> of dimension <span class="nb">$K - 1$.</span> Away from the boundaries of a rule <span class="nb">$\delta$,</span> its per-sample expected cost $\phi_\delta(\mathbf{p}) = \mathbf{c}_{\delta(\mathbf{p})}^\top \mathbf{p}$ is linear near <span class="nb">$\mathbf{p}$,</span> with a gradient <span class="nb">$\mathbf{g} \in V$,</span> so $\boldsymbol{\epsilon}$ changes it by <span class="nb">$\mathbf{g}^\top \boldsymbol{\epsilon}$.</span></p>
+<figure class="fig" data-fig="dilution_geometry"></figure>
+</div>
+<aside class="notes"><ul>
+<li><span class="nb">$K = 2$:</span> one direction, and the whole error changes the cost.</li>
+<li><span class="nb">$K = 3$:</span> only the component along $\mathbf{g}$ counts; on average half.</li>
+<li>In general <span class="nb">$1/(K-1)$:</span> an error of fixed size is diluted over more directions.</li>
+</ul></aside>
+</section>
+
+<section data-n="55" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<h2>Dimensional dilution</h2>
+<div class="body">
+<div class="block lemma"><div class="block-title">Lemma (9.2.3, dimensional dilution; proof: <a class="bk" href="#/P11">P11</a>)</div><div class="block-body"><p>Let $K \geq 2$ and let $\phi \colon \Delta^{K-1} \to \mathbb{R}$ be measurable and differentiable at an interior point $\mathbf{p}$ with gradient <span class="nb">$\mathbf{g} \in V$,</span> with $\mathbf{p} + \boldsymbol{\epsilon} \in \Delta^{K-1}$ and $|\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p})
+    - \mathbf{g}^\top \boldsymbol{\epsilon}| \leq M \|\boldsymbol{\epsilon}\|^2$ for all $\boldsymbol{\epsilon} \in V$ with <span class="nb">$\|\boldsymbol{\epsilon}\| \leq \rho$.</span> If $\boldsymbol{\epsilon}$ is uniform on the sphere $\{\mathbf{v} \in V : \|\mathbf{v}\| = r\}$ with <span class="nb">$0 &lt; r \leq \rho$,</span> then <span class="dm">\[
+      \mathbb{E}\bigl[(\phi(\mathbf{p} + \boldsymbol{\epsilon})
+        - \phi(\mathbf{p}))^2\bigr]
+      = \frac{r^2}{K-1} \, \|\mathbf{g}\|^2 + O(r^3) .
+    \]</span></p></div></div>
+<p>The synthetic check reproduces the ordering in $K$ but not the rate <span class="nb">$1/(K-1)$;</span> its Gaussian perturbations need not satisfy the assumptions of the lemma.</p>
+</div>
+<aside class="notes"><ul>
+<li>The formal statement: one point, a smooth cost, an isotropic perturbation.</li>
+<li>The synthetic check matches the ordering, not the rate.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="56" data-total="63" data-part-name="Conclusion" class="outline">
+<h2>Roadmap</h2>
+<div class="body">
+<div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part current"><span class="num">4</span>Conclusion</li></ol></div>
+</div>
+</section><section data-n="57" data-total="63" data-part-name="Conclusion" data-contrib="5">
+<h2>The threshold_opt library</h2>
+<div class="body">
+<div class="editor">
+<div class="editor-bar"><span class="dots"><i></i><i></i><i></i></span><span>example.py</span><span class="shell">pip install threshold-opt</span></div>
+<pre class="code"><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestClassifier
+<span class="kw">from</span> threshold_opt <span class="kw">import</span> metrics, multiclass_strategies <span class="kw">as</span> ms
+C = np.<span class="fn">array</span>([[ <span class="nu">0</span>, <span class="nu">1</span>, <span class="nu">1</span>],       <span class="cm"># C[i, j]: cost of predicting j when the truth is i</span>
+              [<span class="nu">10</span>, <span class="nu">0</span>, <span class="nu">1</span>],       <span class="cm"># missing class 1 costs 10</span>
+              [ <span class="nu">5</span>, <span class="nu">5</span>, <span class="nu">0</span>]])
+model = <span class="fn">RandomForestClassifier</span>().<span class="fn">fit</span>(X_train, y_train)
+rule = ms.<span class="fn">FullMatrixPartitioningStrategy</span>(model, use_cv=<span class="kw">True</span>)   <span class="cm"># 5-fold CV</span>
+rule.<span class="fn">fit</span>(X_train, y_train, C)
+<span class="kw">for</span> y_pred <span class="kw">in</span> (model.<span class="fn">predict</span>(X_test), rule.<span class="fn">predict</span>(X_test)):     <span class="cm"># argmax, then tuned</span>
+    <span class="fn">print</span>(metrics.<span class="fn">calculate_empirical_risk</span>(y_test, y_pred, C))</pre>
+</div>
+<div class="columns top">
+<div class="col" style="--cw:.49"><ul>
+<li>It follows the scikit-learn interface: <code>fit</code>, then <code>predict</code>.</li>
+<li>It adds the multiclass partition strategies; scikit-learn tunes binary thresholds only (<a class="bk" href="#/B7">B7</a>).</li>
+</ul></div>
+<div class="col" style="--cw:.49"><ul>
+<li>Every experiment of the dissertation uses it, and its tests run in continuous integration.</li>
+<li>It is open source, on <a class="ext" href="https://pypi.org/project/threshold-opt/" target="_blank" rel="noopener">PyPI</a> and <a class="ext" href="https://github.com/vitaliset/threshold-opt" target="_blank" rel="noopener">GitHub</a>: <code>vitaliset/threshold-opt</code>.</li>
+</ul></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Every strategy of the dissertation is one <code>pip install</code> away.</li>
+<li>One interface: fit the decision layer on held-out data, then predict.</li>
+<li>The multiclass partition layer is what scikit-learn does not have.</li>
+</ul></aside>
+</section>
+
+<section data-n="58" data-total="63" data-part-name="Conclusion">
+<h2>Machine-checked proofs</h2>
+<div class="body">
+<p>The mathematical results of the dissertation are stated and proved in <strong>Lean 4</strong> with Mathlib (Appendix E). The Lean kernel checks every proof, and the proofs use only the three standard axioms.</p>
+<p>The formalization was generated with AI assistants (Appendix F). No program checks that each formal statement matches the printed one; that match was checked with AI assistance.</p>
+<p>Stating the results formally revealed errors in the committee version; the next slide lists them.</p>
+</div>
+<aside class="notes"><ul>
+<li>Every result of the text has a formal counterpart in Lean.</li>
+<li>The kernel checks the proofs; the match with the text rests on an AI-assisted comparison.</li>
+<li>The formalization found errors in the version the committee received.</li>
+</ul></aside>
+</section>
+
+<section data-n="59" data-total="63" data-part-name="Conclusion">
+<h2>Corrections since the committee version</h2>
+<div class="body">
+<ul>
+<li><strong>Theory</strong> (<a class="bk" href="#/B20">B20</a>, <a class="bk" href="#/B21">B21</a>). Unconstrained Voronoi rules are exactly the full-matrix rules; the committee version described them as an intermediate class. The bounds now state their logarithmic factors and conditions.</li>
+<li><strong>Descriptions</strong> (<a class="bk" href="#/B22">B22</a>). The text now describes the G-Mean that the code computes. For $K \neq 3$ the Custom cost is Asymmetric <span class="nb">$10\times$,</span> so that matrix is counted twice. The text now says that the relative excess risk falls with <span class="nb">$K$.</span></li>
+<li><strong>Numbers in the prose.</strong> Some win rates in the text of Chapters 8 to 10 differ by one to four points from the charts; no ranking changes.</li>
+</ul>
+<p>No experiment was rerun. Pull requests in the public repository apply the corrections step by step. The final version will rerun the Custom cost for every $K$ and recompute the win rates with one rounding rule.</p>
+</div>
+<aside class="notes"><ul>
+<li>Theory: Voronoi equals the full matrix; the bounds are stated correctly.</li>
+<li>Descriptions now match what was run; the prose numbers will be recomputed.</li>
+<li>Details on B20 to B22.</li>
+</ul></aside>
+</section>
+
+<section data-n="60" data-total="63" data-part-name="Conclusion">
+<h2>Limitations and next steps</h2>
+<div class="body">
+<div class="columns top">
+<div class="col" style="--cw:.44"><p><strong>Limitations</strong></p>
+<ul>
+<li>One protocol, default hyperparameters, tabular data with <span class="nb">$K \leq 10$,</span> and a descriptive comparison.</li>
+<li>The split proportions are arbitrary, and they favour the cross-validated tuners: calibrators are fitted on the $10\%$ split and the cross-validated tuners use the $80\%$ pool.</li>
+</ul></div>
+<div class="col" style="--cw:.54"><p><strong>Next steps</strong></p>
+<ul>
+<li>Data beyond tables: images, text.</li>
+<li>Costs that depend on the instance, such as a payment amount.</li>
+<li>Tuning the base classifiers.</li>
+<li>The effect of the class imbalance, varied with the rest fixed.</li>
+<li>Cross-validated calibrators.</li>
+<li>The computational cost of each method.</li>
+</ul></div>
+</div>
+<p class="center">We plan to organize some of these into a paper.</p>
+</div>
+<aside class="notes"><ul>
+<li>Main limits: one protocol, default hyperparameters, a descriptive comparison, arbitrary split proportions.</li>
+<li>Next: other data, instance-dependent costs, tuned classifiers, the imbalance ratio, cross-validated calibrators, compute cost.</li>
+<li>A paper should organize these.</li>
+</ul></aside>
+</section>
+
+
+<section data-n="61" data-total="63" data-part-name="Conclusion">
+<h2>References i</h2>
+<div class="body refs">
+<p>Anthony, Martin and Peter L. Bartlett (1999). <em>Neural Network Learning: Theoretical Foundations</em>. Cambridge University Press.</p>
+<p>Daniely, Amit, Sivan Sabato, et al. (2015). “Multiclass Learnability and the ERM Principle”. <em>Journal of Machine Learning Research</em> 16, pp. 2377–2404.</p>
+<p>Daniely, Amit and Shai Shalev-Shwartz (2014). “Optimal Learners for Multiclass Problems”. In: <em>Proceedings of the 27th Conference on Learning Theory (COLT)</em>. Vol. 35. Proceedings of Machine Learning Research, pp. 287–316.</p>
+<p>Devroye, Luc et al. (1996). <em>A Probabilistic Theory of Pattern Recognition</em>. Springer.</p>
+<p>Elkan, Charles (2001). “The Foundations of Cost-Sensitive Learning”. In: <em>Proceedings of the 17th International Joint Conference on Artificial Intelligence (IJCAI)</em>, pp. 973–978.</p>
+<p>Gorodkin, Jan (2004). “Comparing Two K-Category Assignments by a K-Category Correlation Coefficient”. <em>Computational Biology and Chemistry</em> 28.5–6, pp. 367–374.</p>
+</div>
+</section>
+
+<section data-n="62" data-total="63" data-part-name="Conclusion">
+<h2>References ii</h2>
+<div class="body refs">
+<p>Guo, Chuan et al. (2017). “On Calibration of Modern Neural Networks”. In: <em>Proceedings of the 34th International Conference on Machine Learning (ICML)</em>, pp. 1321–1330.</p>
+<p>Koyejo, Oluwasanmi et al. (2014). “Consistent Binary Classification with Generalized Performance Metrics”. In: <em>Advances in Neural Information Processing Systems 27 (NeurIPS)</em>.</p>
+<p>Kull, Meelis et al. (2019). “Beyond Temperature Scaling: Obtaining Well-Calibrated Multi-Class Probabilities with Dirichlet Calibration”. In: <em>Advances in Neural Information Processing Systems 32 (NeurIPS)</em>.</p>
+<p>Lachiche, Nicolas and Peter A. Flach (2003). “Improving Accuracy and Cost of Two-Class and Multi-Class Probabilistic Classifiers Using ROC Curves”. In: <em>Proceedings of the 20th International Conference on Machine Learning (ICML)</em>, pp. 416–423.</p>
+<p>Legnaro, Edoardo et al. (2025). “Multiclass Threshold-Based Classification and Model Evaluation”. <em>arXiv preprint arXiv:2511.21794</em>.</p>
+<p>Mohri, Mehryar et al. (2018). <em>Foundations of Machine Learning</em>. 2nd. MIT Press.</p>
+</div>
+</section>
+
+<section data-n="63" data-total="63" data-part-name="Conclusion">
+<h2>References iii</h2>
+<div class="body refs">
+<p>Natarajan, Balas K. (1989). “On Learning Sets and Functions”. <em>Machine Learning</em> 4.1, pp. 67–97.</p>
+<p>O'Brien, Deirdre B. et al. (2008). “Cost-Sensitive Multi-Class Classification from Probability Estimates”. In: <em>Proceedings of the 25th International Conference on Machine Learning (ICML)</em>, pp. 712–719.</p>
+<p>Platt, John C. (1999). “Probabilistic Outputs for Support Vector Machines and Comparisons to Regularized Likelihood Methods”. In: <em>Advances in Large Margin Classifiers</em>. Ed. by Alexander J. Smola et al. MIT Press, pp. 61–74.</p>
+<p>Rivest, Ronald L. (1987). “Learning Decision Lists”. <em>Machine Learning</em> 2.3, pp. 229–246.</p>
+<p>Sheng, Victor S. and Charles X. Ling (2006). “Thresholding for Making Classifiers Cost-Sensitive”. In: <em>Proceedings of the 21st National Conference on Artificial Intelligence (AAAI)</em>, pp. 476–481.</p>
+<p>Zadrozny, Bianca and Charles Elkan (2002). “Transforming Classifier Scores into Accurate Multiclass Probability Estimates”. In: <em>Proceedings of the 8th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)</em>, pp. 694–699.</p>
+</div>
+</section>
+
+
+<section data-backup>
+<h2>Backup index</h2>
+<div class="body fs-scriptsize">
+<div class="columns top">
+<div class="col" style="--cw:.31"><table>
+<tr><td class="l"><strong>Context and caveats</strong></td></tr>
+<tr><td class="l"><a class="bk" href="#/B1"><strong>B1</strong> Protocol details</a><br> <a class="bk" href="#/B2"><strong>B2</strong> Datasets</a><br> <a class="bk" href="#/B3"><strong>B3</strong> Cost objectives</a><br> <a class="bk" href="#/B4"><strong>B4</strong> Limits of the win-or-tie rule</a><br> <a class="bk" href="#/B5"><strong>B5</strong> Binary cost, all strategies</a><br> <a class="bk" href="#/B6"><strong>B6</strong> Binary metrics, all strategies</a><br> <a class="bk" href="#/B7"><strong>B7</strong> Relation to scikit-learn</a><br> <a class="bk" href="#/B8"><strong>B8</strong> Capacity measures</a><br> <a class="bk" href="#/B9"><strong>B9</strong> Searching over prototypes</a><br> <a class="bk" href="#/B10"><strong>B10</strong> Voronoi samplers</a><br></td></tr>
+</table></div>
+<div class="col" style="--cw:.33"><table>
+<tr><td class="l"><strong>Context and caveats (continued)</strong></td></tr>
+<tr><td class="l"><a class="bk" href="#/B11"><strong>B11</strong> Multiclass cost, all strategies</a><br> <a class="bk" href="#/B12"><strong>B12</strong> Multiclass metrics, all strategies</a><br> <a class="bk" href="#/B13"><strong>B13</strong> Compute and use of AI</a><br> <a class="bk" href="#/B14"><strong>B14</strong> The four calibrators</a><br> <a class="bk" href="#/B15"><strong>B15</strong> Metric objectives</a><br> <a class="bk" href="#/B16"><strong>B16</strong> The region allowed by the DLC</a><br> <a class="bk" href="#/B17"><strong>B17</strong> Voronoi against vector-tuned rules</a><br> <a class="bk" href="#/B18"><strong>B18</strong> Capacity against $K$</a><br> <a class="bk" href="#/B19"><strong>B19</strong> A regime that favours rotation: results</a><br> <a class="bk" href="#/index2"><strong>B20&#8211;B34</strong> Next index</a><br></td></tr>
+</table></div>
+<div class="col" style="--cw:.33"><table>
+<tr><td class="l"><strong>Proofs</strong></td></tr>
+<tr><td class="l"><a class="bk" href="#/P1"><strong>P1</strong> Prop. 2.3.1, Bayes risk identity</a><br> <a class="bk" href="#/P2"><strong>P2</strong> Prop. 2.4.1, excess risk</a><br> <a class="bk" href="#/P3"><strong>P3</strong> Prop. 2.6.1, Lemma 2.6.2</a><br> <a class="bk" href="#/P4"><strong>P4</strong> Lemma 3.2.1, threshold</a><br> <a class="bk" href="#/P5"><strong>P5</strong> Props. 6.2.3, 6.2.4</a><br> <a class="bk" href="#/P6"><strong>P6</strong> Props. 7.2.1, 7.3.2, Voronoi and full matrix</a><br> <a class="bk" href="#/P7"><strong>P7</strong> Thm. 7.3.1, separation</a><br> <a class="bk" href="#/P8"><strong>P8</strong> Prop. 7.5.1, sampler</a><br> <a class="bk" href="#/P9"><strong>P9</strong> Lemma C.0.2, Thms. 7.7.3–7.7.5</a><br> <a class="bk" href="#/P10"><strong>P10</strong> Thm. 7.7.2, $d_{Nat}(\mathcal{H}_{PS})$</a><br> <a class="bk" href="#/P11"><strong>P11</strong> Lemma 9.2.3, dilution</a><br></td></tr>
+</table></div>
+</div>
+</div>
+</section>
+
+<section data-backup id="index2">
+<h2>Backup index (continued)</h2>
+<div class="body fs-scriptsize">
+<div class="columns top">
+<div class="col" style="--cw:.48"><table>
+<tr><td class="l"><strong>Corrections since the committee version</strong></td></tr>
+<tr><td class="l"><a class="bk" href="#/B20"><strong>B20</strong> Voronoi, bounds and capacity</a><br> <a class="bk" href="#/B21"><strong>B21</strong> Ties, calibration and local statements</a><br> <a class="bk" href="#/B22"><strong>B22</strong> Experiments and interpretation</a><br> <a class="bk" href="#/B23"><strong>B23</strong> References and stated conditions</a><br></td></tr>
+</table></div>
+<div class="col" style="--cw:.48"><table>
+<tr><td class="l"><strong>Details of the main slides</strong></td></tr>
+<tr><td class="l"><a class="bk" href="#/B24"><strong>B24</strong> Calibrator capacity</a><br> <a class="bk" href="#/B25"><strong>B25</strong> Binary results: the label budget</a><br> <a class="bk" href="#/B26"><strong>B26</strong> The cost matrix fixes the boundaries</a><br> <a class="bk" href="#/B27"><strong>B27</strong> Miscalibration in the simplex</a><br> <a class="bk" href="#/B28"><strong>B28</strong> Multiclass datasets</a><br> <a class="bk" href="#/B29"><strong>B29</strong> The Voronoi decision rule</a><br> <a class="bk" href="#/B30"><strong>B30</strong> Admissible cost matrices</a><br> <a class="bk" href="#/B31"><strong>B31</strong> Voronoi contains the parallel shift</a><br> <a class="bk" href="#/B32"><strong>B32</strong> Binary data use by strategy</a><br> <a class="bk" href="#/B33"><strong>B33</strong> The six Voronoi samplers</a><br> <a class="bk" href="#/B34"><strong>B34</strong> Multiclass benchmark</a><br></td></tr>
+</table></div>
+</div>
+</div>
+</section>
+
+<section data-backup id="B1">
+<h2>B1. Protocol details</h2>
+<div class="body">
+<p><strong>Data.</strong> Stratified $80/20$ split into a training pool and a test set; inside the pool, $70\%$ training and $10\%$ validation. Ten seeds resample the partition.</p>
+<p><strong>Preprocessing.</strong> Imputation, standardization and one-hot encoding are fitted once on the full dataset before splitting. This leaks test-partition feature statistics; the same transformer is shared by every strategy.</p>
+<p><strong>Search.</strong> A grid of $G = 301$ thresholds in binary. In multiclass, random search over $T = 301$ configurations; single-split RiskPartitioning uses the changepoint solver of <span class="cite" data-key="obrien2008costsensitive">O'Brien et al. (2008)</span>.</p>
+<p><strong>Models.</strong> Default hyperparameters. TabPFN and TabICL have no results on <em>adult</em>, <em>bank_marketing</em>, <em>volkert</em> and <em>jannis</em>; TabICL none on <em>sonar</em>, <em>ionosphere</em> and <em>iris</em>.</p>
+</div>
+</section>
+
+<section data-backup id="B2">
+<h2>B2. Datasets</h2>
+<div class="body">
+<div class="columns top">
+<div class="col center" style="--cw:.49"><figure class="fig" data-fig="dataset_summary_binary" style="--h:.6;"><img src="figures/static/dataset_summary_binary.svg" alt="dataset summary binary"></figure></div>
+<div class="col center" style="--cw:.49"><figure class="fig" data-fig="dataset_summary_multiclass" style="--h:.6;"><img src="figures/static/dataset_summary_multiclass.svg" alt="dataset summary multiclass"></figure></div>
+</div>
+<div class="fs-footnotesize"><p>Binary (left) and multiclass (right). Superscripts are OpenML dataset IDs. Columns: samples, classes (multiclass only), numerical, categorical and encoded features, imbalance ratio.</p></div>
+</div>
+</section>
+
+<section data-backup id="B3">
+<h2>B3. Cost objectives</h2>
+<div class="body fs-footnotesize">
+<div class="center"><table>
+<tr><th class="l">Objective</th><th class="l">Binary</th><th class="l">Multiclass</th></tr>
+<tr><td class="l">Symmetric</td><td class="l">the $0/1$ loss</td><td class="l">the $0/1$ loss</td></tr>
+<tr><td class="l">Asymmetric <span class="nb">$10\times$,</span> $100\times$</td><td class="l">$C_{01} \in \{10, 100\}$ (false positive), $C_{10} = 1$</td><td class="l">$C_{K-1, j} \in \{10, 100\}$ for $j \neq K - 1$ (errors on the last true class); other errors cost $1$</td></tr>
+<tr><td class="l">Non-Zero Diagonal</td><td class="l">$\mathbf{C} = \bigl[\begin{smallmatrix} 0.8 &amp; 2.0 \\ 1.0 &amp; 0.5
+          \end{smallmatrix}\bigr]$</td><td class="l">not used</td></tr>
+<tr><td class="l">Custom</td><td class="l">not used</td><td class="l"><span class="nb">$K = 3$:</span> <span class="nb">$C_{12} = C_{21} = 5$;</span> other errors cost $1$</td></tr>
+<tr><td class="l">Ordinal</td><td class="l">not used</td><td class="l">$C_{ij} = |i - j|$</td></tr>
+<tr><td class="l">Quadratic</td><td class="l">not used</td><td class="l">$C_{ij} = (i - j)^2$</td></tr>
+<tr><td class="l">Balanced Error</td><td class="l"><span class="nb">$C_{01} = 1/(2\pi_0)$,</span> $C_{10} = 1/(2\pi_1)$</td><td class="l">$C_{ij} = 1/(K \pi_i)$ for $i \neq j$</td></tr>
+</table></div>
+<div class="smallskip"></div>
+<p>$C_{ii} = 0$ except in Non-Zero Diagonal; $\pi_y$ is the training frequency of class <span class="nb">$y$.</span> On the eight datasets with $K \neq 3$ the code replaces the Custom matrix by the Asymmetric $10\times$ matrix, which is then counted twice in the cost aggregates.</p>
+</div>
+</section>
+
+<section data-backup id="B4">
+<h2>B4. Limits of the win-or-tie rule</h2>
+<div class="body">
+<p><strong>Within a cell.</strong> Mean $\pm 1$ SE over ten seeds; a strategy wins or ties when its interval overlaps that of the best.</p>
+<p><strong>Across cells.</strong> Share of cells won or tied, with a $95\%$ bootstrap interval that resamples (dataset, model, objective) cells.</p>
+<p>The rule gives no per-cell significance level and no correction for multiplicity. The ten seeds resample one dataset, so the standard errors are not those of independent samples, and the bootstrap ignores dependence between cells of one dataset.</p>
+<p>A rank-based analysis over datasets, such as a Friedman test with post-hoc comparisons, is the usual alternative and is not in the dissertation.</p>
+</div>
+</section>
+
+<section data-backup id="B5">
+<h2>B5. All strategies, binary cost objectives</h2>
+<div class="body">
+<figure class="fig" data-fig="win_counts_binary_cost" style="--h:.78;"><img src="figures/static/win_counts_binary_cost.svg" alt="win counts binary cost"></figure>
+</div>
+</section>
+
+<section data-backup id="B6">
+<h2>B6. All strategies, binary metrics</h2>
+<div class="body">
+<figure class="fig" data-fig="win_counts_binary_max" style="--h:.6;"><img src="figures/static/win_counts_binary_max.svg" alt="win counts binary max"></figure>
+</div>
+</section>
+
+<section data-backup id="B7">
+<h2>B7. Relation to scikit-learn</h2>
+<div class="body">
+<p>scikit-learn ships <code>TunedThresholdClassifierCV</code>, which chooses the decision threshold of a binary classifier by cross-validation against a user-supplied metric. Up to the grid of candidate thresholds, this is the procedure the binary study calls EmpiricalCV.</p>
+<p>The binary study adds a comparison of cross-validated tuning with the analytical threshold, four calibrators and single-split tuning, across ten objectives.</p>
+<p>scikit-learn has no counterpart to the multiclass partition classes, their capacity analysis or the benchmark over them.</p>
+</div>
+</section>
+
+<section data-backup id="B8">
+<h2>B8. Capacity measures</h2>
+<div class="body fs-small">
+<div class="block definition"><div class="block-title">Definition (1, VC dimension)</div><div class="block-body"><p>A set $S = \{x_1, \dots, x_m\}$ is shattered by $\mathcal{H} \subseteq \{0,1\}^{\mathcal{X}}$ if every labeling $(b_1, \dots, b_m) \in \{0,1\}^m$ is realized by some <span class="nb">$h \in \mathcal{H}$.</span> $d_{VC}(\mathcal{H})$ is the cardinality of the largest shattered set.</p></div></div>
+<div class="block definition"><div class="block-title">Definition (3, pseudo-dimension)</div><div class="block-body"><p>A set is pseudo-shattered by $\mathcal{G} \subseteq \mathbb{R}^{\mathcal{X}}$ if there are witnesses $r_1, \dots, r_m \in \mathbb{R}$ such that for every labeling some $g \in \mathcal{G}$ satisfies $g(x_i) \geq r_i \iff b_i = 1$ for all <span class="nb">$i$.</span> $d_P(\mathcal{G})$ is the largest such cardinality.</p></div></div>
+<div class="block definition"><div class="block-title">Definition (8, Natarajan dimension)</div><div class="block-body"><p>A set $S$ is shattered by $\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}$ if there are $f_0, f_1 \colon S \to \mathcal{Y}$ with $f_0(x_i) \neq f_1(x_i)$ for all $i$ such that, for every <span class="nb">$B \subseteq S$,</span> some $h \in \mathcal{H}$ equals $f_1$ on $B$ and $f_0$ on <span class="nb">$S \setminus B$.</span> $d_{Nat}(\mathcal{H})$ is the maximum cardinality of a shattered set.</p></div></div>
+</div>
+</section>
+
+<section data-backup id="B9">
+<h2>B9. Searching over prototypes</h2>
+<div class="body">
+<p>The empirical risk is piecewise constant in the prototypes, so the search is random.</p>
+<div class="block definition"><div class="block-title">Definition (7, dominant label constraint)</div><div class="block-body"><p>A configuration $\mathcal{M}$ in the simplex satisfies the DLC if $\arg\min_{j} \|\mathbf{e}_k - \boldsymbol{\mu}_j\|_2 = \{k\}$ for every <span class="nb">$k$:</span> on pure-class inputs the Voronoi rule agrees with argmax.</p></div></div>
+<p>The <strong>sequential $d^2$ sampler</strong> draws one prototype per class uniformly on the simplex, with its largest coordinate moved to that class, and accepts it only if every earlier vertex stays with its own prototype and the new vertex is nearest to the new one. Its output satisfies the DLC (Proposition 7.5.1; proof: <a class="bk" href="#/P8">P8</a>).</p>
+<p>The search starts at the vertices and keeps strict improvements.</p>
+</div>
+</section>
+
+<section data-backup id="B10">
+<h2>B10. Voronoi samplers</h2>
+<div class="body">
+<figure class="fig" data-fig="sampler_partition_overlay" style="--w:1;--h:.56;"><img src="figures/static/sampler_partition_overlay.png" alt="sampler partition overlay"></figure>
+<div class="fs-footnotesize"><p>Disagreement across $300$ sampled configurations at <span class="nb">$K = 3$;</span> white is unanimous agreement. Sequential $d^2$ is the second panel of the bottom row. Among the six Voronoi samplers it is the only one that keeps the vertices with their own class for every $K$ up to $100$ while still exploring the interior.</p></div>
+</div>
+</section>
+
+<section data-backup id="B11">
+<h2>B11. All strategies, multiclass cost objectives</h2>
+<div class="body">
+<figure class="fig" data-fig="win_counts_multiclass_cost" style="--h:.8;"><img src="figures/static/win_counts_multiclass_cost.svg" alt="win counts multiclass cost"></figure>
+</div>
+</section>
+
+<section data-backup id="B12">
+<h2>B12. All strategies, multiclass metrics</h2>
+<div class="body">
+<figure class="fig" data-fig="win_counts_multiclass_max" style="--h:.8;"><img src="figures/static/win_counts_multiclass_max.svg" alt="win counts multiclass max"></figure>
+</div>
+</section>
+
+<section data-backup id="B13">
+<h2>B13. Compute and use of AI</h2>
+<div class="body">
+<p><strong>Compute.</strong> A Google Cloud <code>n2-highcpu-80</code> instance for the seven non-neural classifiers and one NVIDIA H200 pod for TabM, TabPFN and TabICL. The merged results hold $136{,}680$ rows for binary and $276{,}960$ for multiclass. Total cloud spend was about USD $140$ and BRL <span class="nb">$480$.</span></p>
+<p><strong>AI assistants</strong> were used to draft and refactor the library, the experiment harness and the tests; to survey related literature and locate references, which were verified against the sources; to draft and revise prose; to generate and cross-check short derivations; and to propose readings of the results, kept only when the author judged them correct. The Lean formalization of Appendix E was generated by AI assistants; the author's own reading of the formal statements was limited by a basic knowledge of Lean, and their agreement with the printed statements rests on an AI-assisted comparison. The research questions and the theoretical contributions are the author's.</p>
+</div>
+</section>
+
+<section data-backup id="B14">
+<h2>B14. The four calibrators</h2>
+<div class="body">
+<p>Fitted on the validation split, with the base estimator frozen; $\sigma$ is the logistic sigmoid.</p>
+<ul>
+<li><strong>Temperature scaling</strong> <span class="cite" data-key="guo2017calibration">(Guo et al., 2017)</span>: <span class="nb">$g_T(\hat{p}) = \sigma(z / T)$,</span> <span class="nb">$z = \log \frac{\hat{p}}{1 - \hat{p}}$,</span> <span class="nb">$T &gt; 0$.</span></li>
+<li><strong>Platt scaling</strong> <span class="cite" data-key="platt1999probabilistic">(Platt, 1999)</span>: $g_{a,b}(s) = \sigma(a \, s + b)$ on the raw score <span class="nb">$s(x)$.</span></li>
+<li><strong>Isotonic regression</strong> <span class="cite" data-key="zadrozny2002transforming">(Zadrozny and Elkan, 2002)</span>: a monotone step function fitted by least squares.</li>
+<li><strong>Dirichlet calibration</strong> <span class="cite" data-key="kull2019beyond">(Kull et al., 2019)</span>: <span class="nb">$g_{\mathbf{W}, \mathbf{b}}(\hat{\mathbf{p}}) = \mathrm{softmax}(
+      \mathbf{W} \log \hat{\mathbf{p}} + \mathbf{b})$;</span> three effective parameters for <span class="nb">$K = 2$.</span></li>
+</ul>
+<p>The parametric ones minimize the negative log-likelihood. In multiclass, Platt scaling and isotonic regression are applied one-vs-rest.</p>
+</div>
+</section>
+
+<section data-backup id="B15">
+<h2>B15. Metric objectives</h2>
+<div class="body fs-small">
+<p><strong>Binary.</strong> From the counts <span class="nb">$\mathrm{TP}$,</span> <span class="nb">$\mathrm{FP}$,</span> <span class="nb">$\mathrm{FN}$,</span> $\mathrm{TN}$ of the positive class, with $\mathrm{TPR} = \mathrm{TP}/(\mathrm{TP} + \mathrm{FN})$ and <span class="nb">$\mathrm{TNR} = \mathrm{TN}/(\mathrm{TN} + \mathrm{FP})$:</span> <span class="dm">\begin{gather*}
+    F_\beta = \frac{(1 + \beta^2) \, \mathrm{TP}}
+      {(1 + \beta^2) \, \mathrm{TP} + \beta^2 \, \mathrm{FN} + \mathrm{FP}} ,
+    \qquad
+    \text{G-Mean} = \sqrt{\mathrm{TPR} \cdot \mathrm{TNR}} , \\
+    \mathrm{MCC} = \frac{\mathrm{TP} \cdot \mathrm{TN}
+        - \mathrm{FP} \cdot \mathrm{FN}}
+      {\sqrt{(\mathrm{TP} + \mathrm{FP})(\mathrm{TP} + \mathrm{FN})
+             (\mathrm{TN} + \mathrm{FP})(\mathrm{TN} + \mathrm{FN})}} .
+  \end{gather*}</span></p>
+<p><strong>Multiclass.</strong> Macro $F_\beta$ is the mean over classes of the one-vs-rest <span class="nb">$F_\beta$;</span> MCC takes the $K$-class form of <span class="cite" data-key="gorodkin2004comparing">Gorodkin (2004)</span>. For G-Mean the campaign optimizes <code>geometric_mean_score(average="macro")</code> from imbalanced-learn, which is $\sqrt{\overline{\mathrm{TPR}} \cdot \overline{\mathrm{TNR}}}$ with the one-vs-rest rates averaged over classes, as Section 8.1.3 states. The geometric mean of the recalls, <span class="nb">$(\prod_k \mathrm{TPR}_k)^{1/K}$,</span> is the different <code>average="multiclass"</code> variant.</p>
+</div>
+</section>
+
+<section data-backup class="added" id="B16">
+<h2>B16. The region allowed by the DLC</h2>
+<div class="body">
+<figure class="fig" data-fig="dlc_region"></figure>
+<div class="fs-footnotesize"><p>For <span class="nb">$K = 3$:</span> with $\boldsymbol{\mu}_1$ and $\boldsymbol{\mu}_2$ fixed, the DLC confines $\boldsymbol{\mu}_0$ to a disc around $\mathbf{e}_0$ minus discs around $\mathbf{e}_1$ and <span class="nb">$\mathbf{e}_2$.</span> Outside the shaded area the configuration is still in <span class="nb">$\mathcal{H}_{Vor}^{\Delta}$.</span></p></div>
+</div>
+</section>
+
+<section data-backup id="B17">
+<h2>B17. Voronoi against vector-tuned rules</h2>
+<div class="body">
+<p>For each cell we record which family has a strategy that wins or ties it. Vector-tuned means $\mathcal{H}_{PS}$ and $\mathcal{H}_{Sc}$ rules; Voronoi means VoronoiTuning and its CV variant.</p>
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Winning family</th><th class="c">Cost cells</th><th class="c">Metric cells</th></tr>
+<tr><td class="l">Vector-tuned alone</td><td class="c">$52\%$</td><td class="c">$19\%$</td></tr>
+<tr><td class="l">Both</td><td class="c">$39\%$</td><td class="c">$74\%$</td></tr>
+<tr><td class="l">Voronoi alone</td><td class="c">$0.1\%$</td><td class="c">$1.3\%$</td></tr>
+<tr><td class="l">Neither</td><td class="c">$9\%$</td><td class="c">$5\%$</td></tr>
+</table></div>
+<p>On this benchmark the Voronoi family is rarely the only one to win or tie a cell. On metric cells VoronoiTuningCV wins or ties <span class="nb">$74\%$,</span> ahead of the parallel-shift MultidimensionalThresholdCV <span class="nb">($67\%$)</span> and behind ThresholdRatioCV <span class="nb">($90\%$).</span></p>
+</div>
+</section>
+
+<section data-backup id="B18">
+<h2>B18. Capacity against $K$</h2>
+<div class="body">
+<figure class="fig" data-fig="capacity_bounds"></figure>
+<div class="fs-footnotesize"><p>The values of the theorem against <span class="nb">$K$.</span> Only $d_{Nat}(\mathcal{H}_{PS}) = K - 1$ is exact; the others are upper bounds. The gap term of the bound is <span class="nb">$c \, C_{max} \sqrt{d_{Nat} / m}$,</span> so keeping it fixed takes $m$ proportional to <span class="nb">$d_{Nat}$:</span> $K^2 / (K - 1)$ times more validation data under the full-matrix bound than for the parallel shift.</p></div>
+</div>
+</section>
+
+<section data-backup id="B19">
+<h2>B19. A regime that favours rotation: results</h2>
+<div class="body">
+<p>Classes $0$ and $1$ have correlations $+0.8$ and $-0.8$ between the first two features; class $2$ has $+0.8$ between the first and the third. Mean $\pm$ standard error over ten seeds:</p>
+<div class="center fs-footnotesize"><table>
+<tr><th class="l"></th><th class="c">Accuracy</th><th class="c">Macro-$F_1$</th></tr>
+<tr><td class="l">Argmax</td><td class="c">$0.852 \pm 0.002$</td><td class="c">$0.699 \pm 0.005$</td></tr>
+<tr><td class="l">Ratio thresholding <span class="nb">($\mathcal{H}_{Sc}$)</span></td><td class="c">$0.852 \pm 0.002$</td><td class="c">$0.709 \pm 0.004$</td></tr>
+<tr><td class="l">Multidimensional thresholding <span class="nb">($\mathcal{H}_{PS}$)</span></td><td class="c">$0.852 \pm 0.002$</td><td class="c">$0.709 \pm 0.004$</td></tr>
+<tr><td class="l">Voronoi rule <span class="nb">($\mathcal{H}_{Vor}^{\mathrm{DLC}}$)</span></td><td class="c">$0.874 \pm 0.002$</td><td class="c">$0.735 \pm 0.006$</td></tr>
+<tr><td class="l">Full matrix <span class="nb">($\mathcal{H}_{Full}$)</span></td><td class="c">$0.872 \pm 0.003$</td><td class="c">$0.731 \pm 0.007$</td></tr>
+</table></div>
+<p>The Voronoi rule and the full matrix improve accuracy over argmax by about $2$ points, and the two threshold rules leave it unchanged. The regime was built to favour rotation.</p>
+</div>
+</section>
+
+<section data-backup id="B20">
+<h2>B20. Corrections: Voronoi, bounds and capacity</h2>
+<div class="body fs-corr">
+<table>
+<tr><th class="l">Where</th><th class="l">Committee version</th><th class="l">Corrected</th></tr>
+<tr><td class="l">Ch. 7; Thm. 7.7.5; Table 7.2; App. C</td><td class="l">$\mathcal{H}_{Vor}$ an intermediate class, $d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K$</td><td class="l">With the Euclidean distance, $\mathcal{H}_{Vor} = \mathcal{H}_{Full}$ (new Prop. 7.2.1); $d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$</td></tr>
+<tr><td class="l">§8.1.4, §8.2.3, Ch. 10</td><td class="l">The fitted Voronoi rule read as the class that contains $\mathcal{H}_{PS}$</td><td class="l">VoronoiTuning searches the DLC subclass, where the containment need not hold</td></tr>
+<tr><td class="l">Prop. 7.3.2</td><td class="l">Strictness from one $0/1$ witness</td><td class="l"><span class="nb">$K \geq 2$;</span> strict for every <span class="nb">$\mathbf{C}$,</span> at two vertices</td></tr>
+<tr><td class="l">Prop. 2.6.1; Rem. 7.7.1</td><td class="l">Cor. 3.19 on the cost loss; one rule; a universal constant</td><td class="l"><span class="nb">$K = 2$;</span> uniform; a countable approximating class; level sets; explicit <span class="nb">$c_{bin}$,</span> $c_{Nat}$</td></tr>
+<tr><td class="l">Thms. 7.7.2, 7.7.3; Lemma C.0.2</td><td class="l">No hypothesis on <span class="nb">$\mathbf{C}$;</span> positivity implicit; a proof that fails on ties</td><td class="l">Admissible <span class="nb">$\mathbf{C}$;</span> positive weights; a proof that respects the tie rule</td></tr>
+</table>
+</div>
+</section>
+
+<section data-backup id="B21">
+<h2>B21. Corrections: ties, calibration and local statements</h2>
+<div class="body fs-corr">
+<table>
+<tr><th class="l">Where</th><th class="l">Committee version</th><th class="l">Corrected</th></tr>
+<tr><td class="l">Prop. 3.3.1; Def. 2; §5.3, §5.4</td><td class="l">The rule "coincides" with <span class="nb">$h^*$;</span> calibration for all <span class="nb">$q$;</span> posterior recovery taken as calibration</td><td class="l">Bayes risk attained, agreement off the ties; almost every <span class="nb">$q$;</span> posterior recovery sufficient, not necessary</td></tr>
+<tr><td class="l">§2.3; §5.1; Thm. 5.2.4</td><td class="l">The closed regions form a partition</td><td class="l">They cover and overlap on ties; the tie rule gives the partition</td></tr>
+<tr><td class="l">Ex. 5.2.2; Prop. 5.2.3</td><td class="l">The hedge is optimal "only in the interior"</td><td class="l">At no vertex; unique minimizer at <span class="nb">$(\tfrac{1}{2}, \tfrac{1}{2}, 0)$,</span> on an edge</td></tr>
+<tr><td class="l">§6.2.3; Prop. 6.2.4</td><td class="l">"The same class", without the loss or the domain</td><td class="l">Under $0/1$ loss; thresholding with $\boldsymbol{\tau} \in \mathbb{R}^K$</td></tr>
+<tr><td class="l">Thm. 7.3.1; Fig. A.1; Def. 7; Eq. 7.7; §8.1.4</td><td class="l">A step of the sketch, a caption, DLC "equivalently", <span class="nb">$C_{\delta, y}$,</span> weak inequalities</td><td class="l">The step fixed, a schematic caption, "in particular", <span class="nb">$C_{y, \delta}$,</span> strict inequalities</td></tr>
+<tr><td class="l">Rem. 7.7.6</td><td class="l">Calibrators "nested"; Platt capacity "linear in $K$"</td><td class="l">Parameter counts and per-class bounds</td></tr>
+</table>
+</div>
+</section>
+
+<section data-backup id="B22">
+<h2>B22. Corrections: experiments and interpretation</h2>
+<div class="body fs-corr">
+<table>
+<tr><th class="l">Where</th><th class="l">Committee version</th><th class="l">Corrected</th></tr>
+<tr><td class="l">§8.1.3</td><td class="l">Macro G-Mean $= (\prod_k \mathrm{TPR}_k)^{1/K}$</td><td class="l">As computed, $\sqrt{\overline{\mathrm{TPR}} \cdot \overline{\mathrm{TNR}}}$</td></tr>
+<tr><td class="l">§8.1.3</td><td class="l">Custom is a $K = 3$ matrix</td><td class="l">For <span class="nb">$K \neq 3$,</span> Asymmetric <span class="nb">$10\times$,</span> counted twice on eight datasets</td></tr>
+<tr><td class="l">Chs. 4, 6, 8, 10</td><td class="l">Five seeds; $K - 1$ thresholds; "roughly seven times"</td><td class="l">Ten seeds; $K$ thresholds; eight times</td></tr>
+<tr><td class="l">Ch. 9; App. B</td><td class="l">Adjacent means at constant distance; $R_{circ} = \sqrt{2(K-1)/K}\,\sigma$</td><td class="l"><span class="nb">$4 \sin(\pi/K)$,</span> shrinking with <span class="nb">$K$;</span> $R_{circ} = 2\sigma\sqrt{2(K-1)/K}$</td></tr>
+<tr><td class="l">Chs. 9, 10</td><td class="l">The decline read as absolute; dilution derived from the experiments</td><td class="l">The relative excess risk falls, and the oracle risk changes with <span class="nb">$K$;</span> dilution is a candidate mechanism</td></tr>
+<tr><td class="l">Lemma 9.2.3; Cor. 9.2.4</td><td class="l">Implicit hypotheses</td><td class="l"><span class="nb">$K \geq 2$,</span> measurable, a ball in the simplex, one common radius</td></tr>
+</table>
+<p>No experiment was rerun and no reported empirical result changed.</p>
+</div>
+</section>
+
+<section data-backup id="B23">
+<h2>B23. Corrections: references and stated conditions</h2>
+<div class="body fs-corr">
+<table>
+<tr><th class="l">Where</th><th class="l">Committee version</th><th class="l">Corrected</th></tr>
+<tr><td class="l">§6.2.4; Fig. 6.3; Table 7.2</td><td class="l">Cited to arXiv:2505.11276, withdrawn in December 2025</td><td class="l">Its successor <span class="cite" data-key="legnaro2025multiclass">(Legnaro et al., 2025)</span>, with the same rule $\arg\max_k \, (p_k - \tau_k)$</td></tr>
+<tr><td class="l">Introduction; §4.2.3</td><td class="l">$F_\beta$ and MCC have "no closed-form optimal threshold"</td><td class="l">For $F_\beta$ it is <span class="nb">$F_\beta^*/(1+\beta^2)$,</span> which depends on the distribution through $F_\beta^*$ <span class="cite" data-key="koyejo2014consistent">(Koyejo et al., 2014)</span></td></tr>
+<tr><td class="l">§2.2</td><td class="l">$\hat{\mathbf{p}} \to \boldsymbol{\eta}$ from $\boldsymbol{\eta} \in \mathcal{F}$ and $N \to \infty$</td><td class="l">Also uniform convergence of the empirical risk over $\mathcal{F}$</td></tr>
+<tr><td class="l">§3.4.2; Ch. 10</td><td class="l">No mention of scikit-learn's tuner; the library as future work</td><td class="l"><code>TunedThresholdClassifierCV</code> cited; the library a fifth contribution, with the repository URL</td></tr>
+</table>
+</div>
+</section>
+
+<section data-backup id="B24">
+<h2>B24. Calibrator capacity</h2>
+<div class="body">
+<div class="block proposition"><div class="block-title">Proposition (3.5.1, pseudo-dimension of binary calibrators)</div><div class="block-body"><p>The temperature, Platt and binary Dirichlet calibrator families, with <span class="nb">$W = 1$,</span> $2$ and $3$ free parameters, have pseudo-dimension (definition: <a class="bk" href="#/B8">B8</a>) at most <span class="nb">$1$,</span> $2$ and <span class="nb">$3$.</span></p></div></div>
+<p>The four calibrators are defined on <a class="bk" href="#/B14">B14</a>; the multiclass parameter counts are on <a class="bk" href="#/B8">B8</a>.</p>
+</div>
+</section>
+
+<section data-backup id="B25">
+<h2>B25. Binary results: the label budget</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.56"><p>Empirical fits the estimator on $70\%$ of the data and tunes the threshold on the $10\%$ validation split. EmpiricalCV fits and tunes by five-fold cross-validation over the $80\%$ pool, eight times the label budget for the threshold.</p>
+</div>
+<div class="col center" style="--cw:.42"><figure class="fig" data-fig="loss_gap" style="--w:0.8;"><img src="figures/static/loss_gap.svg" alt="loss gap"></figure>
+<div class="fs-footnotesize"><p>Mean test loss of Empirical minus that of EmpiricalCV, on Asymmetric <span class="nb">$100\times$.</span></p></div></div>
+</div>
+<div class="medskip"></div>
+<div class="fs-footnotesize"><p>The size pattern is consistent with the label-budget reading; it does not isolate it from other dataset-size confounds.</p></div>
+</div>
+</section>
+
+<section data-backup id="B26">
+<h2>B26. The cost matrix fixes the boundaries</h2>
+<div class="body">
+<div class="block theorem"><div class="block-title">Theorem (5.2.4, rigid polyhedral partition)</div><div class="block-body"><p>Given an admissible cost matrix <span class="nb">$\mathbf{C}$,</span> the closed Bayes regions $\mathcal{P}_0^*, \dots, \mathcal{P}_{K-1}^*$ are convex polyhedra that cover <span class="nb">$\Delta^{K-1}$;</span> they overlap only where risks tie, and assigning each tie to its smallest index gives a partition. The boundary between any two adjacent regions $\mathcal{P}_i^*$ and $\mathcal{P}_j^*$ lies on the hyperplane <span class="dm">\[
+      \mathcal{B}_{ij} = \{ \mathbf{p} \in \mathbb{R}^K \mid
+        (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} = 0 \} ,
+    \]</span> whose normal vector is fixed as <span class="nb">$\mathbf{n}_{ij} = \mathbf{c}_i - \mathbf{c}_j$.</span></p></div></div>
+<p>The orientation of every boundary is fixed by $\mathbf{C}$ alone. The estimation error $\boldsymbol{\epsilon}(x) = \hat{\mathbf{p}}(x) - \boldsymbol{\eta}(x)$ depends on the estimator and is unconstrained relative to that orientation.</p>
+</div>
+</section>
+
+<section data-backup id="B27">
+<h2>B27. Miscalibration in the simplex</h2>
+<div class="body">
+<figure class="fig" data-fig="simplex_distortions" style="--h:.44;"><img src="figures/static/simplex_distortions.svg" alt="simplex distortions"></figure>
+<p>Oversmoothing contracts the estimates to the barycenter: class $2$ can end with zero recall although the boundaries are correct. Overconfidence pushes them to the vertices, where, for element-wise reasonable costs, the plug-in classifier is argmax.</p>
+<p>Partition optimization fits the boundaries to the estimates observed on held-out data.</p>
+</div>
+</section>
+
+<section data-backup id="B28">
+<h2>B28. Multiclass datasets</h2>
+<div class="body">
+<p>Eleven OpenML datasets with $K$ from $3$ to <span class="nb">$10$;</span> the classifiers, protocol and seeds of the binary study.</p>
+<figure class="fig" data-fig="dataset_sizes_multiclass"></figure>
+</div>
+</section>
+
+<section data-backup id="B29">
+<h2>B29. The Voronoi decision rule</h2>
+<div class="body">
+<p>The squared distance from $\mathbf{p}$ to a vertex is <span class="nb">$\|\mathbf{p} - \mathbf{e}_i\|_2^2 = \|\mathbf{p}\|_2^2 - 2 p_i + 1$,</span> so <span class="nb">$\arg\min_i \|\mathbf{p} - \mathbf{e}_i\|_2 = \arg\max_i p_i$:</span> argmax assigns each $\mathbf{p}$ to its nearest vertex. The reference points need not be the vertices.</p>
+<div class="block definition"><div class="block-title">Definition (6, Voronoi decision rule)</div><div class="block-body"><p>Let $\mathcal{M} = (\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1})$ be $K$ prototypes in <span class="nb">$\mathbb{R}^K$,</span> not necessarily distinct. The rule $\delta_{\mathcal{M}} \colon \Delta^{K-1} \to \mathcal{Y}$ is <span class="nb">$\delta_{\mathcal{M}}(\mathbf{p}) = \arg\min_{k \in \mathcal{Y}}
+    \| \mathbf{p} - \boldsymbol{\mu}_k \|_2$,</span> with ties broken by the smallest index.</p></div></div>
+<p>For distinct prototypes, the boundary between classes $i$ and $j$ lies on the perpendicular bisector of $\boldsymbol{\mu}_i$ and <span class="nb">$\boldsymbol{\mu}_j$,</span> with normal <span class="nb">$\boldsymbol{\mu}_i - \boldsymbol{\mu}_j$.</span> It rotates as the prototypes move, and moving one prototype shifts every boundary of its class. A parallel shift translates the argmax partition with $K - 1$ parameters; prototypes inside the simplex translate and rotate it, with $K(K-1)$ parameters.</p>
+</div>
+</section>
+
+<section data-backup id="B30">
+<h2>B30. Admissible cost matrices</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (4 and 5, admissible and element-wise reasonable)</div><div class="block-body"><p>$\mathbf{C}$ is <strong>admissible</strong> if for every class $i$ there is a $\mathbf{p} \in \Delta^{K-1}$ with $\mathbf{c}_i^\top \mathbf{p} &lt; \mathbf{c}_k^\top \mathbf{p}$ for all <span class="nb">$k \neq i$.</span> It is <strong>element-wise reasonable</strong> if $C_{jj} &lt; C_{ji}$ for every $j$ and all $i \neq j$ <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>.</p></div></div>
+<div class="block proposition"><div class="block-title">Proposition (5.2.3)</div><div class="block-body"><p>Every element-wise reasonable cost matrix is admissible, and the inclusion is strict for every <span class="nb">$K \geq 2$.</span></p></div></div>
+<div class="columns mid">
+<div class="col center" style="--cw:.2"><p>$\mathbf{C} = \begin{bmatrix}
+        0 &amp; 10 &amp; 2 \\
+        10 &amp; 0 &amp; 2 \\
+        3 &amp; 3 &amp; 5
+      \end{bmatrix}$</p></div>
+<div class="col center" style="--cw:.24"><figure class="fig" data-fig="hedge_simplex"></figure></div>
+<div class="col" style="--cw:.52"><p>Class $2$ is the unique risk minimizer at $(\tfrac{1}{2}, \tfrac{1}{2}, 0)$ and at no vertex. The matrix is admissible and not element-wise reasonable.</p></div>
+</div>
+</div>
+</section>
+
+<section data-backup id="B31">
+<h2>B31. Voronoi contains the parallel shift</h2>
+<div class="body">
+<div class="block proposition"><div class="block-title">Proposition (7.3.2, $\mathcal{H}_{PS} \subseteq \mathcal{H}_{Vor}$ for unconstrained prototypes; proof: <a class="bk" href="#/P6">P6</a>)</div><div class="block-body"><p>Let <span class="nb">$K \geq 2$.</span> For any cost matrix and any parallel-shift rule $\delta(\mathbf{p}) = \arg\min_k (\mathbf{c}_k^\top \mathbf{p} + \alpha_k)$ on <span class="nb">$\Delta^{K-1}$,</span> there exist prototypes $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1} \in \mathbb{R}^K$ whose Voronoi rule induces the same partition. Hence <span class="nb">$\mathcal{H}_{PS} \subsetneq \mathcal{H}_{Vor}$.</span></p></div></div>
+<p>The prototypes of the proof may lie outside the simplex, so the containment is proved for $\mathcal{H}_{Vor}$ and not for <span class="nb">$\mathcal{H}_{Vor}^{\mathrm{DLC}}$,</span> the class the experiments fit.</p>
+</div>
+</section>
+
+<section data-backup id="B32">
+<h2>B32. Binary data use by strategy</h2>
+<div class="body">
+<div class="center"><figure class="fig" data-fig="split_bars" style="--w:0.74;"><img src="figures/static/split_bars.svg" alt="split bars"></figure></div>
+<p>All strategies are scored on the same $20\%$ test set. The untuned ones fit the estimator on the $80\%$ pool; the calibrated ones and Empirical fit it on $70\%$ and tune on the $10\%$ validation split; EmpiricalCV fits and tunes by five-fold cross-validation over the pool.</p>
+</div>
+</section>
+
+<section data-backup id="B33">
+<h2>B33. The six Voronoi samplers</h2>
+<div class="body">
+<p>Each draws a configuration $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1}$ for the random search (Section 7.5); $\mathrm{Dir}(\boldsymbol{\alpha})$ is the Dirichlet distribution, uniform on the simplex for <span class="nb">$\boldsymbol{\alpha} = \mathbf{1}$.</span></p>
+<div class="center fs-scriptsize"><table>
+<tr><th class="l">Sampler</th><th class="l">How a configuration is drawn</th><th class="l">DLC on every draw</th></tr>
+<tr><td class="l">Rejection</td><td class="l">$\boldsymbol{\mu}_k$ i.i.d. <span class="nb">$\mathrm{Dir}(\tfrac{1}{K}\mathbf{1})$;</span> kept if each vertex has its own nearest prototype, else redrawn up to $M$ times</td><td class="l">when it returns; acceptance tends to $0$ as $K$ grows</td></tr>
+<tr><td class="l">Hungarian assignment</td><td class="l">as rejection, then relabelled by the matching that minimizes $\sum_k d^2(\mathbf{e}_k, \boldsymbol{\mu}_{\pi(k)})$</td><td class="l">no: the matching ignores the per-vertex inequalities</td></tr>
+<tr><td class="l">Shrink-to-vertex</td><td class="l"><span class="nb">$\boldsymbol{\mu}_k = (1 - \lambda)\,\mathbf{e}_k + \lambda\,\mathbf{d}_k$,</span> $\mathbf{d}_k \sim \mathrm{Dir}(\mathbf{1})$</td><td class="l">yes for <span class="nb">$\lambda &lt; 1/2$,</span> but each $\boldsymbol{\mu}_k$ stays within $\lambda\sqrt{2}$ of $\mathbf{e}_k$</td></tr>
+<tr><td class="l">Concentrated Dirichlet</td><td class="l"><span class="nb">$\boldsymbol{\mu}_i \sim \mathrm{Dir}(\boldsymbol{\alpha}^{(i)})$,</span> <span class="nb">$\alpha^{(i)}_i = \beta &gt; 1$,</span> other entries $1$</td><td class="l">no joint condition across prototypes</td></tr>
+<tr><td class="l">Swap-max</td><td class="l">for each <span class="nb">$i$,</span> $\mathbf{p} \sim \mathrm{Dir}(\tfrac{1}{K}\mathbf{1})$ with its largest coordinate moved to $i$</td><td class="l">only the per-prototype part</td></tr>
+<tr><td class="l">Sequential $d^2$</td><td class="l">for each <span class="nb">$i$,</span> $\mathbf{p} \sim \mathrm{Dir}(\mathbf{1})$ with its largest coordinate moved to <span class="nb">$i$,</span> kept under the two inequalities of the main slide</td><td class="l">yes (Proposition 7.5.1), and it covers the interior</td></tr>
+</table></div>
+</div>
+</section>
+
+<section data-backup id="B34">
+<h2>B34. Multiclass benchmark</h2>
+<div class="body">
+<p>Eleven OpenML datasets, $K$ from $3$ to $10$ (<a class="bk" href="#/B28">B28</a>), with the classifiers, protocol and seeds of the binary study, and twelve objectives (<a class="bk" href="#/B3">B3</a>, <a class="bk" href="#/B15">B15</a>):</p>
+<div class="chips wide">
+<div><span class="grp">seven costs</span><span class="chip">Symmetric</span><span class="chip">Asymmetric $10\times$</span><span class="chip">Asymmetric $100\times$</span><span class="chip">Custom</span><span class="chip">Ordinal <b>$|i - j|$</b></span><span class="chip">Quadratic <b>$(i - j)^2$</b></span><span class="chip">Balanced Error</span></div>
+<div><span class="grp">five metrics</span><span class="chip">macro $F_1$</span><span class="chip">$F_{0.5}$</span><span class="chip">$F_2$</span><span class="chip">MCC</span><span class="chip">macro G-Mean</span></div>
+</div>
+<p>Besides Argmax and Analytical, raw or calibrated, seven tuned rules, each tuned on the $10\%$ split and by $5$-fold cross-validation (suffix CV):</p>
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Class</th><th class="l">Tuned strategies</th></tr>
+<tr><td class="l">$\mathcal{H}_{PS}$</td><td class="l">RiskPartitioning (shift of <span class="nb">$\mathbf{C}$),</span> MultidimensionalThreshold (shift of argmax)</td></tr>
+<tr><td class="l">$\mathcal{H}_{Sc}$</td><td class="l">LinearScaling (scaling of <span class="nb">$\mathbf{C}$),</span> ThresholdRatio (ratio rule)</td></tr>
+<tr><td class="l">$\mathcal{H}_{Vor}^{\mathrm{DLC}} \subseteq \mathcal{H}_{Full}$</td><td class="l">VoronoiTuning (prototypes in the simplex, under the DLC)</td></tr>
+<tr><td class="l">$\mathcal{H}_{Full}$</td><td class="l">FullMatrixPartitioning</td></tr>
+<tr><td class="l">Cascade</td><td class="l">SequentialSelection (class thresholds in sequence, rarest class first)</td></tr>
+</table></div>
+</div>
+<aside class="notes"><ul>
+<li>$11$ datasets, $K$ from $3$ to <span class="nb">$10$;</span> same classifiers and protocol; $12$ objectives, seven costs and five metrics.</li>
+<li>$24$ strategies; each tuned rule has a single-split and a cross-validated version.</li>
+<li>Seven tuned rules, grouped by hypothesis class.</li>
+<li>SequentialSelection is a cascade, outside the matrix classes.</li>
+</ul></aside>
+</section>
+
+
+<section data-backup id="P1">
+<h2>P1. Proof of Proposition 2.3.1 (Bayes risk identity)</h2>
+<div class="body fs-small">
+<p><strong>Measurability.</strong> Each map $x \mapsto \mathcal{R}(\hat{y} \mid x)$ is measurable and $\mathcal{Y}$ is finite, so the level sets <span class="dm">\[
+    \{h^* = k\} = \bigcap_{j &gt; k} \{\mathcal{R}(k \mid x) \leq
+      \mathcal{R}(j \mid x)\} \, \cap \,
+      \bigcap_{j &lt; k} \{\mathcal{R}(k \mid x) &lt; \mathcal{R}(j \mid x)\}
+  \]</span> are finite Boolean combinations of measurable sets: $h^*$ is measurable. Since <span class="nb">$0 \leq \mathcal{R}(\hat{y} \mid x) \leq C_{max}$,</span> the risk $R(h)$ is finite for every measurable <span class="nb">$h$.</span></p>
+<p><strong>Optimality.</strong> For every measurable $h$ and every <span class="nb">$x$,</span> <span class="nb">$\mathcal{R}(h(x) \mid x) \geq \min_{\hat{y}} \mathcal{R}(\hat{y} \mid x)$.</span> Monotonicity of the integral gives <span class="nb">$R(h) \geq \mathbb{E}_X [\min_{\hat{y}} \mathcal{R}(\hat{y} \mid X)]$,</span> and $h^*$ attains the pointwise minimum at every <span class="nb">$x$,</span> so the bound is realized at <span class="nb">$h^*$.</span> <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P2">
+<h2>P2. Proof of Proposition 2.4.1 (bound on excess risk)</h2>
+<div class="body fs-small">
+<p>Fix $x$ and write <span class="nb">$k^* = h^*(x)$,</span> <span class="nb">$\hat{k} = \hat{h}(x)$,</span> <span class="nb">$\boldsymbol{\eta} = \boldsymbol{\eta}(x)$,</span> <span class="nb">$\hat{\mathbf{p}} = \hat{\mathbf{p}}(x)$.</span> Adding and subtracting the estimated risks, the conditional regret is <span class="dm">\begin{align*}
+    \Delta\mathcal{R}(x)
+      &amp;= \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}
+        - \mathbf{c}_{k^*}^\top \boldsymbol{\eta} \\
+      &amp;= \mathbf{c}_{\hat{k}}^\top (\boldsymbol{\eta} - \hat{\mathbf{p}})
+        + \underbrace{\bigl(\mathbf{c}_{\hat{k}}^\top \hat{\mathbf{p}}
+          - \mathbf{c}_{k^*}^\top \hat{\mathbf{p}}\bigr)}_{\leq 0
+          \text{ by definition of } \hat{k}}
+        + \mathbf{c}_{k^*}^\top (\hat{\mathbf{p}} - \boldsymbol{\eta}) \\
+      &amp;\leq (\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*})^\top
+        (\boldsymbol{\eta} - \hat{\mathbf{p}})
+      \leq \|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \,
+        \|\boldsymbol{\eta} - \hat{\mathbf{p}}\|_1 ,
+  \end{align*}</span> by Hölder's inequality. Since <span class="nb">$0 \leq C_{ij} \leq C_{max}$,</span> the first factor is at most <span class="nb">$C_{max}$.</span> Taking the expectation over $X$ gives the result. <span class="qed">□</span></p>
+<p>If $\hat{k} = k^*$ the regret is zero, whatever the estimation error.</p>
+</div>
+</section>
+
+<section data-backup id="P3">
+<h2>P3. Proof of Proposition 2.6.1 and Lemma 2.6.2</h2>
+<div class="body fs-small">
+<p><strong>Proposition 2.6.1.</strong> Condition on the fitted <span class="nb">$\hat{\mathbf{p}}$,</span> which is independent of <span class="nb">$\mathcal{V}$.</span> The pairs $(z_i, y_i)$ are then i.i.d. copies of <span class="nb">$(Z, Y)$,</span> <span class="nb">$Z = \hat{\mathbf{p}}(X)$,</span> and choosing $\delta$ is empirical risk minimization with loss <span class="nb">$\ell_\delta(z, y) = C_{y, \delta(z)}$.</span> This is not a $0/1$ loss: it takes at most four values <span class="nb">$0 &lt; v_1 &lt; \dots &lt; v_q \leq C_{max}$,</span> so write it with level sets, <span class="dm">\[
+    \ell_\delta(z, y) = \sum_{a=1}^{q} (v_a - v_{a-1}) \,
+      \mathbb{I}\{\ell_\delta(z, y) \geq v_a\} , \qquad v_0 = 0 .
+  \]</span> Each level class has VC dimension at most <span class="nb">$d_{dec}$.</span> On the countable subclass, the VC bound of <span class="cite" data-key="mohri2018foundations">Mohri et al. (2018, Corollary 3.19)</span> holds at each level with probability <span class="nb">$1 - \nu/4$;</span> a union bound and the weights <span class="nb">$v_a - v_{a-1}$,</span> which sum to at most <span class="nb">$C_{max}$,</span> give the rate <span class="nb">$C_{max} \cdot 2\sqrt{(d_{dec} \log(2em/d_{dec}) + \log(4/\nu))/m}$.</span> Pointwise approximation extends the bound to all of <span class="nb">$\mathcal{H}_{dec}$:</span> the empirical risks agree eventually, and the population risks converge by dominated convergence. <span class="qed">□</span></p>
+<p><strong>Lemma 2.6.2.</strong> Thresholds on either side of one point give both labels. For <span class="nb">$z_1 &lt; z_2$,</span> the labeling $(1, 0)$ would need <span class="nb">$z_1 \geq \tau &gt; z_2$,</span> so no two points are shattered. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P4">
+<h2>P4. Proof of Lemma 3.2.1 (optimality of threshold policies)</h2>
+<div class="body fs-small">
+<p>Predicting $1$ is optimal exactly when the differential risk $g(\eta) = \mathcal{R}(0 \mid \eta) - \mathcal{R}(1 \mid \eta)$ is non-negative. Expanding, <span class="dm">\begin{align*}
+    g(\eta) &amp;= [C_{00}(1 - \eta) + C_{10}\,\eta]
+      - [C_{01}(1 - \eta) + C_{11}\,\eta] \\
+    &amp;= \eta \underbrace{\bigl[(C_{10} - C_{11}) + (C_{01} - C_{00})\bigr]}_{m}
+      - \underbrace{(C_{01} - C_{00})}_{c} .
+  \end{align*}</span> Under reasonable costs both groups in $m$ are positive, so $m &gt; 0$ and <span class="nb">$c &gt; 0$:</span> $g$ is strictly increasing and has the unique root <span class="nb">$\tau = c / m$.</span> Since <span class="nb">$m = c + (C_{10} - C_{11}) &gt; c$,</span> we get <span class="nb">$\tau \in (0, 1)$,</span> and $g(\eta) \geq 0$ if and only if <span class="nb">$\eta \geq \tau$.</span></p>
+<p>On the tie set $\{\eta = \tau\}$ both actions attain the minimum conditional risk, so the threshold rule and the smallest-index Bayes rule have the same risk <span class="nb">$R^*$.</span> <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P5">
+<h2>P5. Proofs of Propositions 6.2.3 and 6.2.4</h2>
+<div class="body fs-small">
+<p>Under $0/1$ loss, where every error costs <span class="nb">$1$,</span> the risk of predicting class $k$ is <span class="nb">$\mathcal{L}_k(\mathbf{p}) = \sum_{j \neq k} p_j = 1 - p_k$.</span></p>
+<p><strong>Proposition 6.2.3 (ratio thresholding is linear scaling).</strong> Linear scaling with $\boldsymbol{\beta}$ gives <span class="dm">\[
+    \arg\min_k \sum_{j \neq k} \beta_j \, p_j
+    = \arg\min_k \Bigl( \sum_j \beta_j \, p_j - \beta_k \, p_k \Bigr)
+    = \arg\max_k \, \beta_k \, p_k ,
+  \]</span> since the first sum does not depend on <span class="nb">$k$.</span> Setting $\beta_k = 1 / \tau_k$ gives <span class="nb">$\arg\max_k p_k / \tau_k$.</span> <span class="qed">□</span></p>
+<p><strong>Proposition 6.2.4 (multidimensional thresholding is a parallel shift).</strong> The parallel-shift rule reduces to <span class="nb">$\arg\min_k \, (1 - p_k) + \alpha_k = \arg\max_k \, (p_k - \alpha_k)$,</span> and setting $\alpha_k = \tau_k$ recovers the multidimensional-thresholding rule, for every <span class="nb">$\boldsymbol{\tau} \in \mathbb{R}^K$.</span> Both equivalences are exact only under $0/1$ loss. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P6">
+<h2>P6. Proofs of Propositions 7.2.1 and 7.3.2</h2>
+<div class="body fs-small">
+<p><strong>Proposition 7.2.1 <span class="nb">($\mathcal{H}_{Vor} = \mathcal{H}_{Full}$).</span></strong> On the simplex <span class="nb">$\mathbf{1}^\top \mathbf{p} = 1$,</span> so <span class="nb">$\|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + (-2 \boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2 \, \mathbf{1})^\top \mathbf{p}$,</span> and $\|\mathbf{p}\|_2^2$ is common to all classes: a Voronoi rule is the full-matrix rule with columns <span class="nb">$\mathbf{a}_k = -2 \boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2 \, \mathbf{1}$,</span> ties included. Conversely, given columns <span class="nb">$\mathbf{a}_k$,</span> set <span class="nb">$\boldsymbol{\mu}_k = -\tfrac{1}{2} \mathbf{a}_k + \beta_k \mathbf{1}$:</span> <span class="dm">\[
+    \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + \mathbf{a}_k^\top \mathbf{p}
+      + \bigl[ K \beta_k^2 - (2 + \mathbf{a}_k^\top \mathbf{1}) \, \beta_k
+      + \tfrac{1}{4} \|\mathbf{a}_k\|_2^2 \bigr] .
+  \]</span> Each bracket is a quadratic in $\beta_k$ with leading coefficient <span class="nb">$K &gt; 0$,</span> so all of them can be set to one common value; the two rules then have the same minimizers at every <span class="nb">$\mathbf{p}$.</span> <span class="qed">□</span></p>
+<p><strong>Proposition 7.3.2.</strong> A parallel-shift rule is the full-matrix rule with columns <span class="nb">$\mathbf{c}_k + \alpha_k \mathbf{1}$,</span> hence a Voronoi rule. For strictness, write <span class="nb">$D_0 = C_{00} - C_{01}$,</span> $D_1 = C_{10} - C_{11}$ and <span class="nb">$w = \alpha_0 - \alpha_1$.</span> Labeling $\mathbf{e}_0$ as $0$ and $\mathbf{e}_1$ as $1$ needs <span class="nb">$D_0 + w \leq 0 &lt; D_1 + w$,</span> so <span class="nb">$D_0 &lt; D_1$;</span> the swapped labeling needs <span class="nb">$D_1 &lt; D_0$.</span> A fixed $\mathbf{C}$ allows only one of them, while full-matrix rules, hence Voronoi rules, realize both. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P7">
+<h2>P7. Proof of Theorem 7.3.1 (strict separation)</h2>
+<div class="body fs-small">
+<p><strong>Lower bound for <span class="nb">$\mathcal{H}_{PS}$.</span></strong> With scores $s_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \alpha_k$ and $0/1$ loss, <span class="nb">$s_1(\mathbf{p}) - s_2(\mathbf{p}) = (\alpha_1 - \alpha_2) + (p_2 - p_1)$,</span> which is $\alpha_1 - \alpha_2$ on the altitude <span class="nb">$p_1 = p_2$.</span> Labeling $\mathbf{p}_A$ as $1$ forces <span class="nb">$\alpha_1 \leq \alpha_2$;</span> labeling $\mathbf{p}_B$ as $2$ forces <span class="nb">$\alpha_2 \leq \alpha_1$.</span> If both hold, $s_1 \equiv s_2$ on the altitude and the tie is broken the same way at both points. Hence <span class="nb">$\inf_{\mathcal{H}_{PS}} R \geq 1/3$.</span></p>
+<p><strong>The Voronoi rule.</strong> Squared distances to <span class="nb">$(\boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \boldsymbol{\mu}_2)$:</span></p>
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Point</th><th class="c">$\boldsymbol{\mu}_0$</th><th class="c">$\boldsymbol{\mu}_1$</th><th class="c">$\boldsymbol{\mu}_2$</th><th class="l">Vertex</th><th class="c">$\boldsymbol{\mu}_0$</th><th class="c">$\boldsymbol{\mu}_1$</th><th class="c">$\boldsymbol{\mu}_2$</th></tr>
+<tr><td class="l">$\mathbf{p}_C$ (label <span class="nb">$0$)</span></td><td class="c">$\mathbf{0.06}$</td><td class="c">$0.32$</td><td class="c">$0.74$</td><td class="l">$\mathbf{e}_0$</td><td class="c">$\mathbf{0}$</td><td class="c">$0.62$</td><td class="c">$1.22$</td></tr>
+<tr><td class="l">$\mathbf{p}_A$ (label <span class="nb">$1$)</span></td><td class="c">$0.54$</td><td class="c">$\mathbf{0.08}$</td><td class="c">$0.14$</td><td class="l">$\mathbf{e}_1$</td><td class="c">$2$</td><td class="c">$\mathbf{0.42}$</td><td class="c">$0.62$</td></tr>
+<tr><td class="l">$\mathbf{p}_B$ (label <span class="nb">$2$)</span></td><td class="c">$1.50$</td><td class="c">$0.32$</td><td class="c">$\mathbf{0.02}$</td><td class="l">$\mathbf{e}_2$</td><td class="c">$2$</td><td class="c">$1.22$</td><td class="c">$\mathbf{0.42}$</td></tr>
+</table></div>
+<p>Each point is nearest to the prototype of its label (risk <span class="nb">$0$)</span> and each vertex to its own (DLC). <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P8">
+<h2>P8. Proof of Proposition 7.5.1 (the sampler satisfies the DLC)</h2>
+<div class="body fs-small">
+<p>Write <span class="nb">$d^2(\mathbf{a}, \mathbf{b}) = \|\mathbf{a} - \mathbf{b}\|_2^2$.</span> The sampler draws $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1}$ in turn. A candidate $\mathbf{p}$ for $\boldsymbol{\mu}_i$ is accepted when, for every <span class="nb">$k &lt; i$,</span> <span class="dm">\[
+    d^2(\mathbf{e}_k, \mathbf{p}) &gt; d^2(\mathbf{e}_k, \boldsymbol{\mu}_k)
+    \quad \text{and} \quad
+    d^2(\mathbf{e}_i, \mathbf{p}) &lt; d^2(\mathbf{e}_i, \boldsymbol{\mu}_k) .
+  \]</span></p>
+<p><strong>Invariant.</strong> After step <span class="nb">$i$,</span> for every <span class="nb">$k \leq i$,</span> <span class="nb">$\arg\min_{j \leq i} d^2(\mathbf{e}_k, \boldsymbol{\mu}_j) = \{k\}$.</span></p>
+<p><strong>Induction.</strong> For $i = 0$ the argmin is over a single prototype. Assume the invariant after step <span class="nb">$i - 1$.</span> The first inequality says the new prototype is farther from $\mathbf{e}_k$ than $\boldsymbol{\mu}_k$ is, for every <span class="nb">$k &lt; i$,</span> so the argmin at $\mathbf{e}_k$ is unchanged. The second says $\boldsymbol{\mu}_i$ is strictly nearer to $\mathbf{e}_i$ than every earlier prototype, which is the invariant at <span class="nb">$k = i$.</span> At $i = K - 1$ the invariant is the DLC. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P9">
+<h2>P9. The embedding lemma and Theorems 7.7.3 to 7.7.5</h2>
+<div class="body fs-small">
+<div class="block lemma"><div class="block-title">Lemma (C.0.2, linear-score embedding)</div><div class="block-body"><p>Let $\mathcal{H} = \{ \mathbf{p} \mapsto \arg\min_k s_k(\mathbf{p}; w) :
+    w \in \mathbb{R}^W \}$ with <span class="nb">$s_k(\mathbf{p}; w) = w^\top \Phi_k(\mathbf{p}) + g_k(\mathbf{p})$,</span> where $\Phi_k$ and $g_k$ are fixed. Then <span class="nb">$d_{Nat}(\mathcal{H}) \leq W$.</span></p></div></div>
+<p><strong>Idea.</strong> Let $C$ be shattered (Definition 8) with <span class="nb">$f_0, f_1$,</span> and put <span class="nb">$\boldsymbol{\rho} = \Phi_{f_0} - \Phi_{f_1}$,</span> $h = g_{f_0} - g_{f_1}$ at each point, so the score gap is <span class="nb">$s_{f_0} - s_{f_1} = w^\top \boldsymbol{\rho} + h$.</span> If <span class="nb">$|C| &gt; W$,</span> the vectors $\boldsymbol{\rho}(\mathbf{p})$ are linearly dependent: $\sum_{\mathbf{p}} c_{\mathbf{p}} \boldsymbol{\rho}(\mathbf{p}) = \mathbf{0}$ with some <span class="nb">$c_{\mathbf{p}} \neq 0$,</span> so the weighted sum of score gaps is the same number for every <span class="nb">$w$.</span> The labeling that selects $f_0$ where $c_{\mathbf{p}} &gt; 0$ and $f_1$ where $c_{\mathbf{p}} &lt; 0$ makes every summand <span class="nb">$\leq 0$,</span> the opposite labeling makes every summand <span class="nb">$\geq 0$,</span> so each summand with $c_{\mathbf{p}} \neq 0$ is a tie in both. The smallest-index rule cannot break one tie in two ways, hence <span class="nb">$|C| \leq W$.</span> With $g_k \equiv 0$ this is the bound of <span class="cite" data-key="danielyshalev2014optimal">Daniely and Shalev-Shwartz (2014, Theorem 7)</span>.</p>
+<p><strong>Applications.</strong> <span class="nb">$\mathcal{H}_{Sc}$:</span> scores linear in $\beta_1, \dots, \beta_{K-1}$ with <span class="nb">$g_i = C_{0i} \, p_0$,</span> so <span class="nb">$W = K - 1$.</span> <span class="nb">$\mathcal{H}_{Full}$:</span> <span class="nb">$W = K^2$.</span> Voronoi: the score $2 \boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2$ is affine in the lifted pair <span class="nb">$(2 \boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$,</span> of dimension <span class="nb">$K^2 + K$,</span> or $K(K-1) + K = K^2$ on the simplex; with Proposition 7.2.1, <span class="nb">$d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$.</span> <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P10">
+<h2>P10. Proof of Theorem 7.7.2: $d_{Nat}(\mathcal{H}_{PS}) = K - 1$</h2>
+<div class="body fs-small">
+<p><strong>Upper bound.</strong> With the gauge <span class="nb">$\sum_k \alpha_k = 0$,</span> the scores $\mathbf{c}_k^\top \mathbf{p} + \alpha_k$ are affine in $K - 1$ free offsets, with $\mathbf{c}_k^\top \mathbf{p}$ a parameter-free term. Lemma C.0.2 gives <span class="nb">$d_{Nat} \leq K - 1$.</span></p>
+<p><strong>Lower bound.</strong> For an admissible $\mathbf{C}$ the Bayes regions are full-dimensional polytopes tiling the simplex, so their facet-adjacency graph is connected. Fix a spanning tree <span class="nb">$T$,</span> with $K - 1$ edges. For each edge $\{i, j\}$ take an interior point $\mathbf{p}_e$ so close to the shared facet that <span class="nb">$|\mathbf{c}_i^\top \mathbf{p}_e - \mathbf{c}_j^\top \mathbf{p}_e|
+  &lt; \gamma / (4K)$,</span> where $\gamma &gt; 0$ is the margin of every third class at these points. Let $S$ be the set of these $K - 1$ points and let $f_0, f_1$ pick the two endpoints of each edge.</p>
+<p>Given <span class="nb">$B \subseteq S$,</span> root $T$ and assign offsets along it, changing by $\pm \gamma / (2K)$ across each edge with the sign that selects the wanted endpoint. A tree has no cycle, so the assignment is consistent, and $\|\boldsymbol{\alpha}\|_\infty &lt; \gamma / 2$ keeps every third class excluded. All $2^{K-1}$ subsets are realized. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section data-backup id="P11">
+<h2>P11. Proof of Lemma 9.2.3 (dimensional dilution)</h2>
+<div class="body fs-small">
+<p>Choose an orthonormal basis $\mathbf{b}_1, \dots, \mathbf{b}_{K-1}$ of $V$ and write <span class="nb">$\boldsymbol{\epsilon} = \sum_k Z_k \mathbf{b}_k$.</span> Then $(Z_1, \dots, Z_{K-1})$ is uniform on the sphere of radius $r$ in <span class="nb">$\mathbb{R}^{K-1}$.</span> That distribution is invariant under coordinate permutations and sign flips, so $\mathbb{E}[Z_k Z_l] = 0$ for $k \neq l$ and $\mathbb{E}[Z_k^2]$ does not depend on <span class="nb">$k$.</span> With <span class="nb">$\sum_k Z_k^2 = r^2$,</span> this gives <span class="nb">$\mathbb{E}[Z_k^2] = r^2 / (K - 1)$.</span></p>
+<p>Since <span class="nb">$\mathbf{g} \in V$,</span> <span class="dm">\[
+    \mathbb{E}\bigl[(\mathbf{g}^\top \boldsymbol{\epsilon})^2\bigr]
+    = \sum_k (\mathbf{g}^\top \mathbf{b}_k)^2 \, \mathbb{E}[Z_k^2]
+    = \frac{r^2}{K - 1} \, \|\mathbf{g}\|^2 .
+  \]</span></p>
+<p>By the smoothness assumption, $\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p})
+  = \mathbf{g}^\top \boldsymbol{\epsilon} + \mathrm{rem}$ with <span class="nb">$|\mathrm{rem}| \leq M r^2$.</span> Squaring, the cross term is at most $\|\mathbf{g}\| \, r \cdot M r^2 = O(r^3)$ by Cauchy-Schwarz, and the squared remainder is at most <span class="nb">$M^2 r^4$.</span> <span class="qed">□</span></p>
+</div>
+</section>
+
+</div>
+</div>
+<pre id="check-report" hidden></pre>
+<script src="theme/mathjax-config.js"></script>
+<script src="vendor/mathjax/tex-svg-full.js"></script>
+<script src="vendor/reveal/reveal.js"></script>
+<script src="vendor/reveal/notes/notes.js"></script>
+<script src="figures/data/datasets.js"></script>
+<script src="figures/data/scaling_variance.js"></script>
+<script src="figures/data/win_rates.js"></script>
+<script src="figures/js/common.js"></script>
+<script src="figures/js/calibration_sketch.js"></script>
+<script src="figures/js/calibrator_maps.js"></script>
+<script src="figures/js/cv_folds.js"></script>
+<script src="figures/js/dataset_sizes.js"></script>
+<script src="figures/js/decision_learner_binary.js"></script>
+<script src="figures/js/dilution_geometry.js"></script>
+<script src="figures/js/dimensional_dilution.js"></script>
+<script src="figures/js/dlc_region.js"></script>
+<script src="figures/js/dumbbell.js"></script>
+<script src="figures/js/elkan_threshold.js"></script>
+<script src="figures/js/empirical_threshold.js"></script>
+<script src="figures/js/partition_classes.js"></script>
+<script src="figures/js/partition_strategies.js"></script>
+<script src="figures/js/platt_calibration.js"></script>
+<script src="figures/js/risk_bars_simplex.js"></script>
+<script src="figures/js/risk_lines.js"></script>
+<script src="figures/js/risk_patient.js"></script>
+<script src="figures/js/sampler_dlc_vs_k.js"></script>
+<script src="figures/js/sampler_story.js"></script>
+<script src="figures/js/scaling_setup_geometry.js"></script>
+<script src="figures/js/scaling_variance.js"></script>
+<script src="figures/js/sequential_selection.js"></script>
+<script src="figures/js/simplex_3d.js"></script>
+<script src="figures/js/simplex_cost_partition.js"></script>
+<script src="figures/js/simplex_distortions.js"></script>
+<script src="figures/js/small_figures.js"></script>
+<script src="figures/js/threshold_rules.js"></script>
+<script src="figures/js/threshold_step.js"></script>
+<script src="figures/js/voronoi_metrics.js"></script>
+<script src="figures/js/voronoi_witness.js"></script>
+<script src="figures/js/win_bars.js"></script>
+<script src="theme/deck.js"></script>
+</body>
+</html>

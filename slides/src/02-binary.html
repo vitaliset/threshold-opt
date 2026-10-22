@@ -1,0 +1,115 @@
+<!--@subsection Benchmark-->
+
+<section data-contrib="3">
+<h2>Binary benchmark</h2>
+<div class="body">
+<div class="columns top">
+<div class="col" style="--cw:.5">
+<p><strong>Datasets.</strong> Fourteen from OpenML, $208$ to $48{,}842$ samples; ten seeds.</p>
+<figure class="fig" data-fig="dataset_sizes_binary"></figure>
+</div>
+<div class="col" style="--cw:.48">
+<p><strong>Classifiers.</strong> Ten, default hyperparameters:</p>
+<div class="chips">
+<div><span class="grp">linear</span><span class="chip">Logistic regression <b>LogReg</b></span></div>
+<div><span class="grp">generative</span><span class="chip">Gaussian naive Bayes <b>NB</b></span></div>
+<div><span class="grp">boosted trees</span><span class="chip">LightGBM <b>LGBM</b></span><span class="chip">XGBoost <b>XGB</b></span><span class="chip">CatBoost <b>Cat</b></span></div>
+<div><span class="grp">bagged trees</span><span class="chip">Random forest <b>RF</b></span><span class="chip">Extra trees <b>ET</b></span></div>
+<div><span class="grp">deep tabular</span><span class="chip">TabM</span></div>
+<div><span class="grp">in-context transformers</span><span class="chip">TabPFN</span><span class="chip">TabICL</span></div>
+</div>
+</div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>$14$ datasets, $10$ classifiers, ten seeds.</li>
+<li>Default hyperparameters throughout.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>Binary benchmark</h2>
+<div class="body">
+<p><strong>Strategies.</strong> Twelve, ten untuned and two tuned:</p>
+<div class="chips wide">
+<div><span class="grp">untuned</span><span class="chip">Argmax <b>$\tau = 0.5$</b></span><span class="chip">Analytical <b>$\tau = p^*$</b></span><span class="times">each on</span><span class="chip">the raw estimate</span><span class="chip">temperature</span><span class="chip">Platt</span><span class="chip">isotonic</span><span class="chip">Dirichlet</span><span class="count">$2 \times 5$</span></div>
+<div><span class="grp">tuned</span><span class="chip">Empirical <b>$\tau_{emp}$ on a validation split</b></span><span class="chip">EmpiricalCV <b>$\tau_{emp}$ by cross-validation</b></span><span class="count">$2$</span></div>
+</div>
+<p><strong>Objectives.</strong> Ten, defined on <a class="bk" href="#/B3">B3</a> and <a class="bk" href="#/B15">B15</a>:</p>
+<div class="chips wide">
+<div><span class="grp">five cost matrices</span><span class="chip">Symmetric</span><span class="chip">Asymmetric $10\times$</span><span class="chip">Asymmetric $100\times$</span><span class="chip">Non-Zero Diagonal</span><span class="chip">Balanced Error</span></div>
+<div><span class="grp">five metrics</span><span class="chip">$F_1$</span><span class="chip">$F_{0.5}$</span><span class="chip">$F_2$</span><span class="chip">MCC <b>Matthews correlation coefficient</b></span><span class="chip">G-Mean <b>geometric mean of the class recalls</b></span></div>
+</div>
+<p>The untuned strategies fit the estimator on the whole $80\%$ pool. The calibrated ones and Empirical fit it on $70\%$ and tune on the $10\%$ split. EmpiricalCV tunes on the pool by cross-validation. All are scored on the same $20\%$ test set (<a class="bk" href="#/B32">B32</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>$12$ strategies: ten untuned, two tuned; a calibrated strategy is named after its calibrator, as in PlattScalingAnalytical.</li>
+<li>$10$ objectives: five cost matrices and five metrics. In the asymmetric matrices a false positive costs $10$ or $100$ false negatives, so $p^* = 10/11$ and $100/101$.</li>
+<li>Untuned strategies train on the full $80\%$; single-split ones give up $10\%$ for tuning; EmpiricalCV tunes on the whole $80\%$ by cross-validation.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>The win-or-tie rule</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.44"><p>A <strong>cell</strong> is a (dataset, classifier, objective) triple. In each cell a strategy <strong>wins or ties</strong> if its mean $\pm 1$ standard error (SE) over the ten seeds overlaps that of the best strategy.</p>
+<div class="medskip"></div>
+<p>We report the share of cells each strategy wins or ties, with $95\%$ bootstrap intervals over cells. The rule is descriptive (limits: <a class="bk" href="#/B4">B4</a>).</p></div>
+<div class="col center" style="--cw:.54"><figure class="fig" data-fig="adult_mcc" style="--h:.6;"><img src="figures/static/adult_mcc.svg" alt="adult mcc"></figure>
+<div class="fs-footnotesize"><p>The cell shown is dataset <em>adult</em>, classifier TabM, metric MCC. Italic rows win or tie.</p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>One cell: one dataset, one classifier, one objective.</li>
+<li>A strategy wins or ties if its interval overlaps that of the best.</li>
+<li>The rule is descriptive; its limits are on <a class="bk" href="#/B4">B4</a>.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>Binary costs: cross-validated tuning leads</h2>
+<div class="body">
+<figure class="fig" data-fig="win_bars_binary_cost" style="--w:0.642;"><img src="figures/static/win_bars_binary_cost.svg" alt="win bars binary cost"></figure>
+<p>EmpiricalCV wins or ties $87\%$ of the cost cells. Empirical, the same threshold tuned on the $10\%$ validation split, wins or ties $42\%$, below the untuned Analytical at $69\%$. By dataset size, the gap is consistent with overfitting of the $10\%$ split (<a class="bk" href="#/B25">B25</a>).</p>
+<div class="fs-footnotesize"><p>The $14$ datasets, $10$ classifiers and $5$ cost matrices give $700$ cost cells, $670$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+</div>
+<aside class="notes"><ul>
+<li>Cross-validated tuning leads, at $87\%$.</li>
+<li>The analytical rule is at $69\%$; calibrating first moves it between $51\%$ and $73\%$.</li>
+<li>Single-split tuning, at $42\%$, is below the untuned analytical rule.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>Binary metrics: EmpiricalCV wins or ties 99.9%</h2>
+<div class="body">
+<p>$F_\beta$, MCC and G-Mean are not averages of a per-instance cost, so the analytical threshold does not apply and the untuned baseline is Argmax.</p>
+<figure class="fig" data-fig="win_bars_binary_max" style="--w:0.652;"><img src="figures/static/win_bars_binary_max.svg" alt="win bars binary max"></figure>
+<p>EmpiricalCV wins or ties $99.9\%$ of the $670$ metric cells (the same datasets and classifiers, with the five metrics). Single-split Empirical ($73\%$) is ahead of Argmax ($45\%$).</p>
+</div>
+<aside class="notes"><ul>
+<li>No threshold follows from these metrics alone; for $F_\beta$ it depends on the optimal $F_\beta$ itself.</li>
+<li>EmpiricalCV wins or ties nearly every cell.</li>
+<li>Here even single-split tuning is ahead of argmax.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="3">
+<h2>The analytical rule by base classifier</h2>
+<div class="body">
+<p>Share of cost cells won or tied, by base classifier ($\%$):</p>
+<div class="center fs-footnotesize"><figure class="fig" data-fig="dumbbell_models"><div class="static"><table>
+<tr><th class="l"></th><th class="c">LGBM</th><th class="c">XGB</th><th class="c">Cat</th><th class="c">RF</th><th class="c">ET</th><th class="c">LogReg</th><th class="c">NB</th><th class="c">TabM</th><th class="c">TabPFN</th><th class="c">TabICL</th></tr>
+<tr><td class="l">Analytical</td><td class="c">76</td><td class="c">69</td><td class="c">83</td><td class="c">76</td><td class="c">63</td><td class="c">74</td><td class="c">19</td><td class="c">56</td><td class="c">95</td><td class="c">88</td></tr>
+<tr><td class="l">EmpiricalCV</td><td class="c">89</td><td class="c">89</td><td class="c">90</td><td class="c">87</td><td class="c">90</td><td class="c">94</td><td class="c">57</td><td class="c">94</td><td class="c">95</td><td class="c">88</td></tr>
+</table></div></figure>
+<p>Bootstrap half-widths are $5$ to $12$ points.</p></div>
+<p>On TabPFN and TabICL the analytical threshold wins or ties as many cells as EmpiricalCV and uses no held-out data.</p>
+</div>
+<aside class="notes"><ul>
+<li>The gap depends on the base classifier.</li>
+<li>TabPFN and TabICL: the analytical rule matches EmpiricalCV.</li>
+<li>The analytical rule needs no held-out data; tuning pays when the estimate is distorted.</li>
+</ul></aside>
+</section>

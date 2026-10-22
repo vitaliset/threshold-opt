@@ -1,0 +1,143 @@
+<section id="P1">
+<h2>P1. Proof of Proposition 2.3.1 (Bayes risk identity)</h2>
+<div class="body fs-small">
+<p><strong>Measurability.</strong> Each map $x \mapsto \mathcal{R}(\hat{y} \mid x)$ is measurable and $\mathcal{Y}$ is finite, so the level sets <span class="dm">\[
+    \{h^* = k\} = \bigcap_{j &gt; k} \{\mathcal{R}(k \mid x) \leq
+      \mathcal{R}(j \mid x)\} \, \cap \,
+      \bigcap_{j &lt; k} \{\mathcal{R}(k \mid x) &lt; \mathcal{R}(j \mid x)\}
+  \]</span> are finite Boolean combinations of measurable sets: $h^*$ is measurable. Since $0 \leq \mathcal{R}(\hat{y} \mid x) \leq C_{max}$, the risk $R(h)$ is finite for every measurable $h$.</p>
+<p><strong>Optimality.</strong> For every measurable $h$ and every $x$, $\mathcal{R}(h(x) \mid x) \geq \min_{\hat{y}} \mathcal{R}(\hat{y} \mid x)$. Monotonicity of the integral gives $R(h) \geq \mathbb{E}_X [\min_{\hat{y}} \mathcal{R}(\hat{y} \mid X)]$, and $h^*$ attains the pointwise minimum at every $x$, so the bound is realized at $h^*$. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P2">
+<h2>P2. Proof of Proposition 2.4.1 (bound on excess risk)</h2>
+<div class="body fs-small">
+<p>Fix $x$ and write $k^* = h^*(x)$, $\hat{k} = \hat{h}(x)$, $\boldsymbol{\eta} = \boldsymbol{\eta}(x)$, $\hat{\mathbf{p}} = \hat{\mathbf{p}}(x)$. Adding and subtracting the estimated risks, the conditional regret is <span class="dm">\begin{align*}
+    \Delta\mathcal{R}(x)
+      &amp;= \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}
+        - \mathbf{c}_{k^*}^\top \boldsymbol{\eta} \\
+      &amp;= \mathbf{c}_{\hat{k}}^\top (\boldsymbol{\eta} - \hat{\mathbf{p}})
+        + \underbrace{\bigl(\mathbf{c}_{\hat{k}}^\top \hat{\mathbf{p}}
+          - \mathbf{c}_{k^*}^\top \hat{\mathbf{p}}\bigr)}_{\leq 0
+          \text{ by definition of } \hat{k}}
+        + \mathbf{c}_{k^*}^\top (\hat{\mathbf{p}} - \boldsymbol{\eta}) \\
+      &amp;\leq (\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*})^\top
+        (\boldsymbol{\eta} - \hat{\mathbf{p}})
+      \leq \|\mathbf{c}_{\hat{k}} - \mathbf{c}_{k^*}\|_\infty \,
+        \|\boldsymbol{\eta} - \hat{\mathbf{p}}\|_1 ,
+  \end{align*}</span> by Hölder's inequality. Since $0 \leq C_{ij} \leq C_{max}$, the first factor is at most $C_{max}$. Taking the expectation over $X$ gives the result. <span class="qed">□</span></p>
+<p>If $\hat{k} = k^*$ the regret is zero, whatever the estimation error.</p>
+</div>
+</section>
+
+<section id="P3">
+<h2>P3. Proof of Proposition 2.6.1 and Lemma 2.6.2</h2>
+<div class="body fs-small">
+<p><strong>Proposition 2.6.1.</strong> Condition on the fitted $\hat{\mathbf{p}}$, which is independent of $\mathcal{V}$. The pairs $(z_i, y_i)$ are then i.i.d. copies of $(Z, Y)$, $Z = \hat{\mathbf{p}}(X)$, and choosing $\delta$ is empirical risk minimization with loss $\ell_\delta(z, y) = C_{y, \delta(z)}$. This is not a $0/1$ loss: it takes at most four values $0 &lt; v_1 &lt; \dots &lt; v_q \leq C_{max}$, so write it with level sets, <span class="dm">\[
+    \ell_\delta(z, y) = \sum_{a=1}^{q} (v_a - v_{a-1}) \,
+      \mathbb{I}\{\ell_\delta(z, y) \geq v_a\} , \qquad v_0 = 0 .
+  \]</span> Each level class has VC dimension at most $d_{dec}$. On the countable subclass, the VC bound of <span class="cite" data-key="mohri2018foundations">Mohri et al. (2018, Corollary 3.19)</span> holds at each level with probability $1 - \nu/4$; a union bound and the weights $v_a - v_{a-1}$, which sum to at most $C_{max}$, give the rate $C_{max} \cdot 2\sqrt{(d_{dec} \log(2em/d_{dec}) + \log(4/\nu))/m}$. Pointwise approximation extends the bound to all of $\mathcal{H}_{dec}$: the empirical risks agree eventually, and the population risks converge by dominated convergence. <span class="qed">□</span></p>
+<p><strong>Lemma 2.6.2.</strong> Thresholds on either side of one point give both labels. For $z_1 &lt; z_2$, the labeling $(1, 0)$ would need $z_1 \geq \tau &gt; z_2$, so no two points are shattered. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P4">
+<h2>P4. Proof of Lemma 3.2.1 (optimality of threshold policies)</h2>
+<div class="body fs-small">
+<p>Predicting $1$ is optimal exactly when the differential risk $g(\eta) = \mathcal{R}(0 \mid \eta) - \mathcal{R}(1 \mid \eta)$ is non-negative. Expanding, <span class="dm">\begin{align*}
+    g(\eta) &amp;= [C_{00}(1 - \eta) + C_{10}\,\eta]
+      - [C_{01}(1 - \eta) + C_{11}\,\eta] \\
+    &amp;= \eta \underbrace{\bigl[(C_{10} - C_{11}) + (C_{01} - C_{00})\bigr]}_{m}
+      - \underbrace{(C_{01} - C_{00})}_{c} .
+  \end{align*}</span> Under reasonable costs both groups in $m$ are positive, so $m &gt; 0$ and $c &gt; 0$: $g$ is strictly increasing and has the unique root $\tau = c / m$. Since $m = c + (C_{10} - C_{11}) &gt; c$, we get $\tau \in (0, 1)$, and $g(\eta) \geq 0$ if and only if $\eta \geq \tau$.</p>
+<p>On the tie set $\{\eta = \tau\}$ both actions attain the minimum conditional risk, so the threshold rule and the smallest-index Bayes rule have the same risk $R^*$. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P5">
+<h2>P5. Proofs of Propositions 6.2.3 and 6.2.4</h2>
+<div class="body fs-small">
+<p>Under $0/1$ loss, where every error costs $1$, the risk of predicting class $k$ is $\mathcal{L}_k(\mathbf{p}) = \sum_{j \neq k} p_j = 1 - p_k$.</p>
+<p><strong>Proposition 6.2.3 (ratio thresholding is linear scaling).</strong> Linear scaling with $\boldsymbol{\beta}$ gives <span class="dm">\[
+    \arg\min_k \sum_{j \neq k} \beta_j \, p_j
+    = \arg\min_k \Bigl( \sum_j \beta_j \, p_j - \beta_k \, p_k \Bigr)
+    = \arg\max_k \, \beta_k \, p_k ,
+  \]</span> since the first sum does not depend on $k$. Setting $\beta_k = 1 / \tau_k$ gives $\arg\max_k p_k / \tau_k$. <span class="qed">□</span></p>
+<p><strong>Proposition 6.2.4 (multidimensional thresholding is a parallel shift).</strong> The parallel-shift rule reduces to $\arg\min_k \, (1 - p_k) + \alpha_k = \arg\max_k \, (p_k - \alpha_k)$, and setting $\alpha_k = \tau_k$ recovers the multidimensional-thresholding rule, for every $\boldsymbol{\tau} \in \mathbb{R}^K$. Both equivalences are exact only under $0/1$ loss. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P6">
+<h2>P6. Proofs of Propositions 7.2.1 and 7.3.2</h2>
+<div class="body fs-small">
+<p><strong>Proposition 7.2.1 ($\mathcal{H}_{Vor} = \mathcal{H}_{Full}$).</strong> On the simplex $\mathbf{1}^\top \mathbf{p} = 1$, so $\|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + (-2 \boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2 \, \mathbf{1})^\top \mathbf{p}$, and $\|\mathbf{p}\|_2^2$ is common to all classes: a Voronoi rule is the full-matrix rule with columns $\mathbf{a}_k = -2 \boldsymbol{\mu}_k + \|\boldsymbol{\mu}_k\|_2^2 \, \mathbf{1}$, ties included. Conversely, given columns $\mathbf{a}_k$, set $\boldsymbol{\mu}_k = -\tfrac{1}{2} \mathbf{a}_k + \beta_k \mathbf{1}$: <span class="dm">\[
+    \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2 = \|\mathbf{p}\|_2^2 + \mathbf{a}_k^\top \mathbf{p}
+      + \bigl[ K \beta_k^2 - (2 + \mathbf{a}_k^\top \mathbf{1}) \, \beta_k
+      + \tfrac{1}{4} \|\mathbf{a}_k\|_2^2 \bigr] .
+  \]</span> Each bracket is a quadratic in $\beta_k$ with leading coefficient $K &gt; 0$, so all of them can be set to one common value; the two rules then have the same minimizers at every $\mathbf{p}$. <span class="qed">□</span></p>
+<p><strong>Proposition 7.3.2.</strong> A parallel-shift rule is the full-matrix rule with columns $\mathbf{c}_k + \alpha_k \mathbf{1}$, hence a Voronoi rule. For strictness, write $D_0 = C_{00} - C_{01}$, $D_1 = C_{10} - C_{11}$ and $w = \alpha_0 - \alpha_1$. Labeling $\mathbf{e}_0$ as $0$ and $\mathbf{e}_1$ as $1$ needs $D_0 + w \leq 0 &lt; D_1 + w$, so $D_0 &lt; D_1$; the swapped labeling needs $D_1 &lt; D_0$. A fixed $\mathbf{C}$ allows only one of them, while full-matrix rules, hence Voronoi rules, realize both. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P7">
+<h2>P7. Proof of Theorem 7.3.1 (strict separation)</h2>
+<div class="body fs-small">
+<p><strong>Lower bound for $\mathcal{H}_{PS}$.</strong> With scores $s_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \alpha_k$ and $0/1$ loss, $s_1(\mathbf{p}) - s_2(\mathbf{p}) = (\alpha_1 - \alpha_2) + (p_2 - p_1)$, which is $\alpha_1 - \alpha_2$ on the altitude $p_1 = p_2$. Labeling $\mathbf{p}_A$ as $1$ forces $\alpha_1 \leq \alpha_2$; labeling $\mathbf{p}_B$ as $2$ forces $\alpha_2 \leq \alpha_1$. If both hold, $s_1 \equiv s_2$ on the altitude and the tie is broken the same way at both points. Hence $\inf_{\mathcal{H}_{PS}} R \geq 1/3$.</p>
+<p><strong>The Voronoi rule.</strong> Squared distances to $(\boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \boldsymbol{\mu}_2)$:</p>
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Point</th><th class="c">$\boldsymbol{\mu}_0$</th><th class="c">$\boldsymbol{\mu}_1$</th><th class="c">$\boldsymbol{\mu}_2$</th><th class="l">Vertex</th><th class="c">$\boldsymbol{\mu}_0$</th><th class="c">$\boldsymbol{\mu}_1$</th><th class="c">$\boldsymbol{\mu}_2$</th></tr>
+<tr><td class="l">$\mathbf{p}_C$ (label $0$)</td><td class="c">$\mathbf{0.06}$</td><td class="c">$0.32$</td><td class="c">$0.74$</td><td class="l">$\mathbf{e}_0$</td><td class="c">$\mathbf{0}$</td><td class="c">$0.62$</td><td class="c">$1.22$</td></tr>
+<tr><td class="l">$\mathbf{p}_A$ (label $1$)</td><td class="c">$0.54$</td><td class="c">$\mathbf{0.08}$</td><td class="c">$0.14$</td><td class="l">$\mathbf{e}_1$</td><td class="c">$2$</td><td class="c">$\mathbf{0.42}$</td><td class="c">$0.62$</td></tr>
+<tr><td class="l">$\mathbf{p}_B$ (label $2$)</td><td class="c">$1.50$</td><td class="c">$0.32$</td><td class="c">$\mathbf{0.02}$</td><td class="l">$\mathbf{e}_2$</td><td class="c">$2$</td><td class="c">$1.22$</td><td class="c">$\mathbf{0.42}$</td></tr>
+</table></div>
+<p>Each point is nearest to the prototype of its label (risk $0$) and each vertex to its own (DLC). <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P8">
+<h2>P8. Proof of Proposition 7.5.1 (the sampler satisfies the DLC)</h2>
+<div class="body fs-small">
+<p>Write $d^2(\mathbf{a}, \mathbf{b}) = \|\mathbf{a} - \mathbf{b}\|_2^2$. The sampler draws $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1}$ in turn. A candidate $\mathbf{p}$ for $\boldsymbol{\mu}_i$ is accepted when, for every $k &lt; i$, <span class="dm">\[
+    d^2(\mathbf{e}_k, \mathbf{p}) &gt; d^2(\mathbf{e}_k, \boldsymbol{\mu}_k)
+    \quad \text{and} \quad
+    d^2(\mathbf{e}_i, \mathbf{p}) &lt; d^2(\mathbf{e}_i, \boldsymbol{\mu}_k) .
+  \]</span></p>
+<p><strong>Invariant.</strong> After step $i$, for every $k \leq i$, $\arg\min_{j \leq i} d^2(\mathbf{e}_k, \boldsymbol{\mu}_j) = \{k\}$.</p>
+<p><strong>Induction.</strong> For $i = 0$ the argmin is over a single prototype. Assume the invariant after step $i - 1$. The first inequality says the new prototype is farther from $\mathbf{e}_k$ than $\boldsymbol{\mu}_k$ is, for every $k &lt; i$, so the argmin at $\mathbf{e}_k$ is unchanged. The second says $\boldsymbol{\mu}_i$ is strictly nearer to $\mathbf{e}_i$ than every earlier prototype, which is the invariant at $k = i$. At $i = K - 1$ the invariant is the DLC. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P9">
+<h2>P9. The embedding lemma and Theorems 7.7.3 to 7.7.5</h2>
+<div class="body fs-small">
+<div class="block lemma"><div class="block-title">Lemma (C.0.2, linear-score embedding)</div><div class="block-body"><p>Let $\mathcal{H} = \{ \mathbf{p} \mapsto \arg\min_k s_k(\mathbf{p}; w) :
+    w \in \mathbb{R}^W \}$ with $s_k(\mathbf{p}; w) = w^\top \Phi_k(\mathbf{p}) + g_k(\mathbf{p})$, where $\Phi_k$ and $g_k$ are fixed. Then $d_{Nat}(\mathcal{H}) \leq W$.</p></div></div>
+<p><strong>Idea.</strong> Let $C$ be shattered (Definition 8) with $f_0, f_1$, and put $\boldsymbol{\rho} = \Phi_{f_0} - \Phi_{f_1}$, $h = g_{f_0} - g_{f_1}$ at each point, so the score gap is $s_{f_0} - s_{f_1} = w^\top \boldsymbol{\rho} + h$. If $|C| &gt; W$, the vectors $\boldsymbol{\rho}(\mathbf{p})$ are linearly dependent: $\sum_{\mathbf{p}} c_{\mathbf{p}} \boldsymbol{\rho}(\mathbf{p}) = \mathbf{0}$ with some $c_{\mathbf{p}} \neq 0$, so the weighted sum of score gaps is the same number for every $w$. The labeling that selects $f_0$ where $c_{\mathbf{p}} &gt; 0$ and $f_1$ where $c_{\mathbf{p}} &lt; 0$ makes every summand $\leq 0$, the opposite labeling makes every summand $\geq 0$, so each summand with $c_{\mathbf{p}} \neq 0$ is a tie in both. The smallest-index rule cannot break one tie in two ways, hence $|C| \leq W$. With $g_k \equiv 0$ this is the bound of <span class="cite" data-key="danielyshalev2014optimal">Daniely and Shalev-Shwartz (2014, Theorem 7)</span>.</p>
+<p><strong>Applications.</strong> $\mathcal{H}_{Sc}$: scores linear in $\beta_1, \dots, \beta_{K-1}$ with $g_i = C_{0i} \, p_0$, so $W = K - 1$. $\mathcal{H}_{Full}$: $W = K^2$. Voronoi: the score $2 \boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2$ is affine in the lifted pair $(2 \boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$, of dimension $K^2 + K$, or $K(K-1) + K = K^2$ on the simplex; with Proposition 7.2.1, $d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P10">
+<h2>P10. Proof of Theorem 7.7.2: $d_{Nat}(\mathcal{H}_{PS}) = K - 1$</h2>
+<div class="body fs-small">
+<p><strong>Upper bound.</strong> With the gauge $\sum_k \alpha_k = 0$, the scores $\mathbf{c}_k^\top \mathbf{p} + \alpha_k$ are affine in $K - 1$ free offsets, with $\mathbf{c}_k^\top \mathbf{p}$ a parameter-free term. Lemma C.0.2 gives $d_{Nat} \leq K - 1$.</p>
+<p><strong>Lower bound.</strong> For an admissible $\mathbf{C}$ the Bayes regions are full-dimensional polytopes tiling the simplex, so their facet-adjacency graph is connected. Fix a spanning tree $T$, with $K - 1$ edges. For each edge $\{i, j\}$ take an interior point $\mathbf{p}_e$ so close to the shared facet that $|\mathbf{c}_i^\top \mathbf{p}_e - \mathbf{c}_j^\top \mathbf{p}_e|
+  &lt; \gamma / (4K)$, where $\gamma &gt; 0$ is the margin of every third class at these points. Let $S$ be the set of these $K - 1$ points and let $f_0, f_1$ pick the two endpoints of each edge.</p>
+<p>Given $B \subseteq S$, root $T$ and assign offsets along it, changing by $\pm \gamma / (2K)$ across each edge with the sign that selects the wanted endpoint. A tree has no cycle, so the assignment is consistent, and $\|\boldsymbol{\alpha}\|_\infty &lt; \gamma / 2$ keeps every third class excluded. All $2^{K-1}$ subsets are realized. <span class="qed">□</span></p>
+</div>
+</section>
+
+<section id="P11">
+<h2>P11. Proof of Lemma 9.2.3 (dimensional dilution)</h2>
+<div class="body fs-small">
+<p>Choose an orthonormal basis $\mathbf{b}_1, \dots, \mathbf{b}_{K-1}$ of $V$ and write $\boldsymbol{\epsilon} = \sum_k Z_k \mathbf{b}_k$. Then $(Z_1, \dots, Z_{K-1})$ is uniform on the sphere of radius $r$ in $\mathbb{R}^{K-1}$. That distribution is invariant under coordinate permutations and sign flips, so $\mathbb{E}[Z_k Z_l] = 0$ for $k \neq l$ and $\mathbb{E}[Z_k^2]$ does not depend on $k$. With $\sum_k Z_k^2 = r^2$, this gives $\mathbb{E}[Z_k^2] = r^2 / (K - 1)$.</p>
+<p>Since $\mathbf{g} \in V$, <span class="dm">\[
+    \mathbb{E}\bigl[(\mathbf{g}^\top \boldsymbol{\epsilon})^2\bigr]
+    = \sum_k (\mathbf{g}^\top \mathbf{b}_k)^2 \, \mathbb{E}[Z_k^2]
+    = \frac{r^2}{K - 1} \, \|\mathbf{g}\|^2 .
+  \]</span></p>
+<p>By the smoothness assumption, $\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p})
+  = \mathbf{g}^\top \boldsymbol{\epsilon} + \mathrm{rem}$ with $|\mathrm{rem}| \leq M r^2$. Squaring, the cross term is at most $\|\mathbf{g}\| \, r \cdot M r^2 = O(r^3)$ by Cauchy-Schwarz, and the squared remainder is at most $M^2 r^4$. <span class="qed">□</span></p>
+</div>
+</section>

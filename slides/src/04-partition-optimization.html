@@ -1,0 +1,66 @@
+<!--@subsection Partition optimization-->
+
+<section>
+<h2>Learning the partition</h2>
+<div class="body">
+<p>A <strong>partition matrix</strong> $\mathbf{A}$ takes the place of $\mathbf{C}$ in the Bayes rule <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>: <span class="dm">\[
+    \delta_{\mathbf{A}}(\mathbf{p}) = \arg\min_{i} \sum_j A_{ji} \, p_j .
+  \]</span> It is chosen like the threshold, among $301$ random candidates. Three classes:</p>
+<figure class="fig" data-fig="partition_classes" style="margin-bottom:0;"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Separate the matrix that decides, $\mathbf{A}$, from the one that evaluates, $\mathbf{C}$, and fit $\mathbf{A}$ on held-out data.</li>
+<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $301$ random draws.</li>
+<li>Shift: $K - 1$ offsets, no turning. Scaling: $K - 1$ weights, the boundaries turn. Full matrix: $K^2$ entries, any convex polyhedral partition.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>The sequential cascade</h2>
+<div class="body">
+<p>A rule used with class-imbalanced data tests the classes in a priority order, rarest first, and predicts the first whose probability reaches its threshold, or the argmax if none does. It is a decision list <span class="cite" data-key="rivest1987decision">(Rivest, 1987)</span>: <span class="dm">\[
+    \delta_{\mathrm{ord}, \boldsymbol{\tau}}(\mathbf{p}) = \mathrm{ord}(j^*) , \quad
+    j^* = \min \{ j \mid p_{\mathrm{ord}(j)} \geq \tau_{\mathrm{ord}(j)} \} .
+  \]</span></p>
+<figure class="fig" data-fig="sequential_selection"></figure>
+<p>Its regions are not convex and depend on the order of the tests.</p>
+</div>
+<aside class="notes"><ul>
+<li>One-vs-rest tests in a priority order, rarest class first; argmax only as the default.</li>
+<li>A class tested early can claim points where another class has the larger probability.</li>
+<li>Non-convex, order-dependent regions; in the benchmark it is SequentialSelection.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>Two multiclass threshold rules</h2>
+<div class="body">
+<figure class="fig" data-fig="threshold_rules"></figure>
+<p>For $K = 3$ under $0/1$ loss, with the argmax boundaries dashed. Multidimensional thresholding keeps every boundary parallel to its argmax position; under probability-ratio thresholding the boundary between two classes is a line through the vertex of the third.</p>
+</div>
+<aside class="notes"><ul>
+<li>Two rules from the literature, one threshold per class; the next table places them.</li>
+<li>Thresholds in differences: the boundaries translate. Thresholds in ratios: they turn around a vertex.</li>
+<li>Neither turns each boundary on its own.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="1">
+<h2>Five tunable rules</h2>
+<div class="body">
+<div class="center fs-footnotesize"><table>
+<tr><th class="l">Method</th><th class="l">Rule, one parameter per class</th><th class="l">Class</th></tr>
+<tr><td class="l">Parallel shift <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span></td><td class="l">$\arg\min_k \, (\mathbf{c}_k^\top \mathbf{p} + \alpha_k)$</td><td class="l">$\mathcal{H}_{PS}$</td></tr>
+<tr><td class="l">Multidimensional thresholding <span class="cite" data-key="legnaro2025multiclass">(Legnaro et al., 2025)</span></td><td class="l">$\arg\max_k \, (p_k - \tau_k)$</td><td class="l">$\mathcal{H}_{PS}$ at $0/1$ loss</td></tr>
+<tr><td class="l">Linear scaling <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span></td><td class="l">$\arg\min_i \sum_k C_{ki} \, \beta_k \, p_k$</td><td class="l">$\mathcal{H}_{Sc}$</td></tr>
+<tr><td class="l">Probability-ratio thresholding <span class="cite" data-key="lachiche2003improving">(Lachiche and Flach, 2003)</span></td><td class="l">$\arg\max_k \, p_k / \tau_k$</td><td class="l">$\mathcal{H}_{Sc}$ at $0/1$ loss</td></tr>
+<tr><td class="l">Sequential cascade <span class="cite" data-key="rivest1987decision">(Rivest, 1987)</span></td><td class="l">first $p_k \geq \tau_k$, by priority</td><td class="l">&mdash;</td></tr>
+</table></div>
+<div class="block proposition"><div class="block-title">Proposition (6.2.3 and 6.2.4; proof: <a class="bk" href="#/P5">P5</a>)</div><div class="block-body"><p>Under $0/1$ loss, probability-ratio thresholding with thresholds $\tau_k &gt; 0$ is equivalent to linear scaling with $\beta_k = 1/\tau_k$, and multidimensional thresholding with $\boldsymbol{\tau} \in \mathbb{R}^K$ to the parallel shift with $\alpha_k = \tau_k$.</p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Five rules in use; four fall into the two matrix classes, the cascade into none, so no capacity analysis covers it.</li>
+<li>Shifts translate the cost boundaries; weights also turn them, through $K - 1$ coupled parameters.</li>
+<li>None turns each boundary on its own: that is what the prototypes add.</li>
+</ul></aside>
+</section>
