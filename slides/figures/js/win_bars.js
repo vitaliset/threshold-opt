@@ -3,6 +3,9 @@
 // the default view, all cells, equals the static chart; the menu restricts
 // the cells to one base classifier or one objective. Whiskers are 95%
 // bootstrap intervals over cells. Hover a bar for its exact values.
+// state.more starts a binary chart with the calibrate-then-argmax rows shown.
+// state.calibrated adds the calibrate-then-analytical rows to a multiclass
+// chart and offers the calibrate-then-argmax ones on the same button.
 (function () {
   'use strict';
   var fx = Deck.fx;
@@ -15,13 +18,24 @@
     return function (host, state) {
       var data = Deck.data.win_rates[key], families = Deck.data.win_rates.families;
       var slice = data.slices[state.preset] ? state.preset : 'all';
-      // The binary charts can add the calibrate-then-argmax strategies.
-      var base = data.shown, extra = key.indexOf('binary') !== 0 ? [] : Object.keys(data.family).filter(function (s) {
-        return base.indexOf(s) < 0 && data.family[s] === 'argmax' && s !== 'Argmax';
-      });
-      var row0 = base.length > 8 ? 32 : 36;   // the nine-row multiclass charts are a little tighter
-      var rows = base, rh = row0, L = 520, R = 1120, T = 8, more = false;
-      var W = 1220, H = T + base.length * row0 + 72;   // the height stays fixed when rows are added
+      // Added rows are ordered by the rate over all cells, as the shown rows.
+      var byRate = function (a, b) {
+        var va = data.slices.all[a], vb = data.slices.all[b];
+        return (vb ? vb[0] : -1) - (va ? va[0] : -1);
+      };
+      var calibrated = function (family, plain) {
+        return Object.keys(data.family).filter(function (s) {
+          return data.shown.indexOf(s) < 0 && data.family[s] === family && s !== plain;
+        }).sort(byRate);
+      };
+      var base = state.calibrated ? data.shown.concat(calibrated('analytical', 'Analytical')).sort(byRate) : data.shown;
+      // The binary charts, and a multiclass one with state.calibrated, can add the calibrate-then-argmax strategies.
+      var extra = key.indexOf('binary') === 0 || state.calibrated ? calibrated('argmax', 'Argmax') : [];
+      var row0 = data.shown.length > 8 ? 32 : 36;   // the nine-row multiclass charts are a little tighter
+      var span = data.shown.length * row0;   // the height stays fixed when rows are added
+      var more = !!state.more && extra.length > 0;
+      var rows = more ? base.concat(extra) : base, rh = span / rows.length, L = 520, R = 1120, T = 8;
+      var W = 1220, H = T + span + 72;
       fx.flex(host, 'column', 2);
       var top = fx.html('div', 'ctl', host);
       top.style.marginTop = '0';
@@ -45,13 +59,14 @@
       data.objectives.forEach(function (o) { add(go, 'objective:' + o, o); });
       select.value = slice;
       select.addEventListener('change', function () { slice = select.value; draw(); });
+      if (extra.length) select.style.maxWidth = '260px';   // so that the button fits on the same row when it can
       if (extra.length) fx.button(top, '+ calibrated argmax', function (b) {
         more = !more;
         b.classList.toggle('on', more);
         rows = more ? base.concat(extra) : base;
-        rh = base.length * row0 / rows.length;
+        rh = span / rows.length;
         draw();
-      });
+      }).classList.toggle('on', more);
       var svg = fx.svg(host, W, H);
       var layer = fx.el('g', {}, svg);
       var X = function (v) { return L + v / 100 * (R - L); };
@@ -66,7 +81,7 @@
         fx.text(layer, (L + R) / 2, T + rows.length * rh + 62, 'cells won or tied (%)', { 'font-size': 26 });
         rows.forEach(function (s, i) {
           var y = T + i * rh + rh / 2, v = values[s];
-          var fs = rh < 30 ? 21 : 27;
+          var fs = rh < 30 ? Math.min(21, Math.round(rh * 0.92)) : 27;
           fx.text(layer, L - 12, y + fs / 3, s, { 'font-size': fs, 'text-anchor': 'end' });
           if (!v) { fx.text(layer, X(0) + 10, y + 8, 'no results', { 'font-size': 20, 'text-anchor': 'start', fill: fx.grey }); return; }
           var g = fx.el('g', {}, layer);

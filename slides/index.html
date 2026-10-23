@@ -11,20 +11,26 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section data-n="1" data-total="63" data-part-name="" class="title-slide">
+<section data-n="1" data-total="64" data-part-name="" class="title-slide">
 <img class="title-bg" src="figures/static/bg-ime.svg" alt="">
 <div class="title-box">
 <h1>Argmax is not enough</h1>
 <p class="subtitle">Empirical threshold and partition optimization<br>for binary and multiclass classification</p>
 <p class="author">Carlo Domenico Longo de Lemos</p>
-<p class="date">São Paulo, 2026</p>
-<p class="institute"><strong>Advisor:</strong> Prof. Dr. Renato Vicente<br>Graduate Program in Probability and Statistics<br>IME-USP</p>
+<p class="date">São Paulo, October 23, 2026</p>
+<div class="institute">
+<p>Graduate Program in Probability and Statistics, IME-USP</p>
+<div class="people">
+<strong>Advisor:</strong><span>Prof. Dr. Renato Vicente</span>
+<strong>Committee:</strong><span>Prof. Dr. Renato Vicente (IME-USP, chair)<br>Prof. Dr. Rafael Izbicki (UFSCar)<br>Prof. Dr. Tiago Mendonça dos Santos (Insper)</span>
+</div>
+</div>
 <p class="logos"><img class="logo-ime" src="figures/static/ime-logo.svg" alt="IME"><img class="logo-usp" src="figures/static/usp-logo.svg" alt="USP"></p>
 </div>
 <img class="logo-cc" src="figures/static/cc-by.svg" alt="CC BY">
 </section>
 
-<section data-n="2" data-total="63" data-part-name="" class="added">
+<section data-n="2" data-total="64" data-part-name="" class="added">
 <h2>Errors do not cost the same</h2>
 <div class="body">
 <p>A classifier's output triggers an action, and its two kinds of error rarely cost the same.</p>
@@ -41,7 +47,7 @@
 </ul></aside>
 </section>
 
-<section data-n="3" data-total="63" data-part-name="" class="added">
+<section data-n="3" data-total="64" data-part-name="" class="added">
 <h2>A threshold in binary, argmax in multiclass</h2>
 <div class="body">
 <div class="columns top">
@@ -75,7 +81,7 @@
 </ul></aside>
 </section>
 
-<section data-n="4" data-total="63" data-part-name="" class="added">
+<section data-n="4" data-total="64" data-part-name="" class="added">
 <h2>Contributions</h2>
 <div class="body">
 <p>The decision rule is a component to be learned from held-out data.</p>
@@ -94,14 +100,14 @@
 </section>
 
 
-<section data-n="5" data-total="63" data-part-name="" class="outline">
+<section data-n="5" data-total="64" data-part-name="" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
 </section>
 
-<section data-n="6" data-total="63" data-part-name="Binary classification">
+<section data-n="6" data-total="64" data-part-name="Binary classification">
 <h2>Classification in two stages</h2>
 <div class="body">
 <p>Let <span class="nb">$(X, Y) \sim \mathbb{P}$,</span> with features $X \in \mathcal{X}$ and label <span class="nb">$Y \in \mathcal{Y} = \{0, \dots, K-1\}$.</span> A classifier $h \colon \mathcal{X} \to \mathcal{Y}$ is a composition $h(x) = \delta(\hat{\mathbf{p}}(x))$ of two stages.</p>
@@ -120,7 +126,7 @@
 </section>
 
 
-<section data-n="7" data-total="63" data-part-name="Binary classification">
+<section data-n="7" data-total="64" data-part-name="Binary classification">
 <h2>Cost-sensitive risk</h2>
 <div class="body">
 <div class="block definition"><div class="block-title">Definition (Cost matrix, expected risk)</div><div class="block-body"><p>A <strong>cost matrix</strong> $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$ has entry $C_{ij}$ equal to the cost of predicting class $j$ when the true class is <span class="nb">$i$.</span> The <strong>expected risk</strong> of a classifier $h$ is <span class="nb">$R(h) = \mathbb{E} \left[ C_{Y, h(X)} \right]$.</span></p></div></div>
@@ -134,7 +140,7 @@
 </ul></aside>
 </section>
 
-<section data-n="8" data-total="63" data-part-name="Binary classification">
+<section data-n="8" data-total="64" data-part-name="Binary classification">
 <h2>The Bayes rule</h2>
 <div class="body">
 <div class="block definition"><div class="block-title">Definition (Bayes risk)</div><div class="block-body"><p>The <strong>Bayes risk</strong> is $R^* = \inf_{h} R(h)$ over measurable classifiers.</p></div></div>
@@ -148,7 +154,7 @@
 </ul></aside>
 </section>
 
-<section data-n="9" data-total="63" data-part-name="Binary classification">
+<section data-n="9" data-total="64" data-part-name="Binary classification">
 <h2>Threshold rules</h2>
 <div class="body">
 <div class="block definition"><div class="block-title">Definition (Threshold rule)</div><div class="block-body"><p>Let <span class="nb">$K = 2$,</span> $\eta = \eta_1$ and <span class="nb">$\hat{p} = \hat{p}_1$.</span> For <span class="nb">$\tau \in [0, 1]$,</span> the <strong>threshold rule</strong> $\delta_\tau \colon [0,1] \to \{0,1\}$ is $\delta_\tau(z) = 1$ if $z \geq \tau$ and $\delta_\tau(z) = 0$ if <span class="nb">$z &lt; \tau$.</span></p></div></div>
@@ -160,7 +166,7 @@
 </ul></aside>
 </section>
 
-<section data-n="10" data-total="63" data-part-name="Binary classification">
+<section data-n="10" data-total="64" data-part-name="Binary classification">
 <h2>The Elkan threshold</h2>
 <div class="body">
 <div class="block definition"><div class="block-title">Definition (Reasonable costs)</div><div class="block-body"><p>For <span class="nb">$K = 2$,</span> the costs are <strong>reasonable</strong> if $C_{01} &gt; C_{00}$ and $C_{10} &gt; C_{11}$ <span class="cite" data-key="elkan2001foundations">(Elkan, 2001)</span>.</p></div></div>
@@ -176,7 +182,7 @@
 </ul></aside>
 </section>
 
-<section data-n="11" data-total="63" data-part-name="Binary classification" class="added">
+<section data-n="11" data-total="64" data-part-name="Binary classification" class="added">
 <h2>The Elkan threshold</h2>
 <div class="body">
 <p class="center fs-footnotesize">$C_{ij}$ is the cost of predicting $j$ when the true class is <span class="nb">$i$.</span></p>
@@ -190,7 +196,7 @@
 </ul></aside>
 </section>
 
-<section data-n="12" data-total="63" data-part-name="Binary classification">
+<section data-n="12" data-total="64" data-part-name="Binary classification">
 <h2>The plug-in rule</h2>
 <div class="body">
 <p>The Bayes rule needs <span class="nb">$\boldsymbol{\eta}$,</span> which is unknown. The <strong>plug-in classifier</strong> <span class="cite" data-key="devroye1996probabilistic">(Devroye et al., 1996)</span> applies it to the estimate: <span class="nb">$\hat{h}(x) = \delta^*(\hat{\mathbf{p}}(x))$.</span></p>
@@ -207,7 +213,7 @@
 </ul></aside>
 </section>
 
-<section data-n="13" data-total="63" data-part-name="Binary classification">
+<section data-n="13" data-total="64" data-part-name="Binary classification">
 <h2>Calibration is not discrimination</h2>
 <div class="body">
 <div class="columns mid">
@@ -224,7 +230,7 @@
 </ul></aside>
 </section>
 
-<section data-n="14" data-total="63" data-part-name="Binary classification" class="added">
+<section data-n="14" data-total="64" data-part-name="Binary classification" class="added">
 <h2>Calibrate, then decide</h2>
 <div class="body">
 <p>A <strong>calibrator</strong> is a map $g \colon [0,1] \to [0,1]$ that corrects <span class="nb">$\hat{p}$,</span> and calibrate-then-decide predicts $1$ when <span class="nb">$g(\hat{p}(x)) \geq p^*$.</span> Platt scaling uses <span class="nb">$g(\hat{p}) = \sigma\bigl(a \, \mathrm{logit}(\hat{p}) + b\bigr)$,</span> with $\sigma$ the logistic function.</p>
@@ -239,12 +245,12 @@
 </ul></aside>
 </section>
 
-<section data-n="15" data-total="63" data-part-name="Binary classification" class="outline">
+<section data-n="15" data-total="64" data-part-name="Binary classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part current"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li class="sub-current">Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="16" data-total="63" data-part-name="Binary classification">
+</section><section data-n="16" data-total="64" data-part-name="Binary classification">
 <h2>The decision rule as a learner</h2>
 <div class="body">
 <ul>
@@ -261,7 +267,7 @@
 </ul></aside>
 </section>
 
-<section data-n="17" data-total="63" data-part-name="Binary classification">
+<section data-n="17" data-total="64" data-part-name="Binary classification">
 <h2>Generalization bound for the decision stage</h2>
 <div class="body">
 <div class="block proposition"><div class="block-title">Proposition (2.6.1 for <span class="nb">$K = 2$,</span> Remark 7.7.1 for <span class="nb">$K &gt; 2$;</span> proof: <a class="bk" href="#/P3">P3</a>)</div><div class="block-body"><p>Let $\mathcal{V}$ be drawn i.i.d. from <span class="nb">$\mathbb{P}$,</span> independently of the sample used to fit <span class="nb">$\hat{\mathbf{p}}$,</span> and let the rules of $\mathcal{H}_{dec}$ be pointwise limits of a countable class of measurable rules. With probability at least <span class="nb">$1 - \nu$,</span> for all $\delta \in \mathcal{H}_{dec}$ simultaneously, <span class="dm">\[
@@ -277,7 +283,7 @@
 </ul></aside>
 </section>
 
-<section data-n="18" data-total="63" data-part-name="Binary classification" class="added">
+<section data-n="18" data-total="64" data-part-name="Binary classification" class="added">
 <h2>The empirical threshold</h2>
 <div class="body">
 <figure class="fig" data-fig="empirical_threshold"></figure>
@@ -290,7 +296,7 @@
 </ul></aside>
 </section>
 
-<section data-n="19" data-total="63" data-part-name="Binary classification">
+<section data-n="19" data-total="64" data-part-name="Binary classification">
 <h2>The cross-validated threshold</h2>
 <div class="body">
 <p>EmpiricalCV splits the training data into $F = 5$ folds. For each fold $k$ the estimator is fitted on the other folds and scored on fold <span class="nb">$k$,</span> which gives <span class="nb">$\hat{R}_k(\tau)$;</span> the threshold minimizes <span class="nb">$\hat{R}_{CV}(\tau) = \frac{1}{F} \sum_k \hat{R}_k(\tau)$,</span> and the estimator is then refitted on all the training data. In scikit-learn it is <code>TunedThresholdClassifierCV</code>.</p>
@@ -304,12 +310,12 @@
 </section>
 
 
-<section data-n="20" data-total="63" data-part-name="Binary classification" class="outline">
+<section data-n="20" data-total="64" data-part-name="Binary classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part current"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li class="sub-current">Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="21" data-total="63" data-part-name="Binary classification" data-contrib="3">
+</section><section data-n="21" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>Binary benchmark</h2>
 <div class="body">
 <div class="columns top">
@@ -336,7 +342,7 @@
 </ul></aside>
 </section>
 
-<section data-n="22" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<section data-n="22" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>Binary benchmark</h2>
 <div class="body">
 <p><strong>Strategies.</strong> Twelve, ten untuned and two tuned:</p>
@@ -358,7 +364,7 @@
 </ul></aside>
 </section>
 
-<section data-n="23" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<section data-n="23" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>The win-or-tie rule</h2>
 <div class="body">
 <div class="columns mid">
@@ -376,10 +382,10 @@
 </ul></aside>
 </section>
 
-<section data-n="24" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<section data-n="24" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>Binary costs: cross-validated tuning leads</h2>
 <div class="body">
-<figure class="fig" data-fig="win_bars_binary_cost" style="--w:0.642;"><img src="figures/static/win_bars_binary_cost.svg" alt="win bars binary cost"></figure>
+<figure class="fig" data-fig="win_bars_binary_cost" data-state='{"more": true}' style="--w:0.642;"><img src="figures/static/win_bars_binary_cost.svg" alt="win bars binary cost"></figure>
 <p>EmpiricalCV wins or ties $87\%$ of the cost cells. Empirical, the same threshold tuned on the $10\%$ validation split, wins or ties <span class="nb">$42\%$,</span> below the untuned Analytical at <span class="nb">$69\%$.</span> By dataset size, the gap is consistent with overfitting of the $10\%$ split (<a class="bk" href="#/B25">B25</a>).</p>
 <div class="fs-footnotesize"><p>The $14$ datasets, $10$ classifiers and $5$ cost matrices give $700$ cost cells, $670$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
 </div>
@@ -390,7 +396,7 @@
 </ul></aside>
 </section>
 
-<section data-n="25" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<section data-n="25" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>Binary metrics: EmpiricalCV wins or ties 99.9%</h2>
 <div class="body">
 <p><span class="nb">$F_\beta$,</span> MCC and G-Mean are not averages of a per-instance cost, so the analytical threshold does not apply and the untuned baseline is Argmax.</p>
@@ -404,7 +410,7 @@
 </ul></aside>
 </section>
 
-<section data-n="26" data-total="63" data-part-name="Binary classification" data-contrib="3">
+<section data-n="26" data-total="64" data-part-name="Binary classification" data-contrib="3">
 <h2>The analytical rule by base classifier</h2>
 <div class="body">
 <p>Share of cost cells won or tied, by base classifier <span class="nb">($\%$):</span></p>
@@ -424,12 +430,12 @@
 </section>
 
 
-<section data-n="27" data-total="63" data-part-name="Multiclass classification" class="outline">
+<section data-n="27" data-total="64" data-part-name="Multiclass classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="28" data-total="63" data-part-name="Multiclass classification">
+</section><section data-n="28" data-total="64" data-part-name="Multiclass classification">
 <h2>From a threshold to a partition</h2>
 <div class="body">
 <p>For $K &gt; 2$ the estimate $\hat{\mathbf{p}}(x)$ lies in the simplex <span class="nb">$\Delta^{K-1}$,</span> whose vertex $\mathbf{e}_k$ puts probability $1$ on class <span class="nb">$k$.</span> A rule $\delta$ splits it into <strong>decision regions</strong> <span class="nb">$\mathcal{P}_i = \delta^{-1}(\{i\})$.</span> The risk of predicting $i$ at $\mathbf{p}$ is <span class="dm">\[
@@ -445,7 +451,7 @@
 </ul></aside>
 </section>
 
-<section data-n="29" data-total="63" data-part-name="Multiclass classification">
+<section data-n="29" data-total="64" data-part-name="Multiclass classification">
 <h2>From a threshold to a partition</h2>
 <div class="body">
 <figure class="fig" data-fig="simplex_cost_partition" style="--h:.66;"><img src="figures/static/simplex_cost_partition.svg" alt="simplex cost partition"></figure>
@@ -457,27 +463,27 @@
 </section>
 
 
-<section data-n="30" data-total="63" data-part-name="Multiclass classification" class="outline">
+<section data-n="30" data-total="64" data-part-name="Multiclass classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li class="sub-current">Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="31" data-total="63" data-part-name="Multiclass classification">
+</section><section data-n="31" data-total="64" data-part-name="Multiclass classification">
 <h2>Learning the partition</h2>
 <div class="body">
 <p>A <strong>partition matrix</strong> $\mathbf{A}$ takes the place of $\mathbf{C}$ in the Bayes rule <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>: <span class="dm">\[
     \delta_{\mathbf{A}}(\mathbf{p}) = \arg\min_{i} \sum_j A_{ji} \, p_j .
-  \]</span> It is chosen like the threshold, among $301$ random candidates. Three classes:</p>
+  \]</span> It is chosen like the threshold, among $T$ random candidates. Three classes:</p>
 <figure class="fig" data-fig="partition_classes" style="margin-bottom:0;"></figure>
 </div>
 <aside class="notes"><ul>
 <li>Separate the matrix that decides, <span class="nb">$\mathbf{A}$,</span> from the one that evaluates, <span class="nb">$\mathbf{C}$,</span> and fit $\mathbf{A}$ on held-out data.</li>
-<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $301$ random draws.</li>
+<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $T$ random draws.</li>
 <li>Shift: $K - 1$ offsets, no turning. Scaling: $K - 1$ weights, the boundaries turn. Full matrix: $K^2$ entries, any convex polyhedral partition.</li>
 </ul></aside>
 </section>
 
-<section data-n="32" data-total="63" data-part-name="Multiclass classification" class="added">
+<section data-n="32" data-total="64" data-part-name="Multiclass classification" class="added">
 <h2>The sequential cascade</h2>
 <div class="body">
 <p>A rule used with class-imbalanced data tests the classes in a priority order, rarest first, and predicts the first whose probability reaches its threshold, or the argmax if none does. It is a decision list <span class="cite" data-key="rivest1987decision">(Rivest, 1987)</span>: <span class="dm">\[
@@ -494,7 +500,7 @@
 </ul></aside>
 </section>
 
-<section data-n="33" data-total="63" data-part-name="Multiclass classification" class="added">
+<section data-n="33" data-total="64" data-part-name="Multiclass classification" class="added">
 <h2>Two multiclass threshold rules</h2>
 <div class="body">
 <figure class="fig" data-fig="threshold_rules"></figure>
@@ -507,7 +513,7 @@
 </ul></aside>
 </section>
 
-<section data-n="34" data-total="63" data-part-name="Multiclass classification" data-contrib="1">
+<section data-n="34" data-total="64" data-part-name="Multiclass classification" data-contrib="1">
 <h2>Five tunable rules</h2>
 <div class="body">
 <div class="center fs-footnotesize"><table>
@@ -528,12 +534,12 @@
 </section>
 
 
-<section data-n="35" data-total="63" data-part-name="Multiclass classification" class="outline">
+<section data-n="35" data-total="64" data-part-name="Multiclass classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li class="sub-current">Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="36" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+</section><section data-n="36" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>Argmax as a nearest-vertex rule</h2>
 <div class="body">
 <p>Argmax sends each $\mathbf{p}$ to its nearest vertex. A <strong>Voronoi rule</strong> sends it to the nearest of $K$ prototypes under a distance; this work uses the Euclidean one, $\delta_{\mathcal{M}}(\mathbf{p}) = \arg\min_{k} \| \mathbf{p} - \boldsymbol{\mu}_k \|_2$ (Definition 6; <a class="bk" href="#/B29">B29</a>).</p>
@@ -546,7 +552,7 @@
 </ul></aside>
 </section>
 
-<section data-n="37" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<section data-n="37" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>Learning the prototypes</h2>
 <div class="body">
 <p>The prototypes are fitted like the partition matrix, by random search on the validation sample $\mathcal{V}$ (Section 7.4):</p>
@@ -562,7 +568,7 @@
 </ul></aside>
 </section>
 
-<section data-n="38" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<section data-n="38" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>The dominant label constraint</h2>
 <div class="body">
 <div class="columns mid">
@@ -581,7 +587,7 @@
 </ul></aside>
 </section>
 
-<section data-n="39" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<section data-n="39" data-total="64" data-part-name="Multiclass classification" class="added" data-contrib="2">
 <h2>Sampling prototypes under the DLC</h2>
 <div class="body">
 <p>The random search draws configurations that must satisfy the DLC and still cover the simplex (six samplers: <a class="bk" href="#/B33">B33</a>, <a class="bk" href="#/B10">B10</a>). A uniform draw usually violates the DLC. Moving the largest coordinate of the $k$-th draw to position $k$ restores it in almost every draw at <span class="nb">$K = 3$,</span> and in fewer as $K$ grows.</p>
@@ -597,7 +603,7 @@
 </ul></aside>
 </section>
 
-<section data-n="40" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<section data-n="40" data-total="64" data-part-name="Multiclass classification" class="added" data-contrib="2">
 <h2>Sampling prototypes under the DLC</h2>
 <div class="body">
 <p>The sequential $d^2$ sampler keeps the swap and adds a test against the earlier prototypes. With $d^2$ the squared distance, for <span class="nb">$i = 0, \dots, K - 1$:</span></p>
@@ -621,7 +627,7 @@
 </ul></aside>
 </section>
 
-<section data-n="41" data-total="63" data-part-name="Multiclass classification" class="added" data-contrib="2">
+<section data-n="41" data-total="64" data-part-name="Multiclass classification" class="added" data-contrib="2">
 <h2>Sampling prototypes under the DLC</h2>
 <div class="body">
 <figure class="fig" data-fig="sampler_dlc_four" style="--w:1;"><img src="figures/static/sampler_dlc_four.png" alt="four samplers"></figure>
@@ -635,7 +641,7 @@
 </ul></aside>
 </section>
 
-<section data-n="42" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<section data-n="42" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>Expressivity of the Voronoi class</h2>
 <div class="body">
 <ul>
@@ -651,7 +657,7 @@
 </ul></aside>
 </section>
 
-<section data-n="43" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<section data-n="43" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>Expressivity of the Voronoi class</h2>
 <div class="body">
 <div class="columns mid">
@@ -670,7 +676,7 @@
 </ul></aside>
 </section>
 
-<section data-n="44" data-total="63" data-part-name="Multiclass classification" data-contrib="2">
+<section data-n="44" data-total="64" data-part-name="Multiclass classification" data-contrib="2">
 <h2>A scenario built for rotation</h2>
 <div class="body">
 <figure class="fig" data-fig="simplex_regions" style="--h:.43;"><img src="figures/static/simplex_regions.svg" alt="simplex regions"></figure>
@@ -687,7 +693,7 @@
 </ul></aside>
 </section>
 
-<section data-n="45" data-total="63" data-part-name="Multiclass classification" data-contrib="1">
+<section data-n="45" data-total="64" data-part-name="Multiclass classification" data-contrib="1">
 <h2>Capacity of the hypothesis classes</h2>
 <div class="body">
 <p>For $K$ classes the bound uses the Natarajan dimension $d_{Nat}$ <span class="cite" data-key="natarajan1989learning,daniely2015multiclass">(Daniely, Sabato, et al., 2015; Natarajan, 1989)</span>: $R(\delta) \leq \hat{R}(\delta) + c \, C_{max} \sqrt{d_{Nat}(\mathcal{H}_{dec}) / m}$ (Remark 7.7.1; definition on <a class="bk" href="#/B8">B8</a>). With prototypes anywhere, the Voronoi rules are exactly the full-matrix rules (Proposition 7.2.1; <a class="bk" href="#/P6">P6</a>). $\mathcal{H}_{Vor}^{\Delta}$ denotes those with prototypes in the simplex.</p>
@@ -707,26 +713,27 @@
 </section>
 
 
-<section data-n="46" data-total="63" data-part-name="Multiclass classification" class="outline">
+<section data-n="46" data-total="64" data-part-name="Multiclass classification" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part current"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li class="sub-current">Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="47" data-total="63" data-part-name="Multiclass classification" data-contrib="3">
+</section><section data-n="47" data-total="64" data-part-name="Multiclass classification" data-contrib="3">
 <h2>Multiclass costs: the rules built on $\mathbf{C}$ lead</h2>
 <div class="body">
-<figure class="fig" data-fig="win_bars_multiclass_cost" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
-<p>The three cross-validated tuners built on the cost matrix have the highest shares: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical <span class="nb">($70\%$).</span> Tuned on the $10\%$ split, the same three reach $30\%$ to <span class="nb">$36\%$.</span></p>
-<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B34">B34</a>), $10$ classifiers and $7$ cost matrices give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+<figure class="fig" data-fig="win_bars_multiclass_cost" data-state='{"calibrated": true}' style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
+<p>The cross-validated tuners built on the cost matrix lead: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical <span class="nb">($70\%$).</span> Tuned on the $10\%$ split, the same three reach $30\%$ to <span class="nb">$36\%$;</span> with a calibrator, Analytical reaches $31\%$ to <span class="nb">$56\%$.</span></p>
+<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B28">B28</a>), $10$ classifiers and $7$ cost matrices (<a class="bk" href="#/B34">B34</a>) give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
 </div>
 <aside class="notes"><ul>
 <li>The rules that start from the cost matrix lead: $79$ to <span class="nb">$81\%$.</span></li>
 <li>The rules that ignore it are below the untuned analytical rule.</li>
+<li>With a calibrator fitted on the $10\%$ split, the analytical rule is at $31$ to <span class="nb">$56\%$.</span></li>
 <li>VoronoiTuningCV is at <span class="nb">$38\%$.</span></li>
 </ul></aside>
 </section>
 
-<section data-n="48" data-total="63" data-part-name="Multiclass classification" data-contrib="3">
+<section data-n="48" data-total="64" data-part-name="Multiclass classification" data-contrib="3">
 <h2>Multiclass metrics: cross-validated rules rank first</h2>
 <div class="body">
 <figure class="fig" data-fig="win_bars_multiclass_max" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_max.svg" alt="win bars multiclass max"></figure>
@@ -740,7 +747,7 @@
 </ul></aside>
 </section>
 
-<section data-n="49" data-total="63" data-part-name="Multiclass classification">
+<section data-n="49" data-total="64" data-part-name="Multiclass classification">
 <h2>What to do in practice</h2>
 <div class="body">
 <figure class="fig" data-fig="recipe_flowchart" style="--h:.52;"><img src="figures/static/recipe_flowchart.svg" alt="recipe flowchart"></figure>
@@ -754,12 +761,12 @@
 </section>
 
 
-<section data-n="50" data-total="63" data-part-name="Sensitivity across K" class="outline">
+<section data-n="50" data-total="64" data-part-name="Sensitivity across K" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part current"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="51" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+</section><section data-n="51" data-total="64" data-part-name="Sensitivity across K" data-contrib="4">
 <h2>The lead narrows with $K$</h2>
 <div class="body">
 <p>Share of cost cells won or tied:</p>
@@ -776,7 +783,7 @@
 </ul></aside>
 </section>
 
-<section data-n="52" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<section data-n="52" data-total="64" data-part-name="Sensitivity across K" data-contrib="4">
 <h2>Synthetic check</h2>
 <div class="body">
 <div class="columns mid">
@@ -796,7 +803,7 @@
 </ul></aside>
 </section>
 
-<section data-n="53" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<section data-n="53" data-total="64" data-part-name="Sensitivity across K" data-contrib="4">
 <h2>Synthetic check</h2>
 <div class="body">
 <div class="center"><figure class="fig" data-fig="scaling_variance" style="--w:0.918;--h:.43;"><img src="figures/static/scaling_variance.svg" alt="scaling variance"></figure></div>
@@ -809,7 +816,7 @@
 </ul></aside>
 </section>
 
-<section data-n="54" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<section data-n="54" data-total="64" data-part-name="Sensitivity across K" data-contrib="4">
 <h2>Dimensional dilution</h2>
 <div class="body">
 <p>A perturbation $\boldsymbol{\epsilon}$ of a probability vector lies in <span class="nb">$V = \{\mathbf{v} \in \mathbb{R}^K : \sum_k v_k = 0\}$,</span> of dimension <span class="nb">$K - 1$.</span> Away from the boundaries of a rule <span class="nb">$\delta$,</span> its per-sample expected cost $\phi_\delta(\mathbf{p}) = \mathbf{c}_{\delta(\mathbf{p})}^\top \mathbf{p}$ is linear near <span class="nb">$\mathbf{p}$,</span> with a gradient <span class="nb">$\mathbf{g} \in V$,</span> so $\boldsymbol{\epsilon}$ changes it by <span class="nb">$\mathbf{g}^\top \boldsymbol{\epsilon}$.</span></p>
@@ -822,7 +829,7 @@
 </ul></aside>
 </section>
 
-<section data-n="55" data-total="63" data-part-name="Sensitivity across K" data-contrib="4">
+<section data-n="55" data-total="64" data-part-name="Sensitivity across K" data-contrib="4">
 <h2>Dimensional dilution</h2>
 <div class="body">
 <div class="block lemma"><div class="block-title">Lemma (9.2.3, dimensional dilution; proof: <a class="bk" href="#/P11">P11</a>)</div><div class="block-body"><p>Let $K \geq 2$ and let $\phi \colon \Delta^{K-1} \to \mathbb{R}$ be measurable and differentiable at an interior point $\mathbf{p}$ with gradient <span class="nb">$\mathbf{g} \in V$,</span> with $\mathbf{p} + \boldsymbol{\epsilon} \in \Delta^{K-1}$ and $|\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p})
@@ -840,12 +847,12 @@
 </section>
 
 
-<section data-n="56" data-total="63" data-part-name="Conclusion" class="outline">
+<section data-n="56" data-total="64" data-part-name="Conclusion" class="outline">
 <h2>Roadmap</h2>
 <div class="body">
 <div class="columns mid"><ol class="col toc"><li class="part faded"><span class="num">1</span>Binary classification<ul><li>The decision stage</li><li>Learning the threshold</li><li>Benchmark</li></ul></li><li class="part faded"><span class="num">3</span>Sensitivity across $K$</li></ol><ol class="col toc"><li class="part faded"><span class="num">2</span>Multiclass classification<ul><li>Geometry of the Bayes rule</li><li>Partition optimization</li><li>Voronoi tessellations</li><li>Benchmark</li></ul></li><li class="part current"><span class="num">4</span>Conclusion</li></ol></div>
 </div>
-</section><section data-n="57" data-total="63" data-part-name="Conclusion" data-contrib="5">
+</section><section data-n="57" data-total="64" data-part-name="Conclusion" data-contrib="5">
 <h2>The threshold_opt library</h2>
 <div class="body">
 <div class="editor">
@@ -880,7 +887,7 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 </ul></aside>
 </section>
 
-<section data-n="58" data-total="63" data-part-name="Conclusion">
+<section data-n="58" data-total="64" data-part-name="Conclusion">
 <h2>Machine-checked proofs</h2>
 <div class="body">
 <p>The mathematical results of the dissertation are stated and proved in <strong>Lean 4</strong> with Mathlib (Appendix E). The Lean kernel checks every proof, and the proofs use only the three standard axioms.</p>
@@ -894,7 +901,7 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 </ul></aside>
 </section>
 
-<section data-n="59" data-total="63" data-part-name="Conclusion">
+<section data-n="59" data-total="64" data-part-name="Conclusion">
 <h2>Corrections since the committee version</h2>
 <div class="body">
 <ul>
@@ -911,13 +918,13 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 </ul></aside>
 </section>
 
-<section data-n="60" data-total="63" data-part-name="Conclusion">
+<section data-n="60" data-total="64" data-part-name="Conclusion">
 <h2>Limitations and next steps</h2>
 <div class="body">
 <div class="columns top">
 <div class="col" style="--cw:.44"><p><strong>Limitations</strong></p>
 <ul>
-<li>One protocol, default hyperparameters, tabular data with <span class="nb">$K \leq 10$,</span> and a descriptive comparison.</li>
+<li>Default hyperparameters and tabular data with <span class="nb">$K \leq 10$.</span></li>
 <li>The split proportions are arbitrary, and they favour the cross-validated tuners: calibrators are fitted on the $10\%$ split and the cross-validated tuners use the $80\%$ pool.</li>
 </ul></div>
 <div class="col" style="--cw:.54"><p><strong>Next steps</strong></p>
@@ -933,14 +940,32 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 <p class="center">We plan to organize some of these into a paper.</p>
 </div>
 <aside class="notes"><ul>
-<li>Main limits: one protocol, default hyperparameters, a descriptive comparison, arbitrary split proportions.</li>
+<li>Main limits: default hyperparameters, tabular data, arbitrary split proportions.</li>
 <li>Next: other data, instance-dependent costs, tuned classifiers, the imbalance ratio, cross-validated calibrators, compute cost.</li>
 <li>A paper should organize these.</li>
 </ul></aside>
 </section>
 
+<section data-n="61" data-total="64" data-part-name="Conclusion">
+<h2>Acknowledgments</h2>
+<div class="body">
+<ul>
+<li><strong>The committee</strong>, for reading the dissertation and for being here today.</li>
+<li><strong>My colleagues</strong>, who heard about this work many times; their questions and suggestions shaped how I understand it.</li>
+<li><strong>The companies where I worked</strong> during the master's, for supporting me while I took the courses and worked on the dissertation.</li>
+<li><strong>Anna</strong>, my partner, for the encouragement and the patience along the whole way.</li>
+<li><strong>Alice and Lúcio</strong>, my parents, who always motivated me to keep improving.</li>
+<li><strong>Renato Vicente</strong>, for guiding me in research, professionally and personally.</li>
+</ul>
+</div>
+<aside class="notes"><ul>
+<li>Committee, colleagues, companies.</li>
+<li>Anna, my parents, Renato.</li>
+</ul></aside>
+</section>
 
-<section data-n="61" data-total="63" data-part-name="Conclusion">
+
+<section data-n="62" data-total="64" data-part-name="Conclusion">
 <h2>References i</h2>
 <div class="body refs">
 <p>Anthony, Martin and Peter L. Bartlett (1999). <em>Neural Network Learning: Theoretical Foundations</em>. Cambridge University Press.</p>
@@ -952,7 +977,7 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 </div>
 </section>
 
-<section data-n="62" data-total="63" data-part-name="Conclusion">
+<section data-n="63" data-total="64" data-part-name="Conclusion">
 <h2>References ii</h2>
 <div class="body refs">
 <p>Guo, Chuan et al. (2017). “On Calibration of Modern Neural Networks”. In: <em>Proceedings of the 34th International Conference on Machine Learning (ICML)</em>, pp. 1321–1330.</p>
@@ -964,7 +989,7 @@ rule.<span class="fn">fit</span>(X_train, y_train, C)
 </div>
 </section>
 
-<section data-n="63" data-total="63" data-part-name="Conclusion">
+<section data-n="64" data-total="64" data-part-name="Conclusion">
 <h2>References iii</h2>
 <div class="body refs">
 <p>Natarajan, Balas K. (1989). “On Learning Sets and Functions”. <em>Machine Learning</em> 4.1, pp. 67–97.</p>

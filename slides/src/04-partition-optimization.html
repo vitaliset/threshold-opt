@@ -5,12 +5,12 @@
 <div class="body">
 <p>A <strong>partition matrix</strong> $\mathbf{A}$ takes the place of $\mathbf{C}$ in the Bayes rule <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>: <span class="dm">\[
     \delta_{\mathbf{A}}(\mathbf{p}) = \arg\min_{i} \sum_j A_{ji} \, p_j .
-  \]</span> It is chosen like the threshold, among $301$ random candidates. Three classes:</p>
+  \]</span> It is chosen like the threshold, among $T$ random candidates. Three classes:</p>
 <figure class="fig" data-fig="partition_classes" style="margin-bottom:0;"></figure>
 </div>
 <aside class="notes"><ul>
 <li>Separate the matrix that decides, $\mathbf{A}$, from the one that evaluates, $\mathbf{C}$, and fit $\mathbf{A}$ on held-out data.</li>
-<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $301$ random draws.</li>
+<li>Same recipe as the threshold: score candidates on the validation sample, keep the best; here $T$ random draws.</li>
 <li>Shift: $K - 1$ offsets, no turning. Scaling: $K - 1$ weights, the boundaries turn. Full matrix: $K^2$ entries, any convex polyhedral partition.</li>
 </ul></aside>
 </section>

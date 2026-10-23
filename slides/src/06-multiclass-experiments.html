@@ -3,13 +3,14 @@
 <section data-contrib="3">
 <h2>Multiclass costs: the rules built on $\mathbf{C}$ lead</h2>
 <div class="body">
-<figure class="fig" data-fig="win_bars_multiclass_cost" style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
-<p>The three cross-validated tuners built on the cost matrix have the highest shares: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical ($70\%$). Tuned on the $10\%$ split, the same three reach $30\%$ to $36\%$.</p>
-<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B34">B34</a>), $10$ classifiers and $7$ cost matrices give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
+<figure class="fig" data-fig="win_bars_multiclass_cost" data-state='{"calibrated": true}' style="--w:0.647;"><img src="figures/static/win_bars_multiclass_cost.svg" alt="win bars multiclass cost"></figure>
+<p>The cross-validated tuners built on the cost matrix lead: FullMatrixPartitioning, RiskPartitioning (the parallel shift) and LinearScaling. The four cross-validated rules that ignore it are below the untuned Analytical ($70\%$). Tuned on the $10\%$ split, the same three reach $30\%$ to $36\%$; with a calibrator, Analytical reaches $31\%$ to $56\%$.</p>
+<div class="fs-footnotesize"><p>The $11$ datasets (<a class="bk" href="#/B28">B28</a>), $10$ classifiers and $7$ cost matrices (<a class="bk" href="#/B34">B34</a>) give $770$ cost cells, $735$ with results (<a class="bk" href="#/B1">B1</a>).</p></div>
 </div>
 <aside class="notes"><ul>
 <li>The rules that start from the cost matrix lead: $79$ to $81\%$.</li>
 <li>The rules that ignore it are below the untuned analytical rule.</li>
+<li>With a calibrator fitted on the $10\%$ split, the analytical rule is at $31$ to $56\%$.</li>
 <li>VoronoiTuningCV is at $38\%$.</li>
 </ul></aside>
 </section>

@@ -42,8 +42,14 @@ TITLE_SLIDE = """<section class="title-slide">
 <h1>Argmax is not enough</h1>
 <p class="subtitle">Empirical threshold and partition optimization<br>for binary and multiclass classification</p>
 <p class="author">Carlo Domenico Longo de Lemos</p>
-<p class="date">São Paulo, 2026</p>
-<p class="institute"><strong>Advisor:</strong> Prof. Dr. Renato Vicente<br>Graduate Program in Probability and Statistics<br>IME-USP</p>
+<p class="date">São Paulo, October 23, 2026</p>
+<div class="institute">
+<p>Graduate Program in Probability and Statistics, IME-USP</p>
+<div class="people">
+<strong>Advisor:</strong><span>Prof. Dr. Renato Vicente</span>
+<strong>Committee:</strong><span>Prof. Dr. Renato Vicente (IME-USP, chair)<br>Prof. Dr. Rafael Izbicki (UFSCar)<br>Prof. Dr. Tiago Mendonça dos Santos (Insper)</span>
+</div>
+</div>
 <p class="logos"><img class="logo-ime" src="figures/static/ime-logo.svg" alt="IME"><img class="logo-usp" src="figures/static/usp-logo.svg" alt="USP"></p>
 </div>
 <img class="logo-cc" src="figures/static/cc-by.svg" alt="CC BY">
