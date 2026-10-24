@@ -1,0 +1,174 @@
+<!--@subsection Voronoi tessellations-->
+
+<section data-contrib="2">
+<h2>Argmax as a nearest-vertex rule</h2>
+<div class="body">
+<p>Argmax sends each $\mathbf{p}$ to its nearest vertex. A <strong>Voronoi rule</strong> sends it to the nearest of $K$ prototypes under a distance; this work uses the Euclidean one, $\delta_{\mathcal{M}}(\mathbf{p}) = \arg\min_{k} \| \mathbf{p} - \boldsymbol{\mu}_k \|_2$ (Definition 6; <a class="bk" href="#/B29">B29</a>).</p>
+<figure class="fig" data-fig="voronoi_metrics"></figure>
+</div>
+<aside class="notes"><ul>
+<li>$\|\mathbf{p} - \mathbf{e}_i\|_2^2 = \|\mathbf{p}\|_2^2 - 2 p_i + 1$: argmax is the nearest-vertex rule. Move the reference points and you get a Voronoi rule with prototypes.</li>
+<li>At the vertices every distance gives argmax. Euclidean: straight boundaries, which turn with the prototypes. Manhattan: bent boundaries. Hellinger: curved ones.</li>
+<li>Prototypes in the simplex have $K(K-1)$ parameters.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="2">
+<h2>Learning the prototypes</h2>
+<div class="body">
+<p>The prototypes are fitted like the partition matrix, by random search on the validation sample $\mathcal{V}$ (Section 7.4):</p>
+<ol>
+<li>start from the argmax prototypes, $\boldsymbol{\mu}_k = \mathbf{e}_k$;</li>
+<li>draw a new configuration $\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1}$ (free prototypes can send a pure-class input $\mathbf{e}_k$ to another class);</li>
+<li>keep it if it lowers $\hat{R}$ on $\mathcal{V}$, and repeat for a fixed number of draws.</li>
+</ol>
+</div>
+<aside class="notes"><ul>
+<li>Same recipe as for the partition matrix: draw, score on the validation sample, keep the best.</li>
+<li>The question is which configurations to draw.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="2">
+<h2>The dominant label constraint</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.6">
+<p>A cost matrix is <strong>element-wise reasonable</strong> if $C_{jj} &lt; C_{ji}$ for every $j$ and all $i \neq j$ <span class="cite" data-key="obrien2008costsensitive">(O'Brien et al., 2008)</span>. Then the Bayes rule sends each vertex $\mathbf{e}_k$ to class $k$. The <strong>dominant label constraint</strong> (DLC) requires the same property of the prototypes.</p>
+<div class="block definition"><div class="block-title">Definition (7, dominant label constraint)</div><div class="block-body"><p style="text-align:left">A configuration $\mathcal{M} =(\boldsymbol{\mu}_0, \dots, \boldsymbol{\mu}_{K-1})$ of points of $\Delta^{K-1}$ satisfies the DLC if $\arg\min_{j \in \mathcal{Y}} \|\mathbf{e}_k - \boldsymbol{\mu}_j\|_2
+    = \{k\}$ for every $k \in \mathcal{Y}$.</p></div></div>
+</div>
+<div class="col center" style="--cw:.38"><figure class="fig" data-fig="dlc_region" data-state='{"plain": true}' style="--w:1;"></figure></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>With an element-wise reasonable matrix, every vertex goes to its own class.</li>
+<li>The DLC asks the prototypes for the same: on pure-class inputs the Voronoi rule agrees with argmax.</li>
+<li>Drag $\boldsymbol{\mu}_0$: the shaded area is where the constraint still holds.</li>
+</ul></aside>
+</section>
+
+<section class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<p>The random search draws configurations that must satisfy the DLC and still cover the simplex (six samplers: <a class="bk" href="#/B33">B33</a>, <a class="bk" href="#/B10">B10</a>). A uniform draw usually violates the DLC. Moving the largest coordinate of the $k$-th draw to position $k$ restores it in almost every draw at $K = 3$, and in fewer as $K$ grows.</p>
+<div class="columns top">
+<div class="col center" style="--cw:.46"><figure class="fig" data-fig="sampler_story" data-state='{"modes": ["uniform", "swap"]}' style="--w:1;"></figure></div>
+<div class="col center" style="--cw:.52"><figure class="fig" data-fig="sampler_dlc_vs_k" style="--w:1;"></figure></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>The same three draws twice: uniform, they send vertices to other classes; after the swap, each prototype lies where its own coordinate is largest.</li>
+<li>The swap fixes each prototype alone, not the pairs: swap-max keeps the DLC in $61\%$ of the draws at $K = 100$.</li>
+<li>The sampler adds a test against the earlier prototypes.</li>
+</ul></aside>
+</section>
+
+<section class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<p>The sequential $d^2$ sampler keeps the swap and adds a test against the earlier prototypes. With $d^2$ the squared distance, for $i = 0, \dots, K - 1$:</p>
+<div class="columns top">
+<div class="col" style="--cw:.5">
+<ul>
+<li>draw $\mathbf{p}$ uniformly on the simplex, its largest coordinate swapped into position $i$;</li>
+<li>accept it as $\boldsymbol{\mu}_i$ if $d^2(\mathbf{e}_k, \mathbf{p}) &gt; d^2(\mathbf{e}_k, \boldsymbol{\mu}_k)$ and $d^2(\mathbf{e}_i, \mathbf{p}) &lt; d^2(\mathbf{e}_i, \boldsymbol{\mu}_k)$ for every $k &lt; i$; else draw again.</li>
+</ul>
+<p>Every configuration it returns satisfies the DLC (Proposition 7.5.1; <a class="bk" href="#/P8">P8</a>).</p>
+</div>
+<div class="col center" style="--cw:.48">
+<figure class="fig" data-fig="sampler_story" data-state='{"modes": ["sequential"]}' style="--w:1;"></figure>
+</div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Dashed disc: the new prototype must stay out of it, or it would take an earlier vertex. Dotted disc: it must enter it, so that its own vertex is nearest to it.</li>
+<li>Shaded: where a draw is kept; crosses: rejected draws, rare at $K = 3$.</li>
+<li>Of the six samplers compared, it is the only one that keeps the DLC for every $K$ up to $100$ and still explores the interior (B10).</li>
+</ul></aside>
+</section>
+
+<section class="added" data-contrib="2">
+<h2>Sampling prototypes under the DLC</h2>
+<div class="body">
+<figure class="fig" data-fig="sampler_dlc_four" style="--w:1;"><img src="figures/static/sampler_dlc_four.png" alt="four samplers"></figure>
+<p class="center">The shade at $\mathbf{p}$ is $1 - H(\mathbf{f}(\mathbf{p})) / \log 3$, with $\mathbf{f}(\mathbf{p})$ the share of $300$ draws that send $\mathbf{p}$ to each class.</p>
+<div class="fs-footnotesize"><p class="center">The samplers are described on <a class="bk" href="#/B33">B33</a>, and all six panels are on <a class="bk" href="#/B10">B10</a>.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>White: all $300$ draws agree on the class of the point. Black: the three classes are equally frequent.</li>
+<li>Rejection and Hungarian: grey corners, so some draws break the DLC.</li>
+<li>Shrink: white corners, little variation inside. Sequential $d^2$: white corners, and the interior still varies.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="2">
+<h2>Expressivity of the Voronoi class</h2>
+<div class="body">
+<ul>
+<li>$\mathcal{H}_{Vor}$, the Voronoi rules with prototypes anywhere in $\mathbb{R}^K$, strictly contains the parallel-shift class: $\mathcal{H}_{PS} \subsetneq \mathcal{H}_{Vor}$ (Proposition 7.3.2; <a class="bk" href="#/B31">B31</a>).</li>
+<li>$\mathcal{H}_{Vor}^{\mathrm{DLC}}$, with prototypes in the simplex under the DLC, is the class of the experiments. Its containment is not proved, so the theorem compares the best risks.</li>
+</ul>
+<div class="block theorem"><div class="block-title">Theorem (7.3.1, strict risk separation from the parallel-shift class; proof: <a class="bk" href="#/P7">P7</a>)</div><div class="block-body"><p>There exist a data distribution $\mathbb{P}$ and a cost matrix $\mathbf{C}$ such that $\inf_{\delta \in \mathcal{H}_{Vor}^{\mathrm{DLC}}} R(\delta)
+      &lt; \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$.</p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Unconstrained prototypes contain every parallel shift; the experiments use constrained ones.</li>
+<li>For the constrained class: a distribution where it has strictly lower risk than every shift.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="2">
+<h2>Expressivity of the Voronoi class</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="voronoi_witness" style="--w:1;"><img src="figures/static/voronoi_witness.svg" alt="voronoi witness"></figure></div>
+<div class="col" style="--cw:.58"><p>Take $K = 3$, $0/1$ loss, and mass $1/3$ on each of $\mathbf{p}_C = (0.8, 0.1, 0.1)$, $\mathbf{p}_A = (0.4, 0.3, 0.3)$ and $\mathbf{p}_B = (0, 0.5, 0.5)$, with labels $0$, $1$, $2$.</p>
+<div class="medskip"></div>
+<p>A parallel-shift rule picks the smallest score $s_k(\mathbf{p}) = \mathbf{c}_k^\top \mathbf{p} + \alpha_k$. On the altitude $p_1 = p_2$, $s_1 - s_2$ is the constant $\alpha_1 - \alpha_2$, so no such rule labels $\mathbf{p}_A$ as $1$ and $\mathbf{p}_B$ as $2$, and its risk is at least $1/3$.</p>
+<div class="medskip"></div>
+<p>The prototypes $\boldsymbol{\mu}_0 = \mathbf{e}_0$, $\boldsymbol{\mu}_1 = (0.4, 0.5, 0.1)$, $\boldsymbol{\mu}_2 = (0.1, 0.4, 0.5)$ satisfy the DLC and classify all three points, with risk $0$.</p></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Three points on one altitude of the simplex.</li>
+<li>No parallel shift labels $\mathbf{p}_A$ as $1$ and $\mathbf{p}_B$ as $2$.</li>
+<li>The Voronoi rule classifies all three: risk $0$ against at least $1/3$.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="2">
+<h2>A scenario built for rotation</h2>
+<div class="body">
+<figure class="fig" data-fig="simplex_regions" style="--h:.43;"><img src="figures/static/simplex_regions.svg" alt="simplex regions"></figure>
+<ul>
+<li>The scenario of Section 7.6 is built to need rotation. Classes $0$ and $1$ have correlations $+0.8$ and $-0.8$ between the first two features, and class $2$ has $0.8$ between the first and the third. Naive Bayes ignores correlations, so its error turns the boundaries in different directions.</li>
+<li>A shift (c) translates the boundaries without turning them, and a scaling (b) turns them through coupled parameters. The prototypes (d) and the full matrix (e) can turn each boundary separately.</li>
+<li>Both improve accuracy over argmax (a) by about $2$ points (<a class="bk" href="#/B19">B19</a>).</li>
+</ul>
+</div>
+<aside class="notes"><ul>
+<li>What makes the case special: it is constructed so that each boundary needs its own rotation.</li>
+<li>That is when prototypes help; under $0/1$-type objectives, and as an existence example.</li>
+<li>In the benchmark the Voronoi rule does not lead.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="1">
+<h2>Capacity of the hypothesis classes</h2>
+<div class="body">
+<p>For $K$ classes the bound uses the Natarajan dimension $d_{Nat}$ <span class="cite" data-key="natarajan1989learning,daniely2015multiclass">(Daniely, Sabato, et al., 2015; Natarajan, 1989)</span>: $R(\delta) \leq \hat{R}(\delta) + c \, C_{max} \sqrt{d_{Nat}(\mathcal{H}_{dec}) / m}$ (Remark 7.7.1; definition on <a class="bk" href="#/B8">B8</a>). With prototypes anywhere, the Voronoi rules are exactly the full-matrix rules (Proposition 7.2.1; <a class="bk" href="#/P6">P6</a>). $\mathcal{H}_{Vor}^{\Delta}$ denotes those with prototypes in the simplex.</p>
+<div class="block theorem"><div class="block-title">Theorem (7.7.2 to 7.7.5; proofs: <a class="bk" href="#/P9">P9</a>, <a class="bk" href="#/P10">P10</a>)</div><div class="block-body"><p><span class="dm">\begin{align*}
+      d_{Nat}(\mathcal{H}_{PS}) &amp;= K - 1 , &amp;
+      d_{Nat}(\mathcal{H}_{Sc}) &amp;\leq K - 1 , \\
+      d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) &amp;\leq K^2 , &amp;
+      d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) &amp;\leq K^2 .
+    \end{align*}</span></p></div></div>
+<p>The parallel-shift value is exact for an <strong>admissible</strong> $\mathbf{C}$, one where every class is the unique risk minimizer at some point of the simplex (<a class="bk" href="#/B30">B30</a>); the other values are upper bounds (against $K$: <a class="bk" href="#/B18">B18</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>Parallel shift: exactly $K - 1$.</li>
+<li>The others are upper bounds of order $K^2$.</li>
+<li>No capacity argument favours Voronoi over the full matrix: with free prototypes they are the same class.</li>
+</ul></aside>
+</section>

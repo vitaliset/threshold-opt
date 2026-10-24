@@ -97,3 +97,6 @@ lean/.lake/
 *.lof
 *.lot
 tex/_backup_pre_argmax_rename_20260519_231422/
+
+# HTML deck: build products of the tools
+slides/.build/

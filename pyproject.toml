@@ -92,3 +92,6 @@ ignore = [
     # ruff format conflict rules
     "W191", "E111", "E114", "E117",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"slides/**" = ["E501"]  # HTML templates and help strings of the deck tools
