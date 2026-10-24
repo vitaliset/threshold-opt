@@ -235,8 +235,7 @@ html, body { background: #1c1c1c; }
 .reveal .title-box { position: absolute; left: 48px; top: 56px; width: 60%; }
 .reveal .title-slide h1 { margin: 0 0 .5em 0; font-size: 62px; font-weight: 700; color: var(--ink); text-transform: none; letter-spacing: 0; line-height: 1.1; }
 .reveal .title-slide .subtitle { font-size: 44px; margin-bottom: 1.3em; }
-.reveal .title-slide .author { font-size: 36px; margin-bottom: .5em; }
-.reveal .title-slide .date { font-size: 36px; margin-bottom: 1em; }
+.reveal .title-slide .author { font-size: 36px; margin-bottom: 1em; }
 .reveal .title-slide .institute { font-size: 28px; line-height: 1.3; }
 .reveal .title-slide .institute p { margin: 0 0 .5em 0; }
 .reveal .title-slide .people { display: grid; grid-template-columns: max-content auto; column-gap: .35em; }

@@ -42,7 +42,6 @@ TITLE_SLIDE = """<section class="title-slide">
 <h1>Argmax is not enough</h1>
 <p class="subtitle">Empirical threshold and partition optimization<br>for binary and multiclass classification</p>
 <p class="author">Carlo Domenico Longo de Lemos</p>
-<p class="date">São Paulo, October 23, 2026</p>
 <div class="institute">
 <p>Graduate Program in Probability and Statistics, IME-USP</p>
 <div class="people">
