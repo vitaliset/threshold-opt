@@ -1,0 +1,281 @@
+/* IME-USP look of the defense deck, after the [slides] mode of imelooks.sty
+   (tex/): colours, fonts and statement blocks. Lengths are in px of the
+   1600 x 900 stage, which reveal.js scales to the window; 1pt of the Beamer
+   deck is about 3.5px here, so 12pt body text is 42px. The page is flat: no
+   shadows, gradients or rounded corners. */
+
+@font-face { font-family: "Libertinus Sans"; src: url("fonts/LibertinusSans-Regular.otf") format("opentype"); font-weight: 400; font-style: normal; }
+@font-face { font-family: "Libertinus Sans"; src: url("fonts/LibertinusSans-Bold.otf") format("opentype"); font-weight: 700; font-style: normal; }
+@font-face { font-family: "Libertinus Sans"; src: url("fonts/LibertinusSans-Italic.otf") format("opentype"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Libertinus Mono"; src: url("fonts/LibertinusMono-Regular.otf") format("opentype"); }
+
+:root {
+  --ime-blue: #142D69;
+  --ime-yellow: #E6AF3C;
+  --ime-red: #82143C;
+  --ime-softblue: #0064A0;
+  --ink: #232830;
+  --paper: #FAFAFA;
+  --grey: #666666;
+  --rule: #D9D9D9;
+  --sandy: #FFFCE2;
+  --def-title: #DB9470;
+  --def-body: #F0D1C2;
+  --prop-title: #BFBF80;
+  --prop-body: #D9D9B3;
+  --texth: 790px;
+  --fs: 42px;
+}
+
+html, body { background: #1c1c1c; }
+
+.reveal {
+  font-family: "Libertinus Sans", "Linux Biolinum", "Segoe UI", sans-serif;
+  font-size: var(--fs);
+  line-height: 1.22;
+  color: var(--ink);
+}
+.reveal .slides { text-align: left; }
+.reveal .slides > section {
+  box-sizing: border-box;
+  width: 1600px;
+  height: 900px;
+  padding: 0;
+  top: 0 !important;
+  background: var(--paper);
+  flex-direction: column;
+}
+.reveal .progress { color: var(--ime-yellow); height: 5px; }
+
+/* ---- title bar, part map, slide number ---- */
+.reveal h2 {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  min-height: 88px;
+  margin: 0;
+  padding: 10px 48px 12px 48px;
+  background: var(--ime-blue);
+  color: #fff;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.title-text { flex: 1 1 auto; min-width: 0; }
+.contrib-tag { flex: 0 0 auto; padding: 4px 16px 6px 16px; background: var(--ime-yellow); color: var(--ime-blue); font-size: 27px; font-weight: 700; white-space: nowrap; }
+
+/* ---- footer: author and talk on the left, part and slide number on the right ---- */
+.reveal .slide-foot {
+  flex: 0 0 auto; display: grid; grid-template-columns: 1fr auto; column-gap: 28px; align-items: center; box-sizing: border-box; height: 40px; padding: 0 48px 5px 48px;
+  border-top: 2px solid var(--rule); font-size: 21px; line-height: 1; color: var(--grey); font-variant-numeric: tabular-nums;
+}
+.reveal .slide-foot span { white-space: nowrap; }
+.reveal .slide-foot .l { text-align: left; overflow: hidden; text-overflow: ellipsis; }
+.reveal .slide-foot .c { text-align: center; }
+.reveal .slide-foot .r { text-align: right; }
+.reveal .back-link { bottom: 58px; }
+
+/* ---- the numbered list of contributions ---- */
+.reveal .body ol:not(.contrib):not(.toc) { margin: 0 0 .42em 0; padding: 0 0 0 1.6em; }
+.reveal ol.contrib { list-style: none; counter-reset: contrib; margin: .2em 0 .5em 0; padding: 0; }
+.reveal ol.contrib > li { counter-increment: contrib; position: relative; margin: 0 0 .42em 0; padding-left: 1.5em; }
+.reveal ol.contrib > li::before {
+  content: counter(contrib); position: absolute; left: 0; top: .1em; width: 1.08em; height: 1.08em; line-height: 1.08em;
+  background: var(--ime-yellow); color: var(--ime-blue); font-weight: 700; font-size: .85em; text-align: center;
+}
+
+/* ---- labelled groups of items, for the benchmark slides ---- */
+.reveal .chips { display: flex; flex-direction: column; gap: 8px; margin: .1em 0 .5em 0; }
+.reveal .chips > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.reveal .chips .grp { flex: 0 0 100%; font-size: 28px; color: var(--grey); }
+.reveal .chips.wide .grp { flex: 0 0 auto; min-width: 5.2em; }
+.reveal .chips .chip { padding: 3px 12px 4px 12px; border: 2px solid var(--ime-blue); font-size: 31px; line-height: 1.15; }
+.reveal .chips.wide .chip { font-size: 34px; }
+
+/* ---- three examples side by side, on the opening slide ---- */
+.reveal .cards { display: flex; gap: 36px; margin: .5em 0 .8em 0; }
+.reveal .cards > div { flex: 1 1 0; padding: 6px 0 0 0; border-top: 6px solid var(--ime-yellow); font-size: 40px; line-height: 1.2; }
+.reveal .cards strong { display: block; color: var(--ime-blue); }
+.reveal .chips .chip b { font-weight: 400; font-size: 26px; color: var(--grey); margin-left: 6px; }
+.reveal .chips .times { font-size: 30px; color: var(--grey); padding: 0 4px; }
+.reveal .chips .count { margin-left: 6px; font-size: 30px; color: var(--ime-blue); font-weight: 700; }
+
+/* ---- body ---- */
+.reveal .body {
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 14px 80px 12px 48px;
+  overflow: hidden;
+  /* Content sits in the middle of the slide; a slide that is full starts at the top. */
+  align-content: safe center;
+}
+.reveal p { margin: 0 0 .42em 0; }
+/* Running text is justified, with hyphenation; a paragraph that fits on one
+   line is centred (class one-line, set by deck.js). */
+.reveal .body p, .reveal .body li { text-align: justify; hyphens: auto; }
+.reveal .body p.one-line, .reveal .body p.center { text-align: center; }
+.reveal .body .center p, .reveal .body .refs p, .reveal .demo p, .reveal .body td p { text-align: inherit; }
+.reveal .refs { text-align: left; }
+.reveal .cards > div { text-align: left; }
+/* Justified text in a narrow column leaves wide gaps between words. */
+.reveal .body .col.narrow p, .reveal .body .col.narrow li { text-align: left; }
+.reveal .body > :last-child, .reveal .col > :last-child, .reveal .block-body > :last-child { margin-bottom: 0; }
+.reveal strong { font-weight: 700; }
+.reveal em { font-style: italic; }
+.reveal code { font-family: "Libertinus Mono", Consolas, monospace; font-size: .9em; }
+.reveal .fs-corr { font-size: 26px; }
+.reveal .fs-corr th, .reveal .fs-corr td { padding: .22em .45em; line-height: 1.3; vertical-align: top; }
+.reveal pre.code { font-family: "Libertinus Mono", Consolas, monospace; font-size: .62em; line-height: 1.45; text-align: left; white-space: pre; margin: 0; padding: .55em .8em; background: #f1f3f7; border-left: 4px solid var(--ime-softblue); box-shadow: none; width: auto; }
+/* A code example drawn as an editor window, with light syntax colours. */
+.reveal .editor { margin: .25em 0 .4em 0; border: 1px solid #cfd6e3; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 12px rgba(20, 45, 105, .14); }
+.reveal .editor-bar { display: flex; align-items: center; gap: 16px; padding: 7px 16px; background: var(--ime-blue); color: #ffffff; font-family: "Libertinus Mono", Consolas, monospace; font-size: 22px; line-height: 1.2; }
+.reveal .editor-bar .dots i { display: inline-block; width: 13px; height: 13px; margin-right: 7px; border-radius: 50%; background: var(--ime-yellow); }
+.reveal .editor-bar .shell { margin-left: auto; color: var(--ime-yellow); }
+.reveal .editor pre.code { border-left: 0; background: #f6f8fb; padding: .55em .9em; font-size: .55em; }
+.reveal pre.code .kw { color: var(--ime-blue); font-weight: 700; }
+.reveal pre.code .fn { color: var(--ime-red); }
+.reveal pre.code .nu { color: var(--ime-softblue); }
+.reveal pre.code .cm { color: #6b7280; font-style: italic; }
+.reveal a.bk, .reveal a.ext { color: inherit; text-decoration: underline; text-decoration-color: var(--ime-softblue); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+
+.fs-small { font-size: 38px; }
+.fs-footnotesize { font-size: 35px; }
+.fs-scriptsize { font-size: 28px; }
+.reveal .medskip { height: .5em; }
+.reveal .smallskip { height: .25em; }
+.reveal .center { text-align: center; }
+.reveal .qed { float: right; }
+.reveal .nb { white-space: nowrap; }
+
+.reveal ul { list-style: none; margin: 0 0 .42em 0; padding: 0 0 0 1.05em; display: block; }
+.reveal ul > li { position: relative; margin: 0 0 .22em 0; }
+.reveal ul > li::before {
+  content: ""; position: absolute; left: -.8em; top: .44em;
+  width: .3em; height: .3em; border-radius: 50%; background: var(--ime-blue);
+}
+
+/* ---- display math ---- */
+.reveal .dm { display: block; margin: .3em 0; text-align: center; }
+.reveal mjx-container[display="true"] { margin: .15em 0 !important; }
+
+/* ---- statement blocks: body text is black in all of them ---- */
+.reveal .block { margin: 0 0 .5em 0; }
+.reveal .block-title { padding: .1em .45em .12em .45em; font-weight: 700; }
+.reveal .block-body { padding: .22em .45em .3em .45em; color: #000; }
+.reveal .definition .block-title { background: var(--def-title); color: #000; }
+.reveal .definition .block-body { background: var(--def-body); }
+.reveal .proposition .block-title { background: var(--prop-title); color: #000; }
+.reveal .proposition .block-body { background: var(--prop-body); font-style: italic; }
+.reveal .lemma .block-title, .reveal .theorem .block-title { background: var(--ime-softblue); color: #fff; }
+.reveal .lemma .block-body, .reveal .theorem .block-body { background: var(--sandy); font-style: italic; }
+.reveal .block-body strong { font-style: normal; }
+.reveal .block-title a.bk { text-decoration-color: currentColor; }
+/* A highlighted remark, for the one sentence of a slide that the talk builds on. */
+.reveal .note-box { margin: .4em 0 0 0; padding: .3em .7em; border-left: 8px solid var(--ime-yellow); background: #FFF4D6; color: #000; }
+.reveal .note-box p { margin: 0; }
+/* The roadmap: the current subsection of the current part. */
+.reveal .toc li.sub-current { font-weight: 700; color: var(--ime-blue); }
+
+/* ---- columns ---- */
+.reveal .columns { display: flex; gap: 2%; margin: 0 0 .42em 0; }
+.reveal .columns.mid { align-items: center; }
+.reveal .columns.top { align-items: flex-start; }
+.reveal .col { flex: 0 1 calc(var(--cw, 1) * 100%); min-width: 0; }
+
+/* ---- tables (booktabs) ---- */
+.reveal table { margin: .15em auto .4em auto; border-collapse: collapse; border-top: 3px solid var(--ink); border-bottom: 3px solid var(--ink); font-size: inherit; }
+.reveal table th, .reveal table td { padding: .1em .5em; border: 0; font-weight: 400; vertical-align: top; }
+.reveal table tr:has(th) + tr:has(td) > td { border-top: 2px solid var(--ink); }
+.reveal table .l { text-align: left; }
+.reveal table .c { text-align: center; }
+.reveal table .r { text-align: right; }
+.reveal .center > table { display: table; }
+
+/* ---- figures ----
+   --w and --h are the Beamer sizes: fractions of the line width and of the
+   text height. The image takes the largest size that fits both. */
+.reveal figure.fig { margin: .25em auto .35em auto; text-align: center; line-height: 0; }
+.reveal figure.fig > img {
+  display: inline-block;
+  width: calc(var(--w, 1) * 100%);
+  max-height: calc(var(--h, 1) * var(--texth));
+  object-fit: contain;
+  margin: 0;
+}
+.reveal figure.fig.live > img { display: none; }
+.reveal figure.fig.live > .static { display: none; }
+.reveal figure.fig > .static { line-height: 1.22; }
+.reveal .demo table { font-size: 30px; line-height: 1.2; }
+.reveal .demo table td, .reveal .demo table th { padding: .22em .55em; vertical-align: middle; }
+.reveal .demo select { font: inherit; padding: 2px 8px; border: 2px solid var(--ink); border-radius: 0; background: var(--paper); color: var(--ink); }
+
+/* ---- outline ---- */
+.reveal .outline .body { display: flex; align-items: center; }
+.reveal .outline .columns { width: 100%; padding: 0 60px; box-sizing: border-box; align-items: flex-start; }
+.reveal ol.toc { list-style: none; margin: 0; padding: 0; flex: 1 1 50%; }
+.reveal ol.toc > li.part { position: relative; margin: 0 0 .9em 0; padding-left: 1.5em; font-weight: 700; color: var(--ime-blue); }
+.reveal ol.toc .num {
+  position: absolute; left: 0; top: .12em; width: 1.05em; height: 1.05em; line-height: 1.05em;
+  border-radius: 50%; background: var(--ime-blue); color: #fff; font-size: .8em; text-align: center;
+}
+.reveal ol.toc ul { padding-left: 1em; margin: .1em 0 0 0; }
+.reveal ol.toc ul > li { font-weight: 400; color: var(--ink); margin: 0; }
+.reveal ol.toc ul > li::before { display: none; }
+.reveal ol.toc > li.faded { opacity: .22; }
+
+/* ---- title slide ---- */
+.reveal .title-slide { position: relative; background: #fff; }
+.reveal .title-bg { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; object-fit: cover; }
+.reveal .title-box { position: absolute; left: 48px; top: 56px; width: 60%; }
+.reveal .title-slide h1 { margin: 0 0 .5em 0; font-size: 62px; font-weight: 700; color: var(--ink); text-transform: none; letter-spacing: 0; line-height: 1.1; }
+.reveal .title-slide .subtitle { font-size: 44px; margin-bottom: 1.3em; }
+.reveal .title-slide .author { font-size: 36px; margin-bottom: 1em; }
+.reveal .title-slide .institute { font-size: 28px; line-height: 1.3; }
+.reveal .title-slide .institute p { margin: 0 0 .5em 0; }
+.reveal .title-slide .people { display: grid; grid-template-columns: max-content auto; column-gap: .35em; }
+.reveal .title-slide .logos { position: absolute; left: 0; top: 660px; margin: 0; display: flex; align-items: flex-end; gap: 70px; }
+.reveal .title-slide .logo-ime { height: 80px; margin: 0; }
+.reveal .title-slide .logo-usp { height: 54px; margin: 0 0 12px 0; }
+.reveal .title-slide .logo-cc { position: absolute; right: 100px; bottom: 60px; width: 80px; margin: 0; }
+
+/* ---- references and backup index ---- */
+.reveal .refs { font-size: 36px; }
+.reveal .refs p { padding-left: 1.2em; text-indent: -1.2em; margin-bottom: .55em; }
+.reveal .fs-scriptsize table { border: 0; margin: 0; }
+.reveal .fs-scriptsize td { padding: 0 0 .5em 0; line-height: 1.5; }
+.reveal .fs-scriptsize a.bk { text-decoration: none; }
+
+/* ---- the way back from a backup slide reached through a link ---- */
+.reveal .back-link {
+  position: absolute; left: 24px; bottom: 22px; z-index: 30; padding: 6px 18px 8px 18px;
+  font: inherit; font-size: 26px; font-weight: 700; border: 0; border-radius: 0;
+  background: var(--ime-yellow); color: var(--ime-blue); cursor: pointer;
+}
+.reveal .back-link[hidden] { display: none; }
+
+/* ---- interactive figures: flat controls, square slider thumb ---- */
+.reveal .demo { line-height: 1.2; font-size: 30px; text-align: left; }
+.reveal .demo sub { vertical-align: sub; font-size: .7em; }
+.reveal .demo svg.chart { display: block; margin: 0 auto; overflow: visible; }
+.reveal .demo .ctl { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 34px; margin-top: 10px; }
+.reveal .demo label { display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.reveal .demo output { display: inline-block; min-width: 3.2em; font-variant-numeric: tabular-nums; }
+.reveal .demo input[type="range"] { -webkit-appearance: none; appearance: none; width: 260px; height: 24px; margin: 0; background: transparent; cursor: pointer; }
+.reveal .demo input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: var(--ink); }
+.reveal .demo input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -8px; background: var(--ime-blue); border: 0; border-radius: 0; }
+.reveal .demo input[type="range"]::-moz-range-track { height: 4px; background: var(--ink); }
+.reveal .demo input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; background: var(--ime-blue); border: 0; border-radius: 0; }
+.reveal .demo button { font: inherit; padding: 4px 16px; border: 2px solid var(--ink); border-radius: 0; background: var(--paper); color: var(--ink); cursor: pointer; }
+.reveal .demo button.on { background: var(--ink); color: var(--paper); }
+.reveal .demo .readout { text-align: center; margin-top: 10px; font-variant-numeric: tabular-nums; }
+.reveal .demo .ctl.col { flex-direction: column; align-items: flex-start; }
+.reveal .demo mjx-container { margin: 0 !important; }
+.reveal .demo .bad { color: var(--ime-red); font-weight: 700; }
+.reveal .demo .swatch { display: inline-block; width: 34px; height: 6px; vertical-align: middle; margin-right: 10px; }
+.reveal .demo .drag { cursor: grab; }

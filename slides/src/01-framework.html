@@ -1,0 +1,179 @@
+<section>
+<h2>Cost-sensitive risk</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Cost matrix, expected risk)</div><div class="block-body"><p>A <strong>cost matrix</strong> $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$ has entry $C_{ij}$ equal to the cost of predicting class $j$ when the true class is $i$. The <strong>expected risk</strong> of a classifier $h$ is $R(h) = \mathbb{E} \left[ C_{Y, h(X)} \right]$.</p></div></div>
+<p>At a single input, with $\boldsymbol{\eta}(x) = (\eta_0(x), \dots, \eta_{K-1}(x))$, the <strong>conditional risk</strong> of predicting $\hat{y}$ is $\mathcal{R}(\hat{y} \mid x) = \sum_k C_{k \hat{y}} \, \eta_k(x) = \mathbf{c}_{\hat{y}}^\top \boldsymbol{\eta}(x)$, with $\mathbf{c}_{\hat{y}}$ the column $\hat{y}$ of $\mathbf{C}$.</p>
+<figure class="fig" data-fig="risk_patient"></figure>
+</div>
+<aside class="notes"><ul>
+<li>$C_{ij}$: cost of predicting $j$ when the truth is $i$; the risk to minimize is the expected cost.</li>
+<li>At one input, each prediction has a conditional risk.</li>
+<li>The patient: a treatment costs $1$, sick or not, and a missed disease costs $10$; at $\eta = 0.2$, predicting "sick" has the smaller risk.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>The Bayes rule</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Bayes risk)</div><div class="block-body"><p>The <strong>Bayes risk</strong> is $R^* = \inf_{h} R(h)$ over measurable classifiers.</p></div></div>
+<p>The <strong>Bayes rule</strong> picks the class of smallest conditional risk, with ties to the smallest index: <span class="dm">\[
+    \delta^*(\mathbf{p}) = \arg\min_{\hat{y} \in \mathcal{Y}} \mathbf{c}_{\hat{y}}^\top \mathbf{p} ,
+  \]</span> and $h^* = \delta^* \circ \boldsymbol{\eta}$ attains $R^*$ (Proposition 2.3.1; proof: <a class="bk" href="#/P1">P1</a>).</p>
+</div>
+<aside class="notes"><ul>
+<li>The best achievable risk, and the rule that attains it: the smallest conditional risk at each point.</li>
+<li>It needs the true probabilities.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Threshold rules</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Threshold rule)</div><div class="block-body"><p>Let $K = 2$, $\eta = \eta_1$ and $\hat{p} = \hat{p}_1$. For $\tau \in [0, 1]$, the <strong>threshold rule</strong> $\delta_\tau \colon [0,1] \to \{0,1\}$ is $\delta_\tau(z) = 1$ if $z \geq \tau$ and $\delta_\tau(z) = 0$ if $z &lt; \tau$.</p></div></div>
+<figure class="fig" data-fig="threshold_step"></figure>
+</div>
+<aside class="notes"><ul>
+<li>For two classes, a rule that predicts $1$ above a cut is a threshold rule.</li>
+<li>Move $\tau$: the step moves, and so does the split of $[0, 1]$.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>The Elkan threshold</h2>
+<div class="body">
+<div class="block definition"><div class="block-title">Definition (Reasonable costs)</div><div class="block-body"><p>For $K = 2$, the costs are <strong>reasonable</strong> if $C_{01} &gt; C_{00}$ and $C_{10} &gt; C_{11}$ <span class="cite" data-key="elkan2001foundations">(Elkan, 2001)</span>.</p></div></div>
+<div class="block lemma"><div class="block-title">Lemma (3.2.1, optimality of threshold policies; proof: <a class="bk" href="#/P4">P4</a>)</div><div class="block-body"><p>Under reasonable costs, the Bayes classifier $h^*$ is equivalent to $x \mapsto \delta_\tau(\eta(x))$ for a unique $\tau \in [0, 1]$, namely <span class="dm">\[
+      p^* = \frac{C_{01} - C_{00}}{(C_{01} - C_{00}) + (C_{10} - C_{11})} .
+    \]</span></p></div></div>
+<p>The <strong>analytical rule</strong> applies this threshold to the estimate: it predicts $1$ when $\hat{p}(x) \geq p^*$. Under the $0/1$ loss, where every error costs $1$, $p^* = 0.5$ and the analytical rule is argmax.</p>
+</div>
+<aside class="notes"><ul>
+<li>For $K = 2$ the Bayes rule is a threshold on $\eta$.</li>
+<li>$p^*$ depends only on the cost matrix; the analytical rule uses it on $\hat{p}$.</li>
+<li>For the patient, $C_{00} = 0$, $C_{01} = 1$, $C_{10} = 10$, $C_{11} = 1$: $p^* = 1/(1 + 9) = 1/10$.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>The Elkan threshold</h2>
+<div class="body">
+<p class="center fs-footnotesize">$C_{ij}$ is the cost of predicting $j$ when the true class is $i$.</p>
+<figure class="fig" data-fig="elkan_threshold"></figure>
+<div class="note-box"><p>The analytical rule is optimal when $\hat{p}(x) = \eta(x)$ almost everywhere. Otherwise, the best threshold on $\hat{p}$ depends on the estimator.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The two conditional risks are lines in $\eta$; the threshold is where they cross, and the diagonal entries move it.</li>
+<li>Break a condition, for instance $C_{10} &lt; C_{11}$: the lines no longer cross as a threshold rule needs.</li>
+<li>The box is the point of the next slides: $p^*$ is right only for a correct estimate.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>The plug-in rule</h2>
+<div class="body">
+<p>The Bayes rule needs $\boldsymbol{\eta}$, which is unknown. The <strong>plug-in classifier</strong> <span class="cite" data-key="devroye1996probabilistic">(Devroye et al., 1996)</span> applies it to the estimate: $\hat{h}(x) = \delta^*(\hat{\mathbf{p}}(x))$.</p>
+<div class="block proposition"><div class="block-title">Proposition (2.4.1, bound on excess risk; proof: <a class="bk" href="#/P2">P2</a>)</div><div class="block-body"><p>With $C_{max} = \max_{i,j} C_{ij}$, <span class="dm">\[
+      \underbrace{R(\hat{h}) - R(h^*)}_{\text{excess risk}}
+      \leq C_{max} \cdot
+      \underbrace{\mathbb{E}_X \left[ \| \hat{\mathbf{p}}(X)
+        - \boldsymbol{\eta}(X) \|_1 \right]}_{\text{estimation error}} .
+    \]</span></p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>Replace $\boldsymbol{\eta}$ by the estimate; in binary, this is the analytical rule.</li>
+<li>The excess risk is bounded by the $L_1$ estimation error.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Calibration is not discrimination</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col" style="--cw:.58"><div class="block definition"><div class="block-title">Definition (2, perfect calibration)</div><div class="block-body"><p>For $K = 2$, an estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ of $\eta_1$ is perfectly calibrated with respect to $\mathbb{P}$ if $\mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q$ for almost every $q$ under the distribution of $\hat{p}(X)$.</p></div></div>
+<p>The definition constrains the values of $\hat{p}$ and says nothing about how it ranks instances. The constant $\hat{p}(x) = \mathbb{P}(Y = 1)$ is perfectly calibrated and uninformative, and a classifier can rank correctly and emit distorted values <span class="cite" data-key="guo2017calibration">(Guo et al., 2017)</span>.</p></div>
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="calibration_sketch" style="--w:.88;"><img src="figures/static/calibration_sketch.svg" alt="calibration sketch"></figure>
+<div class="fs-footnotesize"><p>In this schematic, a threshold of $0.09$ on the overconfident estimate selects points of true frequency about $0.22$.</p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>Calibration constrains the values, not the ranking.</li>
+<li>A classifier that ranks well can still be miscalibrated.</li>
+<li>Then a threshold computed from the costs lands in the wrong place.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>Calibrate, then decide</h2>
+<div class="body">
+<p>A <strong>calibrator</strong> is a map $g \colon [0,1] \to [0,1]$ that corrects $\hat{p}$, and calibrate-then-decide predicts $1$ when $g(\hat{p}(x)) \geq p^*$. Platt scaling uses $g(\hat{p}) = \sigma\bigl(a \, \mathrm{logit}(\hat{p}) + b\bigr)$, with $\sigma$ the logistic function.</p>
+<figure class="fig" data-fig="platt_calibration"></figure>
+<div class="fs-footnotesize"><p>In practice, $a$ and $b$ are learned from held-out data.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>First option when $\hat{p} \neq \eta$: repair the probabilities, keep $p^*$.</li>
+<li>Red: the calibrator; dashed diagonal: no correction; gold: $p^*$ on the calibrated scale.</li>
+<li>Black: where calibrate-then-decide cuts the raw estimate. Grey: where the analytical rule cuts it without the calibrator.</li>
+<li>Move $a$ or $b$: the black cut moves, the grey one stays at $p^*$.</li>
+</ul></aside>
+</section>
+
+<!--@subsection Learning the threshold-->
+
+<section>
+<h2>The decision rule as a learner</h2>
+<div class="body">
+<ul>
+<li>Fix $\hat{\mathbf{p}}$, fitted on a training sample $\mathcal{S}$. The validation sample $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ is drawn i.i.d. from $\mathbb{P}$, disjoint from $\mathcal{S}$, so the pairs $(z_i, y_i)$, with $z_i = \hat{\mathbf{p}}(x_i)$, are i.i.d.</li>
+<li>The decision learner picks the $\delta \in \mathcal{H}_{dec}$ that minimizes $\hat{R}(\delta) = \frac{1}{m} \sum_{i=1}^m C_{y_i, \delta(z_i)}$, the empirical counterpart of $R(\delta) := R(\delta \circ \hat{\mathbf{p}})$.</li>
+<li>For $K = 2$ and $\mathcal{H}_{thresh} = \{\delta_\tau : \tau \in [0,1]\}$, the minimizer over a uniform grid is the <strong>empirical threshold</strong> $\tau_{emp}$ <span class="cite" data-key="sheng2006thresholding">(Sheng and Ling, 2006)</span>.</li>
+</ul>
+<figure class="fig" data-fig="decision_learner_binary"></figure>
+</div>
+<aside class="notes"><ul>
+<li>Second option after calibration: learn the threshold directly.</li>
+<li>With the estimator frozen, choosing $\delta$ is a learning problem, and the validation set is its training sample.</li>
+<li>For thresholds: move $\tau$, count the errors with their costs, keep the minimum.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>Generalization bound for the decision stage</h2>
+<div class="body">
+<div class="block proposition"><div class="block-title">Proposition (2.6.1 for $K = 2$, Remark 7.7.1 for $K &gt; 2$; proof: <a class="bk" href="#/P3">P3</a>)</div><div class="block-body"><p>Let $\mathcal{V}$ be drawn i.i.d. from $\mathbb{P}$, independently of the sample used to fit $\hat{\mathbf{p}}$, and let the rules of $\mathcal{H}_{dec}$ be pointwise limits of a countable class of measurable rules. With probability at least $1 - \nu$, for all $\delta \in \mathcal{H}_{dec}$ simultaneously, <span class="dm">\[
+      R(\delta) \leq \hat{R}(\delta)
+        + c \, C_{max} \sqrt{\frac{d_{dec}}{m}} ,
+    \]</span> where $d_{dec}$ bounds the capacity of $\mathcal{H}_{dec}$, its VC dimension for $K = 2$ and its Natarajan dimension for $K &gt; 2$ (definitions: <a class="bk" href="#/B8">B8</a>), and $c$ depends on $m$, $K$ and $1/\nu$ only through logarithms.</p></div></div>
+<div class="block lemma"><div class="block-title">Lemma (2.6.2; proof: <a class="bk" href="#/P3">P3</a>)</div><div class="block-body"><p>The class $\mathcal{H}_{thresh}$ has VC dimension $1$.</p></div></div>
+</div>
+<aside class="notes"><ul>
+<li>A standard uniform bound, applied to the decision class; the gap shrinks as $\sqrt{d_{dec}/m}$.</li>
+<li>For thresholds, $d_{dec} = 1$: a gap of order $\sqrt{1/m}$, with $m$ the size of the validation split.</li>
+<li>The held-out sample must be independent of the estimator's training data.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>The empirical threshold</h2>
+<div class="body">
+<figure class="fig" data-fig="empirical_threshold"></figure>
+<div class="fs-footnotesize"><p>In this constructed example, $\hat{p}(X)$ is uniform on $[0, 1]$ and miscalibrated, with $\mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = 0.42 + 0.5 \, q$. The costs are $C_{01} = 4$ and $C_{10} = 2$, so $p^* = 2/3$. The size $8m$ matches the label budget of the $80\%$ pool when a $10\%$ split has $m$ labels. The figure does not model the refitting of cross-validation.</p></div>
+</div>
+<aside class="notes"><ul>
+<li>The estimate is miscalibrated, so the analytical threshold is in the wrong place: a fixed error, and no data needed.</li>
+<li>The empirical threshold aims at the right place and misses it by chance; the histogram is that chance.</li>
+<li>Small sample: it often does worse than the analytical rule. Eight times the labels: it nearly always does better.</li>
+</ul></aside>
+</section>
+
+<section>
+<h2>The cross-validated threshold</h2>
+<div class="body">
+<p>EmpiricalCV splits the training data into $F = 5$ folds. For each fold $k$ the estimator is fitted on the other folds and scored on fold $k$, which gives $\hat{R}_k(\tau)$; the threshold minimizes $\hat{R}_{CV}(\tau) = \frac{1}{F} \sum_k \hat{R}_k(\tau)$, and the estimator is then refitted on all the training data. In scikit-learn it is <code>TunedThresholdClassifierCV</code>.</p>
+<figure class="fig" data-fig="cv_folds"></figure>
+</div>
+<aside class="notes"><ul>
+<li>No data set aside: every training label scores the threshold once.</li>
+<li>In the benchmark that is the $80\%$ pool, eight times the $10\%$ split.</li>
+<li>Cross-validated tuning leads in both studies.</li>
+</ul></aside>
+</section>

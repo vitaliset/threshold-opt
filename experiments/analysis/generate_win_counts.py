@@ -17,12 +17,18 @@ Generates four files under ``tex/figures/win_counts/``:
     win_counts_multiclass_cost.tex
     win_counts_multiclass_max.tex
 
+With ``--slides``, writes instead one bare bar chart per (scope, family)
+under ``slides/figures/tex/`` (``win_bars_<scope>_<family>.tex``), showing
+the overall column for the strategies the defense slides discuss.
+
 Usage:
     uv run python -m experiments.analysis.generate_win_counts
+    uv run python -m experiments.analysis.generate_win_counts --slides
 """
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import numpy as np
@@ -37,6 +43,7 @@ from experiments.analysis.generate_tables import (
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WIN_COUNTS_DIR = REPO_ROOT / "tex" / "figures" / "win_counts"
+SLIDES_DIR = REPO_ROOT / "slides" / "figures" / "tex"
 
 # Display labels for base classifiers used in heatmap column headers.
 MODEL_LABELS: dict[str, str] = {
@@ -785,8 +792,273 @@ def write_win_count_figures(
     return written
 
 
+# Strategies drawn in the slide-sized summary bars, per (scope, family). The
+# heatmaps keep every strategy; a slide has room for about ten rows. The
+# multiclass charts hold every tuned strategy that applies to the objective
+# group (cost: all seven CV variants; metrics: the five CV variants and
+# their single-split versions), plus the untuned baselines.
+SLIDE_BAR_STRATEGIES: dict[tuple[str, str], tuple[str, ...]] = {
+    ("binary", "cost"): (
+        "EmpiricalCV",
+        "TemperatureScalingAnalytical",
+        "DirichletCalibrationAnalytical",
+        "Analytical",
+        "PlattScalingAnalytical",
+        "IsotonicAnalytical",
+        "Empirical",
+        "Argmax",
+    ),
+    ("binary", "max"): (
+        "EmpiricalCV",
+        "Empirical",
+        "Argmax",
+        "TemperatureScalingArgmax",
+        "PlattScalingArgmax",
+        "IsotonicArgmax",
+        "DirichletCalibrationArgmax",
+    ),
+    ("multiclass", "cost"): (
+        "FullMatrixPartitioningCV",
+        "RiskPartitioningCV",
+        "LinearScalingCV",
+        "Analytical",
+        "ThresholdRatioCV",
+        "MultidimensionalThresholdCV",
+        "SequentialSelectionCV",
+        "VoronoiTuningCV",
+        "Argmax",
+    ),
+    ("multiclass", "max"): (
+        "ThresholdRatioCV",
+        "SequentialSelectionCV",
+        "VoronoiTuningCV",
+        "FullMatrixPartitioningCV",
+        "MultidimensionalThresholdCV",
+        "Argmax",
+        "ThresholdRatio",
+        "VoronoiTuning",
+        "SequentialSelection",
+        "MultidimensionalThreshold",
+        "FullMatrixPartitioning",
+    ),
+}
+
+# Strategy families in legend order: (key, legend label, fill colour). The
+# blue and the yellow are the IME-USP visual-identity colours that
+# imelooks.sty defines; the light blue and the grey were chosen so that every
+# pair stays apart under the common colour-vision deficiencies.
+SLIDE_BAR_FAMILIES: tuple[tuple[str, str, str], ...] = (
+    ("cv", "Cross-validated tuning", "142D69"),
+    ("split", "Single-split tuning", "7FB6E6"),
+    ("analytical", "Analytical rule", "E6AF3C"),
+    ("argmax", "Argmax", "707070"),
+)
+
+# Families whose fill is dark enough to hide a dark whisker: the half of the
+# interval that lies inside the bar is redrawn in white.
+SLIDE_BAR_DARK_FAMILIES: frozenset[str] = frozenset({"cv", "argmax"})
+
+
+def _strategy_family(strategy: str) -> str:
+    """Map a strategy name to its ``SLIDE_BAR_FAMILIES`` key."""
+    if strategy.endswith("CV"):
+        return "cv"
+    if strategy.endswith("Argmax"):
+        return "argmax"
+    if strategy.endswith("Analytical"):
+        return "analytical"
+    return "split"
+
+
+def render_win_summary_bars(
+    *,
+    rates: pd.Series,
+    half_widths: pd.Series,
+) -> str:
+    """Render overall win-or-tie rates as a bare horizontal bar chart.
+
+    *rates* and *half_widths* are in percentage points, indexed by strategy
+    in display order (top to bottom). The output is a ``tikzpicture`` with
+    no float, caption or label, meant to be ``\\input`` inside a slide.
+    """
+    n = len(rates)
+    families_present = {_strategy_family(s) for s in rates.index}
+
+    plot_blocks: list[str] = []
+    for key, label, _hex in SLIDE_BAR_FAMILIES:
+        if key not in families_present:
+            continue
+        members = [s for s in rates.index if _strategy_family(s) == key]
+        # The two untuned families also hold the calibrate-then-decide
+        # strategies, whose names carry the calibrator as a prefix.
+        if key in ("analytical", "argmax") and any(
+            s not in ("Analytical", "Argmax") for s in members
+        ):
+            label = f"{label} (raw or calibrated)"
+        coords = " ".join(
+            f"({rates[s]:.1f},{row}) +- ({half_widths[s]:.1f},0)"
+            for row, s in enumerate(rates.index, start=1)
+            if s in members
+        )
+        plot_blocks.append(
+            f"\\addplot[fill=winbar{key}, draw=none, "
+            "error bars/x dir=both, error bars/x explicit, "
+            "error bars/error bar style={black!70, line width=0.5pt}"
+            f"] coordinates {{ {coords} }};\n"
+            f"\\addlegendentry{{{label}}}"
+        )
+
+    # Inside a dark bar the lower half of the whisker is redrawn in white.
+    inner_whiskers = "\n".join(
+        "\\draw[white, line width=0.5pt] "
+        f"(axis cs:{rates[s]:.1f},{row}) -- "
+        f"(axis cs:{rates[s] - half_widths[s]:.1f},{row}) "
+        "+(0,-2pt) -- +(0,2pt);"
+        for row, s in enumerate(rates.index, start=1)
+        if _strategy_family(s) in SLIDE_BAR_DARK_FAMILIES
+        and half_widths[s] >= 0.5
+    )
+
+    # Rounded value at the bar tip, placed past the upper whisker.
+    value_nodes = "\n".join(
+        "\\node[anchor=west, font=\\footnotesize, inner sep=1pt] "
+        f"at (axis cs:{rates[s] + half_widths[s] + 1.5:.1f},{row}) "
+        f"{{{rates[s]:.0f}}};"
+        for row, s in enumerate(rates.index, start=1)
+    )
+
+    color_defs = "\n".join(
+        f"\\definecolor{{winbar{key}}}{{HTML}}{{{hex_}}}"
+        for key, _label, hex_ in SLIDE_BAR_FAMILIES
+    )
+    yticks = ",".join(str(row) for row in range(1, n + 1))
+    yticklabels = ",".join(rates.index)
+
+    return (
+        "% Auto-generated by experiments.analysis.generate_win_counts"
+        " --slides --- do not edit.\n"
+        "\\begin{tikzpicture}\n"
+        f"{color_defs}\n"
+        "\\begin{axis}[\n"
+        "    xbar, bar shift=0pt, bar width=7pt,\n"
+        f"    scale only axis, width=7.5cm, height={0.40 * n + 0.2:.2f}cm,\n"
+        "    xmin=0, xmax=100, xtick={0,25,50,75,100},\n"
+        "    xlabel={Cells won or tied (\\%)},\n"
+        f"    ymin=0.4, ymax={n + 0.6:.1f}, y dir=reverse,\n"
+        f"    ytick={{{yticks}}},\n"
+        f"    yticklabels={{{yticklabels}}},\n"
+        "    axis x line*=bottom, axis y line*=left,\n"
+        "    axis line style={draw=black!40},\n"
+        "    tick style={draw=none},\n"
+        "    xmajorgrids=true,\n"
+        "    major grid style={draw=black!12, line width=0.3pt},\n"
+        "    tick label style={font=\\footnotesize},\n"
+        "    label style={font=\\footnotesize},\n"
+        "    clip=false,\n"
+        # Four families take two rows of two; three fit on one row.
+        f"    legend columns={2 if len(plot_blocks) == 4 else 3},\n"
+        "    legend cell align=left,\n"
+        "    legend image code/.code={\\fill[#1] (0cm,-0.1cm) rectangle"
+        " (0.3cm,0.1cm);},\n"
+        "    legend style={draw=none, fill=none, font=\\footnotesize,\n"
+        "        at={(1,1.04)}, anchor=south east,\n"
+        "        /tikz/every even column/.append style={column sep=0.4cm}},\n"
+        "]\n"
+        + "\n".join(plot_blocks)
+        + "\n"
+        + (inner_whiskers + "\n" if inner_whiskers else "")
+        + value_nodes
+        + "\n"
+        "\\end{axis}\n"
+        "\\end{tikzpicture}%\n"
+    )
+
+
+def write_win_summary_bars(
+    parquet_paths: dict[str, Path] | None = None,
+    plots_dir: Path | None = None,
+    *,
+    n_boot: int = 1000,
+    seed: int = 0,
+) -> list[Path]:
+    """Generate the slide-sized summary bars for all (scope, family) pairs.
+
+    Each chart shows the ``Total`` column of the matching heatmap for the
+    strategies in ``SLIDE_BAR_STRATEGIES``. The bootstrap draws the overall
+    slice first from ``default_rng(seed)``, as
+    :func:`bootstrap_breakdown_cis` does, so the half-widths agree with the
+    heatmap's ``Total`` column.
+    """
+    if plots_dir is None:
+        plots_dir = SLIDES_DIR
+    plots_dir.mkdir(parents=True, exist_ok=True)
+    parquet_paths = dict(parquet_paths or {})
+
+    written: list[Path] = []
+    for scope in ("binary", "multiclass"):
+        cfg = SCOPE_CONFIG[scope]
+        path = parquet_paths.get(scope)
+        if path is None:
+            path = _find_latest_parquet(cfg["parquet_pattern"])
+        print(f"Reading: {path}")
+        df = pd.read_parquet(path)
+        df = _apply_legacy_strategy_renames(df)
+        df = _normalize_balanced_error_objective(df)
+        df = df[df["dataset_name"].isin(cfg["datasets"])]
+        max_metrics = cfg["max_metrics"]
+
+        for family, objs in (
+            ("cost", cfg["cost_objectives"]),
+            ("max", max_metrics),
+        ):
+            sub = df[df["optimization_objective_name"].isin(objs)]
+            if sub.empty:
+                continue
+            win_table = compute_win_table(sub, max_metrics)
+            strats = sorted(win_table["strategy_name"].unique())
+            W, A = _slice_arrays(win_table, strats)
+            lo, hi = _bootstrap_lo_hi(
+                W, A, np.random.default_rng(seed), n_boot
+            )
+            rate = pd.Series(W.sum(axis=0) / A.sum(axis=0), index=strats)
+            half = pd.Series((hi - lo) / 2.0, index=strats)
+
+            shown = [
+                s for s in SLIDE_BAR_STRATEGIES[(scope, family)] if s in rate
+            ]
+            order = rate[shown].sort_values(ascending=False).index
+            tex = render_win_summary_bars(
+                rates=rate[order] * 100.0,
+                half_widths=half[order] * 100.0,
+            )
+            out = plots_dir / f"win_bars_{scope}_{family}.tex"
+            out.write_text(tex, encoding="utf-8")
+            written.append(out)
+            n_cells = int(A.any(axis=1).sum())
+            print(f"  Wrote {out} ({n_cells} cells)")
+            for s in order:
+                print(
+                    f"    {s}: {rate[s] * 100:.1f} +- {half[s] * 100:.1f} "
+                    f"(n={int(A[:, strats.index(s)].sum())})"
+                )
+    return written
+
+
 def main() -> None:
-    write_win_count_figures()
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser.add_argument(
+        "--slides",
+        action="store_true",
+        help=(
+            "Write the slide-sized summary bars to slides/figures/tex/ "
+            "instead of the heatmaps."
+        ),
+    )
+    args = parser.parse_args()
+    if args.slides:
+        write_win_summary_bars()
+    else:
+        write_win_count_figures()
     print("Done.")
 
 

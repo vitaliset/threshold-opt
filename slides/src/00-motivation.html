@@ -1,0 +1,68 @@
+<section class="added">
+<h2>Errors do not cost the same</h2>
+<div class="body">
+<p>A classifier's output triggers an action, and its two kinds of error rarely cost the same.</p>
+<div class="cards">
+<div><strong>Medical diagnosis</strong>A missed disease, against an unnecessary biopsy or operation.</div>
+<div><strong>Fraud detection</strong>A fraud that goes through, against a blocked legitimate payment.</div>
+<div><strong>Industrial fault monitoring</strong>An undetected fault, against an unnecessary stop.</div>
+</div>
+<p>A false negative often costs orders of magnitude more than a false positive, and the default rule, which predicts the most probable class, treats them as equal.</p>
+</div>
+<aside class="notes"><ul>
+<li>Three settings where a missed positive costs far more than a false alarm.</li>
+<li>The default rule ignores the costs; the talk is about what to use in its place.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>A threshold in binary, argmax in multiclass</h2>
+<div class="body">
+<div class="columns top">
+<div class="col center" style="--cw:.49">
+<p><strong>Two classes</strong></p>
+<svg class="motive" viewBox="0 0 300 150" width="620" role="img" aria-label="A threshold on the probability of class 1">
+<rect x="20" y="52" width="170" height="44" fill="#142D69"/>
+<rect x="190" y="52" width="90" height="44" fill="#82143C"/>
+<text x="105" y="80" font-size="17" fill="#ffffff" text-anchor="middle">predict 0</text>
+<text x="235" y="80" font-size="17" fill="#ffffff" text-anchor="middle">predict 1</text>
+<line x1="190" y1="38" x2="190" y2="110" stroke="#E6AF3C" stroke-width="5"/>
+<text x="190" y="30" font-size="20" fill="#232830" text-anchor="middle" font-style="italic">τ</text>
+<text x="20" y="128" font-size="16" fill="#666666" text-anchor="middle">0</text>
+<text x="280" y="128" font-size="16" fill="#666666" text-anchor="middle">1</text>
+<text x="150" y="146" font-size="16" fill="#666666" text-anchor="middle">estimated probability of class 1</text>
+</svg>
+<p>scikit-learn tunes the threshold $\tau$ on held-out data with <code>TunedThresholdClassifierCV</code>.</p>
+</div>
+<div class="col center" style="--cw:.49">
+<p><strong>Three classes</strong></p>
+<figure class="fig" data-fig="simplex_3d"></figure>
+<p>The rule is a partition of the probability triangle, with no single number to tune, and argmax is the usual choice.</p>
+</div>
+</div>
+<p class="center"><strong>This dissertation asks how to parametrize the multiclass partition and how to learn it from held-out data.</strong></p>
+</div>
+<aside class="notes"><ul>
+<li>In binary, the decision is one threshold, and tuning it is common practice.</li>
+<li>Three probabilities that sum to $1$ lie on a triangle in space; a rule is a partition of it, with no single knob, so practitioners keep argmax. Drag the figure to turn it.</li>
+<li>How to parametrize that search is what started this work.</li>
+</ul></aside>
+</section>
+
+<section class="added">
+<h2>Contributions</h2>
+<div class="body">
+<p>The decision rule is a component to be learned from held-out data.</p>
+<ol class="contrib">
+<li><strong>A common framework for multiclass decision rules.</strong> We write published multiclass rules as partition matrices and bound the capacity of each class.</li>
+<li><strong>Voronoi prototypes for the partition.</strong> The rule assigns each input to the nearest of $K$ prototypes. On a constructed distribution it has strictly lower risk than every shift of the Bayes boundaries. We also give a sampler for them.</li>
+<li><strong>A benchmark of decision strategies.</strong> 14 binary and 11 multiclass datasets, 10 classifiers, 10 binary and 12 multiclass objectives.</li>
+<li><strong>Sensitivity to the number of classes.</strong> Relative to the best achievable risk, the untuned rule loses less as the number of classes grows.</li>
+<li><strong>An open-source library.</strong> The <code>threshold_opt</code> library, available on <a class="ext" href="https://pypi.org/project/threshold-opt/" target="_blank" rel="noopener">PyPI</a>, implements every strategy and the benchmark.</li>
+</ol>
+</div>
+<aside class="notes"><ul>
+<li>Five contributions; a slide that presents one carries its name in the title bar.</li>
+<li>The first third of the talk is the setting they build on.</li>
+</ul></aside>
+</section>

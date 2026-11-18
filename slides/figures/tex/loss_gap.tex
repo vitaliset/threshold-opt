@@ -1,0 +1,28 @@
+% Mean test loss of Empirical minus that of EmpiricalCV on Asymmetric 100x,
+% by dataset size.
+\begin{tikzpicture}
+  \begin{axis}[
+      ybar, bar width=16pt,
+      width=5.6cm, height=4.6cm,
+      ymin=0, ymax=2.35,
+      symbolic x coords={small, medium, large},
+      xtick=data,
+      xticklabels={$< 10^3$, $10^3$ to $10^4$, $\geq 10^4$},
+      xlabel={Dataset size $N$},
+      enlarge x limits=0.3,
+      axis x line*=bottom, axis y line*=left,
+      axis line style={draw=black!40},
+      tick style={draw=none},
+      ymajorgrids=true,
+      major grid style={draw=black!12, line width=0.3pt},
+      tick label style={font=\footnotesize},
+      label style={font=\footnotesize},
+      ylabel={Mean-loss gap},
+      nodes near coords,
+      nodes near coords style={font=\footnotesize,
+        /pgf/number format/fixed, /pgf/number format/precision=2},
+    ]
+    \addplot[fill={rgb,255:red,127;green,182;blue,230}, draw=none]
+      coordinates {(small, 1.90) (medium, 0.32) (large, 0.11)};
+  \end{axis}
+\end{tikzpicture}

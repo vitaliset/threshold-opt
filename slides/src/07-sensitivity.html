@@ -1,0 +1,81 @@
+<!--@section Sensitivity across $K$-->
+
+<section data-contrib="4">
+<h2>The lead narrows with $K$</h2>
+<div class="body">
+<p>Share of cost cells won or tied:</p>
+<div class="center fs-small"><table>
+<tr><th class="l"></th><th class="c">Best strategy</th><th class="c">Analytical</th><th class="c">Lead</th></tr>
+<tr><td class="l">Binary</td><td class="c">$87\%$</td><td class="c">$69\%$</td><td class="c">$18$ points</td></tr>
+<tr><td class="l">Multiclass</td><td class="c">$81\%$</td><td class="c">$70\%$</td><td class="c">$11$ points</td></tr>
+</table></div>
+<p>The smaller lead may come from multiclass validation data that carry less signal for tuning, or from an analytical rule that loses less to estimation error when $K$ is larger. A synthetic study with an error of controlled size tests the second explanation.</p>
+</div>
+<aside class="notes"><ul>
+<li>Lead over the analytical rule: $18$ points in binary, $11$ in multiclass.</li>
+<li>Two explanations; the synthetic study tests the second.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="4">
+<h2>Synthetic check</h2>
+<div class="body">
+<div class="columns mid">
+<div class="col center" style="--cw:.4"><figure class="fig" data-fig="scaling_setup_geometry" style="--w:1;"><img src="figures/static/scaling_setup_geometry.svg" alt="scaling setup geometry"></figure></div>
+<div class="col" style="--cw:.58"><p>The reference $\mathbb{P}_1$ has $K$ Gaussian classes in $\mathbb{R}^2$, with means on a regular $K$-gon and variance $\sigma^2$ (solid). The data come from $\mathbb{P}_\lambda$, with variance $\lambda \sigma^2$ (dashed).</p>
+<p>The Bayes rule $h^*_1$ of $\mathbb{P}_1$ is an analytical rule built on a wrong estimate. Under $\mathbb{P}_\lambda$, with Bayes rule $h^*_\lambda$ and expected risk $R_\lambda$, we measure the <strong>relative excess risk</strong> for $K$ from $2$ to $20$: <span class="dm">\[
+        \frac{R_\lambda(h^*_1) - R_\lambda(h^*_\lambda)}
+             {R_\lambda(h^*_\lambda)} .
+      \]</span></p>
+<div class="fs-footnotesize"><p>With the Asymmetric $10\times$ cost, an error on class $K - 1$ costs $10$ and any other error $1$. Under the $0/1$ loss, scaling the variance does not change the Bayes rule.</p></div></div>
+</div>
+</div>
+<aside class="notes"><ul>
+<li>The reference assumes variance $\sigma^2$; the data have $\lambda \sigma^2$.</li>
+<li>So the Bayes rule of the reference is a plug-in rule with a wrong estimate.</li>
+<li>We measure how much it loses, relative to the best risk, for each $K$.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="4">
+<h2>Synthetic check</h2>
+<div class="body">
+<div class="center"><figure class="fig" data-fig="scaling_variance" style="--w:0.918;--h:.43;"><img src="figures/static/scaling_variance.svg" alt="scaling variance"></figure></div>
+<p>The relative excess risk is highest for $K = 2$ and $7$ to $8$ times lower for $K = 20$; random shifts of the class means give the same ordering, also under the $0/1$ loss. The ratio divides by a Bayes risk that also changes with $K$, since the classes on the $K$-gon get closer as $K$ grows.</p>
+</div>
+<aside class="notes"><ul>
+<li>Highest at $K = 2$, seven to eight times lower at $K = 20$.</li>
+<li>Same ordering with random mean shifts, also under the $0/1$ loss.</li>
+<li>It is relative to a Bayes risk that changes with $K$.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="4">
+<h2>Dimensional dilution</h2>
+<div class="body">
+<p>A perturbation $\boldsymbol{\epsilon}$ of a probability vector lies in $V = \{\mathbf{v} \in \mathbb{R}^K : \sum_k v_k = 0\}$, of dimension $K - 1$. Away from the boundaries of a rule $\delta$, its per-sample expected cost $\phi_\delta(\mathbf{p}) = \mathbf{c}_{\delta(\mathbf{p})}^\top \mathbf{p}$ is linear near $\mathbf{p}$, with a gradient $\mathbf{g} \in V$, so $\boldsymbol{\epsilon}$ changes it by $\mathbf{g}^\top \boldsymbol{\epsilon}$.</p>
+<figure class="fig" data-fig="dilution_geometry"></figure>
+</div>
+<aside class="notes"><ul>
+<li>$K = 2$: one direction, and the whole error changes the cost.</li>
+<li>$K = 3$: only the component along $\mathbf{g}$ counts; on average half.</li>
+<li>In general $1/(K-1)$: an error of fixed size is diluted over more directions.</li>
+</ul></aside>
+</section>
+
+<section data-contrib="4">
+<h2>Dimensional dilution</h2>
+<div class="body">
+<div class="block lemma"><div class="block-title">Lemma (9.2.3, dimensional dilution; proof: <a class="bk" href="#/P11">P11</a>)</div><div class="block-body"><p>Let $K \geq 2$ and let $\phi \colon \Delta^{K-1} \to \mathbb{R}$ be measurable and differentiable at an interior point $\mathbf{p}$ with gradient $\mathbf{g} \in V$, with $\mathbf{p} + \boldsymbol{\epsilon} \in \Delta^{K-1}$ and $|\phi(\mathbf{p} + \boldsymbol{\epsilon}) - \phi(\mathbf{p})
+    - \mathbf{g}^\top \boldsymbol{\epsilon}| \leq M \|\boldsymbol{\epsilon}\|^2$ for all $\boldsymbol{\epsilon} \in V$ with $\|\boldsymbol{\epsilon}\| \leq \rho$. If $\boldsymbol{\epsilon}$ is uniform on the sphere $\{\mathbf{v} \in V : \|\mathbf{v}\| = r\}$ with $0 &lt; r \leq \rho$, then <span class="dm">\[
+      \mathbb{E}\bigl[(\phi(\mathbf{p} + \boldsymbol{\epsilon})
+        - \phi(\mathbf{p}))^2\bigr]
+      = \frac{r^2}{K-1} \, \|\mathbf{g}\|^2 + O(r^3) .
+    \]</span></p></div></div>
+<p>The synthetic check reproduces the ordering in $K$ but not the rate $1/(K-1)$; its Gaussian perturbations need not satisfy the assumptions of the lemma.</p>
+</div>
+<aside class="notes"><ul>
+<li>The formal statement: one point, a smooth cost, an isotropic perturbation.</li>
+<li>The synthetic check matches the ordering, not the rate.</li>
+</ul></aside>
+</section>

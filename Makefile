@@ -1,4 +1,6 @@
 .PHONY: help all fetch-results tables ci-plots win-counts figures figures-sampler-analysis pdf supplement \
+       slides-figures \
+       slides-html slides-html-figures slides-html-check slides-html-shots slides-html-pdf \
        test test-e2e test-freshness test-provenance lint check-refs clean setup profile timing \
        experiments experiments-binary experiments-multiclass experiments-rotational-bias \
        sensitivity-experiments \
@@ -58,6 +60,24 @@ pdf: tables figures  ## Build the dissertation PDF (runs tables + figures first;
 
 supplement: tables  ## Build the per-dataset-tables companion PDF (tex/supplement/supplement.pdf)
 	cd tex/supplement && latexmk -pdf supplement.tex
+
+slides-figures:  ## Generate the slide-sized win-rate bar charts (slides/figures/tex/)
+	uv run python -m experiments.analysis.generate_win_counts --slides
+
+slides-html:  ## Build the HTML defense deck (slides/index.html; opens offline)
+	uv run --no-project python slides/build.py
+
+slides-html-figures:  ## Compile the static figures of the HTML deck to SVG (needs pdflatex, pdftocairo)
+	uv run --no-project python slides/tools/build_figures.py
+
+slides-html-check: slides-html  ## Check the HTML deck: formulas of the built page, slides that overflow, MathJax errors
+	uv run --no-project python slides/tools/check.py
+
+slides-html-shots: slides-html  ## Screenshot every slide of the HTML deck (slides/.build/shots/)
+	uv run --no-project --with pillow python slides/tools/shots.py
+
+slides-html-pdf: slides-html  ## Fallback PDF of the HTML deck, one page per slide (slides/.build/slides-html.pdf)
+	uv run --no-project --with pillow python slides/tools/shots.py --pdf
 
 test:  ## Run pytest
 	uv run pytest

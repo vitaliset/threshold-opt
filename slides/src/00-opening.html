@@ -1,0 +1,21 @@
+<!--@section Binary classification-->
+
+<!--@subsection The decision stage-->
+
+<section>
+<h2>Classification in two stages</h2>
+<div class="body">
+<p>Let $(X, Y) \sim \mathbb{P}$, with features $X \in \mathcal{X}$ and label $Y \in \mathcal{Y} = \{0, \dots, K-1\}$. A classifier $h \colon \mathcal{X} \to \mathcal{Y}$ is a composition $h(x) = \delta(\hat{\mathbf{p}}(x))$ of two stages.</p>
+<div class="center"><figure class="fig" data-fig="pipeline_diagram" style="--w:.46;"><img src="figures/static/pipeline_diagram.svg" alt="pipeline diagram"></figure></div>
+<ul>
+<li><strong>Inference.</strong> An estimator $\hat{\mathbf{p}} \colon \mathcal{X} \to \Delta^{K-1}$ of the conditional class probabilities $\eta_k(x) = \mathbb{P}(Y = k \mid X = x)$, where $\Delta^{K-1} = \{\mathbf{p} \in \mathbb{R}^K \mid p_k \geq 0, \,
+      \sum_k p_k = 1\}$ is the simplex.</li>
+<li><strong>Decision.</strong> A decision rule $\delta \colon \Delta^{K-1} \to \mathcal{Y}$. The default is <strong>argmax</strong>, $\delta(\mathbf{p}) = \arg\max_k p_k$. The costs of errors enter only at this stage.</li>
+</ul>
+</div>
+<aside class="notes"><ul>
+<li>Two stages: estimate the probabilities, then decide.</li>
+<li>The second stage is usually left at its default, argmax.</li>
+<li>The dissertation is about the second stage.</li>
+</ul></aside>
+</section>
