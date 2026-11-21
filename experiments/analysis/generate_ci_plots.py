@@ -29,6 +29,7 @@ import pandas as pd
 from experiments.analysis.generate_tables import (
     SCOPE_CONFIG,
     _apply_legacy_strategy_renames,
+    _drop_custom_cost_fallback,
     _find_latest_parquet,
     _normalize_balanced_error_objective,
     _sanitize_filename,
@@ -196,6 +197,7 @@ def select_illustrative_cell(
     df = pd.read_parquet(parquet_path)
     df = _apply_legacy_strategy_renames(df)
     df = _normalize_balanced_error_objective(df)
+    df = _drop_custom_cost_fallback(df)
     # Restrict to the curated dataset set used by the tables and
     # win-count figures (so the cell can never be a dataset absent from
     # the chapter, e.g. fabert) and to this objective family.
@@ -536,6 +538,7 @@ def write_ci_plots(
     df = pd.read_parquet(parquet_path)
     df = _apply_legacy_strategy_renames(df)
     df = _normalize_balanced_error_objective(df)
+    df = _drop_custom_cost_fallback(df)
     if dataset_filter is not None:
         df = df[df["dataset_name"].isin(dataset_filter)]
     if objective_filter is not None:

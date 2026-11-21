@@ -32,6 +32,9 @@ from experiments.analysis.generate_ci_plots import (
     PLOTS_DIR,
     write_showcase_plots,
 )
+from experiments.analysis.generate_decision_summaries import (
+    write_decision_summaries,
+)
 from experiments.analysis.generate_obrien_figure import (
     OUT_A as OBRIEN_FIG_A,
 )
@@ -246,6 +249,20 @@ def test_rotational_bias_table_fresh(tmp_path):
         )
     parquet = files[-1]
     generated = write_rotational_bias_table(
+        parquet_path=parquet, tables_dir=tmp_path
+    )
+    _assert_matches_committed(generated)
+
+
+@pytest.mark.freshness
+def test_decision_summaries_fresh(tmp_path):
+    try:
+        parquet = _find_latest_parquet(
+            SCOPE_CONFIG["multiclass"]["parquet_pattern"]
+        )
+    except FileNotFoundError as exc:
+        pytest.skip(str(exc))
+    generated = write_decision_summaries(
         parquet_path=parquet, tables_dir=tmp_path
     )
     _assert_matches_committed(generated)
