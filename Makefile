@@ -33,6 +33,7 @@ fetch-results:  ## Download the published result files into experiments/results/
 
 tables:  ## Generate LaTeX tables from latest results
 	uv run python -m experiments.analysis.generate_tables
+	uv run python -m experiments.analysis.generate_decision_summaries
 
 ci-plots:  ## Generate the inline CI plots used in chapters 4 and 8 (the SHOWCASE_PLOTS set)
 	uv run python -m experiments.analysis.generate_ci_plots

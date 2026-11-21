@@ -37,6 +37,7 @@ import pandas as pd
 from experiments.analysis.generate_tables import (
     SCOPE_CONFIG,
     _apply_legacy_strategy_renames,
+    _drop_custom_cost_fallback,
     _find_latest_parquet,
     _normalize_balanced_error_objective,
 )
@@ -736,6 +737,7 @@ def write_win_count_figures(
         df = pd.read_parquet(path)
         df = _apply_legacy_strategy_renames(df)
         df = _normalize_balanced_error_objective(df)
+        df = _drop_custom_cost_fallback(df)
         scope_dfs[scope] = df[df["dataset_name"].isin(cfg["datasets"])]
 
     if dataset_metadata is None:
@@ -1004,6 +1006,8 @@ def write_win_summary_bars(
         df = pd.read_parquet(path)
         df = _apply_legacy_strategy_renames(df)
         df = _normalize_balanced_error_objective(df)
+        # No _drop_custom_cost_fallback here: the bars reproduce the
+        # defense deck as presented, Custom Cost fallback cells included.
         df = df[df["dataset_name"].isin(cfg["datasets"])]
         max_metrics = cfg["max_metrics"]
 

@@ -176,6 +176,28 @@ def _normalize_balanced_error_objective(df: "pd.DataFrame") -> "pd.DataFrame":
     return df
 
 
+# ``create_custom_cost_matrix`` in the multiclass config defines its own
+# matrix only for K = 3 and falls back to the Asymmetric 10x matrix for
+# every other K, so on the other datasets the Custom Cost rows repeat the
+# Asymmetric 10x Cost rows exactly. Only the K = 3 datasets keep them.
+CUSTOM_COST_DATASETS = ("iris", "cmc", "abalone")
+
+
+def _drop_custom_cost_fallback(df: "pd.DataFrame") -> "pd.DataFrame":
+    """Drop the Custom Cost rows of datasets with K != 3.
+
+    Applied before any table or win-rate aggregate is built, so that the
+    Asymmetric 10x matrix is not counted twice. The binary results have
+    no Custom Cost rows and pass through unchanged.
+    """
+    if "optimization_objective_name" not in df.columns:
+        return df
+    fallback = (df["optimization_objective_name"] == "Custom Cost") & ~df[
+        "dataset_name"
+    ].isin(CUSTOM_COST_DATASETS)
+    return df[~fallback]
+
+
 def _sanitize_filename(name: str) -> str:
     """Lowercase and replace non-alphanumeric chars with underscores."""
     return name.lower().replace(" ", "_")
@@ -240,6 +262,7 @@ def write_strategy_tables(
     df = pd.read_parquet(parquet_path)
     df = _apply_legacy_strategy_renames(df)
     df = _normalize_balanced_error_objective(df)
+    df = _drop_custom_cost_fallback(df)
     df = df[df["dataset_name"].isin(datasets)]
 
     specs = (

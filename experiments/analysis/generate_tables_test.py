@@ -494,3 +494,43 @@ def test_write_strategy_tables_one_file_per_dataset(tmp_path):
         assert "\\begin{table}[H]" in content
         assert "StratA" in content
         assert "StratB" in content
+
+
+def test_custom_cost_falls_back_to_asymmetric_10x_outside_k_3():
+    """The premise of ``_drop_custom_cost_fallback``."""
+    import numpy as np
+
+    from experiments.multiclass.config import (
+        create_custom_cost_matrix,
+        create_mild_asymmetry_cost_matrix,
+    )
+
+    for k in range(3, 11):
+        same = np.array_equal(
+            create_custom_cost_matrix(k), create_mild_asymmetry_cost_matrix(k)
+        )
+        assert same == (k != 3)
+
+
+def test_drop_custom_cost_fallback_keeps_k3_datasets_and_other_objectives():
+    df = pd.DataFrame(
+        {
+            "dataset_name": ["iris", "vehicle", "vehicle", "cmc", "abalone"],
+            "optimization_objective_name": [
+                "Custom Cost",
+                "Custom Cost",
+                "Asymmetric 10x Cost",
+                "Custom Cost",
+                "Custom Cost",
+            ],
+        }
+    )
+    out = gt._drop_custom_cost_fallback(df)
+    assert list(
+        zip(out["dataset_name"], out["optimization_objective_name"])
+    ) == [
+        ("iris", "Custom Cost"),
+        ("vehicle", "Asymmetric 10x Cost"),
+        ("cmc", "Custom Cost"),
+        ("abalone", "Custom Cost"),
+    ]

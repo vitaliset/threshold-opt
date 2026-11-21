@@ -1,7 +1,7 @@
 %!TeX root=../carlo_master.tex
 \chapter{Experimental analysis: multiclass classification}\label{sec:multiclass_experiments}
 
-This chapter evaluates the partition-optimization and Voronoi decision strategies of Chapters~\ref{sec:partition_optimization} and~\ref{sec:voronoi_tessellation} on eleven datasets, ten base classifiers, and twelve objectives (seven cost-sensitive objectives and five maximization metrics). The protocol adapts the binary setup of Chapter~\ref{sec:binary_experiments}, changing only the dataset pool, decision-strategy families, and objective set. The cross-validated tuning variants lead both objective groups. On cost objectives the top is shared by three variants within sampling noise (FullMatrixPartitioningCV, RiskPartitioningCV, LinearScalingCV, all between $78$ and $80\%$); on maximization metrics ThresholdRatioCV leads at $90\%$.
+This chapter evaluates the partition-optimization and Voronoi decision strategies of Chapters~\ref{sec:partition_optimization} and~\ref{sec:voronoi_tessellation} on eleven datasets, ten base classifiers, and twelve objectives (seven cost-sensitive objectives and five maximization metrics). The protocol adapts the binary setup of Chapter~\ref{sec:binary_experiments}, changing only the dataset pool, decision-strategy families, and objective set. The cross-validated tuning variants lead both objective groups. On cost objectives the top is shared by three variants within sampling noise (FullMatrixPartitioningCV, RiskPartitioningCV, LinearScalingCV, all between $78$ and $81\%$); on maximization metrics ThresholdRatioCV leads at $90\%$.
 
 \section{Experimental setup}\label{sec:multiclass_setup}
 
@@ -34,7 +34,7 @@ The cost-sensitive objectives are:
 \begin{itemize}
     \item Symmetric: $0/1$ loss ($C_{ij} = 0$ if $i = j$, else $1$).
     \item Asymmetric $10\times$ / Asymmetric $100\times$: unit costs with a $10\times$ or $100\times$ penalty on errors involving the last class.
-    \item Custom: A hand-specified matrix for $K\!=\!3$ ($C_{12} = C_{21} = 5$, other off-diagonals $1$). For $K \neq 3$ the implementation falls back to the Asymmetric $10\times$ matrix, so on the eight datasets with $K \neq 3$ that matrix enters the cost aggregates twice, under both labels.
+    \item Custom: A hand-specified matrix for $K\!=\!3$ ($C_{12} = C_{21} = 5$, other off-diagonals $1$). For $K \neq 3$ the implementation falls back to the Asymmetric $10\times$ matrix, so on the eight datasets with $K \neq 3$ the Custom runs repeat the Asymmetric $10\times$ results exactly. Those runs are left out of the tables and aggregates: Custom is reported only on the three datasets with $K = 3$ (\textit{iris}, \textit{cmc}, \textit{abalone}).
     \item Ordinal: $C_{ij} = |i - j|$.
     \item Quadratic: $C_{ij} = (i - j)^2$ \citep{obrien2008costsensitive}.
     \item Balanced Error: the prior-weighted form of Section~\ref{sec:binary_objectives}, generalized to $K > 2$ as $1 - \texttt{sklearn.\allowbreak metrics.\allowbreak balanced\_\allowbreak accuracy\_\allowbreak score}$ (one minus the unweighted mean of per-class recalls, equivalent to misclassification weights $1/(K\pi_y)$ on class $y$ under per-sample-average risk).
@@ -87,7 +87,7 @@ Table~\ref{tab:model-auc-multiclass} reports the held-out test ROC AUC of each b
 
 \input{tables/model_auc_multiclass.tex}
 
-The cross-validated tuning variants lead both objective groups. On cost objectives three CV variants are tied at the top within sampling noise: FullMatrixPartitioningCV ($80\%$ of cost cells won or tied), RiskPartitioningCV ($79\%$), and LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$. The bare Analytical rule is the strongest non-tuning strategy on cost at $69\%$.
+The cross-validated tuning variants lead both objective groups. On cost objectives three CV variants are tied at the top within sampling noise: FullMatrixPartitioningCV ($81\%$ of cost cells won or tied), RiskPartitioningCV ($80\%$), and LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$. The bare Analytical rule is the strongest non-tuning strategy on cost at $70\%$.
 
 Per-dataset means $\pm\,1$ standard error (SE) over the ten seeds for every (model, objective, strategy) combination are reported in the companion supplement (\texttt{tex/supplement/supplement.pdf} in the source repository), in a cost-matrix table (all $24$ strategies) and a maximization-metric table, with the same bolding convention as the binary supplement. As in the binary chapter the within-$1$-SE rule is descriptive, not a per-cell significance test. The aggregates cover all ten base classifiers.
 
@@ -95,7 +95,7 @@ Per-dataset means $\pm\,1$ standard error (SE) over the ten seeds for every (mod
 
 Under the Symmetric matrix the analytical rule and the cost-blind Argmax coincide, since the cost-weighted argmin reduces to the argmax.
 
-As the asymmetry grows the cost-blind rule degrades while the analytical rule, which folds the cost matrix into the decision, stays closer to the per-row best. Analytical wins or ties the per-row best on $69\%$ of cost cells, against $31\%$ for Argmax. The cross-validated tuning variants improve on this further, with the largest gains on the heavy-asymmetry matrices.
+As the asymmetry grows the cost-blind rule degrades while the analytical rule, which folds the cost matrix into the decision, stays closer to the per-row best. Analytical wins or ties the per-row best on $70\%$ of cost cells, against $32\%$ for Argmax. The cross-validated tuning variants improve on this further, with the largest gains on the heavy-asymmetry matrices.
 
 Figure~\ref{fig:ci-abalone-quadratic_cost} shows a representative cell, \textit{abalone} with LGBM under Quadratic: the cross-validated tuning variants, Analytical, and the parametric calibrate-then-analytical pipelines lead, the single-split tuning strategies follow, and the cost-blind strategies trail.
 
@@ -103,16 +103,18 @@ Figure~\ref{fig:ci-abalone-quadratic_cost} shows a representative cell, \textit{
 
 \subsection{Calibration in the multiclass simplex}
 
-The parametric calibrate-then-analytical pipelines have win-or-tie rates between $30\%$ (Dirichlet) and $53\%$ (Temperature) on cost cells, against $79$ to $80\%$ for the three leading CV variants. DirichletCalibrationArgmax sits near the floor at $8\%$ on cost.
+The parametric calibrate-then-analytical pipelines have win-or-tie rates between $31\%$ (Dirichlet) and $58\%$ (Temperature) on cost cells, against $78$ to $81\%$ for the three leading CV variants. DirichletCalibrationArgmax sits near the floor at $9\%$ on cost. Temperature, Platt, and isotonic calibration have no results on \textit{yeast} and \textit{wine\_quality\_red}, so their rates are computed over $539$ cost cells and $425$ maximization cells, against $659$ and $525$ for the other strategies.
 
 The calibrators are fit on the dedicated $10\%$ validation partition, while the cross-validated tuning variants use the full $80\%$ pool (eight times the label budget). Whether matched-budget calibration would close the gap is outside the scope of this work, since the natural budget-matching protocols change what ``calibration'' denotes in the comparison (Chapter~\ref{sec:conclusion} discusses this).
+
+\input{tables/winning_family_summary.tex}
 
 \subsection{Vector-tuned versus Voronoi partitioning}
 
 VoronoiTuning searches the DLC subclass with its prototype sampler and can rotate boundaries (Section~\ref{sec:voronoi_tessellation}). Under the SE-overlap rule, partition by per-cell winning family:
 \begin{itemize}
-    \item Cost cells: a vector-tuned variant alone is in the winning band on $52\%$ of cells, both families share the band on $38\%$, a Voronoi variant alone on $0.1\%$, and neither on $9\%$.
-    \item Maximization cells: both families share the band on $76\%$, vector-tuned alone on $18\%$, Voronoi alone on $1.2\%$, neither on $5\%$.
+    \item Cost cells: a vector-tuned variant alone is in the winning band on $\MulticlassCostVectorOnly$ of cells, both families share the band on $\MulticlassCostBoth$, a Voronoi variant alone on $\MulticlassCostVoronoiOnly$, and neither on $\MulticlassCostNeither$.
+    \item Maximization cells: both families share the band on $\MulticlassMetricBoth$, vector-tuned alone on $\MulticlassMetricVectorOnly$, Voronoi alone on $\MulticlassMetricVoronoiOnly$, neither on $\MulticlassMetricNeither$.
 \end{itemize}
 Voronoi variants are therefore rarely the unique winning family. On cost cells they are typically below the SE band; on maximization cells they typically share it with the vector-tuned methods.
 
@@ -120,13 +122,13 @@ These rankings describe the fitted searches: the containment of Proposition~\ref
 
 \subsection{Cross-validated tuning variants}
 
-Each cross-validated tuning variant has a higher cost win-or-tie rate than its single-split counterpart. Among the leading CV variants, the gap to the corresponding single-split variant is large: RiskPartitioningCV $79\%$ versus RiskPartitioning $29\%$, LinearScalingCV $78\%$ versus LinearScaling $30\%$, FullMatrixPartitioningCV $80\%$ versus FullMatrixPartitioning $34\%$. The single-split variants tune on the same $10\%$ validation partition the calibrators use; the CV variants tune over the full $80\%$ pool.
+Each cross-validated tuning variant has a higher cost win-or-tie rate than its single-split counterpart. Among the leading CV variants, the gap to the corresponding single-split variant is large: RiskPartitioningCV $80\%$ versus RiskPartitioning $31\%$, LinearScalingCV $78\%$ versus LinearScaling $32\%$, FullMatrixPartitioningCV $81\%$ versus FullMatrixPartitioning $37\%$. The single-split variants tune on the same $10\%$ validation partition the calibrators use; the CV variants tune over the full $80\%$ pool.
 
 The cross-validated variant is therefore the recommended default for cost-sensitive multiclass decisions on benchmark pools of this scale.
 
 \subsection{Non-decomposable maximization objectives}
 
-For the macro $F_\beta$ metrics, MCC, and macro G-Mean the cross-validated tuning variants lead. The top is ThresholdRatioCV at $90\%$, with SequentialSelectionCV ($83\%$) and VoronoiTuningCV ($76\%$) next; Argmax sits at $62\%$. The calibrate-then-Argmax strategies fall in the $13$ to $41\%$ range.
+For the macro $F_\beta$ metrics, MCC, and macro G-Mean the cross-validated tuning variants lead. The top is ThresholdRatioCV at $90\%$, with SequentialSelectionCV ($82\%$) and VoronoiTuningCV ($74\%$) next; Argmax sits at $60\%$. The calibrate-then-Argmax strategies fall in the $13$ to $43\%$ range.
 
 Figure~\ref{fig:ci-fot_proving-f2_macro} shows a representative cell, \textit{fot\_proving} with LGBM on macro $F_2$: the cross-validated tuning variants cluster at the top within a narrow band, with Argmax among them, and the calibrate-then-Argmax strategies a few points below.
 
@@ -143,7 +145,7 @@ Figures~\ref{fig:win-counts-multiclass-cost} and~\ref{fig:win-counts-multiclass-
 The multiclass campaign supports three conclusions.
 
 \begin{enumerate}
-    \item The cross-validated tuning variants lead the per-row comparison on both objective groups. On cost objectives three variants share the top within sampling noise: FullMatrixPartitioningCV ($80\%$), RiskPartitioningCV ($79\%$), LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$.
-    \item The calibrate-then-analytical pipelines do not match the leading CV variants on cost (their win-or-tie rates are $30$ to $53\%$). The calibrators are fit on the $10\%$ validation partition while the CV variants use the full $80\%$ pool, so this gap is consistent with a label-budget gap but does not isolate it from other differences.
-    \item The fitted Voronoi strategies do not improve on the vector-tuned variants on this benchmark. Counting cells where a Voronoi variant is the unique SE-overlap winning family, the rate is $0.1\%$ on cost cells and $1.2\%$ on maximization cells. The population-level containment of Proposition~\ref{prop:ps_in_vor} concerns unrestricted prototypes rather than the fitted DLC subclass, and the strict advantage of Theorem~\ref{thm:rotational_dominance} requires a rotational regime the OpenML pool does not appear to concentrate in.
+    \item The cross-validated tuning variants lead the per-row comparison on both objective groups. On cost objectives three variants share the top within sampling noise: FullMatrixPartitioningCV ($81\%$), RiskPartitioningCV ($80\%$), LinearScalingCV ($78\%$). On maximization metrics ThresholdRatioCV leads at $90\%$.
+    \item The calibrate-then-analytical pipelines do not match the leading CV variants on cost (their win-or-tie rates are $31$ to $58\%$). The calibrators are fit on the $10\%$ validation partition while the CV variants use the full $80\%$ pool, so this gap is consistent with a label-budget gap but does not isolate it from other differences.
+    \item The fitted Voronoi strategies do not improve on the vector-tuned variants on this benchmark. Counting cells where a Voronoi variant is the unique SE-overlap winning family, the rate is $\MulticlassCostVoronoiOnly$ on cost cells and $\MulticlassMetricVoronoiOnly$ on maximization cells. The population-level containment of Proposition~\ref{prop:ps_in_vor} concerns unrestricted prototypes rather than the fitted DLC subclass, and the strict advantage of Theorem~\ref{thm:rotational_dominance} requires a rotational regime the OpenML pool does not appear to concentrate in.
 \end{enumerate}
