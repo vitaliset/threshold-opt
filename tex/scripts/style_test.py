@@ -1,0 +1,76 @@
+"""Typographic conventions of the dissertation that new text could break.
+
+- Run-in paragraph headings (``\\paragraph{...}``) end with a period.
+- Panel labels in captions, such as ``(a)~``, are bold: ``\\textbf{(a)}~``.
+"""
+
+from __future__ import annotations
+
+import bisect
+import re
+from pathlib import Path
+
+from texstream import StreamLine, read_stream, rel
+
+PARAGRAPH_RE = re.compile(r"\\paragraph\*?\{((?:[^{}]|\{[^{}]*\})*)\}")
+CAPTION_RE = re.compile(r"\\caption(?:\[[^\]]*\])?\{")
+PANEL_RE = re.compile(r"\(([a-h])\)~")
+
+
+def style_problems(stream: list[StreamLine]) -> list[str]:
+    """One message per heading or panel label that breaks the conventions."""
+    text = "\n".join(line.text for line in stream)
+    starts, pos = [], 0
+    for line in stream:
+        starts.append(pos)
+        pos += len(line.text) + 1
+
+    def where(offset: int) -> str:
+        line = stream[bisect.bisect_right(starts, offset) - 1]
+        return f"{rel(line.file)}:{line.lineno}"
+
+    problems = []
+    for match in PARAGRAPH_RE.finditer(text):
+        heading = " ".join(match.group(1).split())
+        if not heading.endswith((".", "?", "!")):
+            problems.append(
+                f"{where(match.start())}: paragraph heading '{heading}' "
+                "does not end with a period"
+            )
+    for match in CAPTION_RE.finditer(text):
+        depth, end = 1, match.end()
+        while depth and end < len(text):
+            depth += {"{": 1, "}": -1}.get(text[end], 0)
+            end += 1
+        body = text[match.end() : end - 1]
+        for panel in PANEL_RE.finditer(body):
+            if not body[: panel.start()].endswith("\\textbf{"):
+                problems.append(
+                    f"{where(match.end() + panel.start())}: panel label "
+                    f"({panel.group(1)}) in a caption is not bold"
+                )
+    return problems
+
+
+def _stream(*lines: str) -> list[StreamLine]:
+    return [StreamLine(Path("ch.tex"), i, t) for i, t in enumerate(lines, 1)]
+
+
+def test_flags_headings_without_period_and_plain_panel_labels():
+    stream = _stream(
+        r"\paragraph{Contributions} The main contributions are:",
+        r"\paragraph{Search budget.} Every strategy uses $T = 301$.",
+        r"\caption{Two panels. \textbf{(a)}~First; \textbf{(b)}~second.}",
+        r"\caption{Regions: \textbf{(a)}~Default,",
+        r"(b)~Voronoi.}",
+    )
+    assert style_problems(stream) == [
+        "ch.tex:1: paragraph heading 'Contributions' does not end with "
+        "a period",
+        "ch.tex:5: panel label (b) in a caption is not bold",
+    ]
+
+
+def test_dissertation_follows_the_typographic_conventions():
+    problems = style_problems(read_stream())
+    assert not problems, "\n".join(problems)
