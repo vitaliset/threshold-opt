@@ -5,9 +5,9 @@
         \toprule
         Method & Type & Parameters $W$ & Complexity ($d_P$ or $d_{Nat}$) \\
         \midrule
-        Temperature Scaling & Calibrator & $1$ & $\leq 1$ \\
-        Platt Scaling (OvR) & Calibrator & $2K$ & $\leq 2$ per class \\
-        Dirichlet Calibration & Calibrator & $K^2 + K$ & $\leq K + 1$ per class \\
+        Temperature scaling & Calibrator & $1$ & $\leq 1$ \\
+        Platt scaling (one-vs-rest) & Calibrator & $2K$ & $\leq 2$ per class \\
+        Dirichlet calibration & Calibrator & $K^2 + K$ & $\leq K + 1$ per class \\
         \midrule
         $\mathcal{H}_{PS}$ (Parallel shift / multidimensional thresholding) & Decision & $K-1$ & $K-1$ \\
         $\mathcal{H}_{Sc}$ (Linear scaling / ratio thresholding) & Decision & $K-1$ & $\leq K-1$ \\

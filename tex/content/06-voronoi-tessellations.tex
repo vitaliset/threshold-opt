@@ -42,7 +42,7 @@ This prototype view also explains the role of interior anchors. When the estimat
 \begin{figure}[H]
     \centering
     \resizebox{0.65\textwidth}{!}{\input{figures/partition_strategies.tex}}
-    \caption{Geometric comparison of partition optimization strategies on the 3-class simplex. Dashed gray lines show the baseline argmax boundaries (medians meeting at the barycenter). \textbf{(a)}~Parallel Shift preserves boundary orientations (fixed normals $\mathbf{n}_{ij} = \mathbf{e}_i - \mathbf{e}_j$) and translates the intersection point, using $K{-}1$ free parameters. \textbf{(b)}~Voronoi tessellation places free prototypes $\boldsymbol{\mu}_k$ inside the simplex, allowing both rotation and translation with $K(K{-}1)$ parameters.}\label{fig:partition_strategies}
+    \caption{Geometric comparison of partition optimization strategies on the 3-class simplex. Dashed gray lines show the baseline argmax boundaries (medians meeting at the barycenter). \textbf{(a)}~Parallel shift preserves boundary orientations (fixed normals $\mathbf{n}_{ij} = \mathbf{e}_i - \mathbf{e}_j$) and translates the intersection point, using $K{-}1$ free parameters. \textbf{(b)}~Voronoi tessellation places free prototypes $\boldsymbol{\mu}_k$ inside the simplex, allowing both rotation and translation with $K(K{-}1)$ parameters.}\label{fig:partition_strategies}
 \end{figure}
 
 We will use two versions of the class. For expressivity results, prototypes are allowed anywhere in $\mathbb{R}^K$; this unconstrained class is denoted $\mathcal{H}_{Vor}$. For the optimizer, prototypes are restricted to the simplex, giving $\mathcal{H}_{Vor}^{\Delta}$. The restriction matches the interpretation of prototypes as probability-space anchors, but it is not only cosmetic: the containment result for $\mathcal{H}_{PS}$ uses off-simplex prototypes and therefore applies to $\mathcal{H}_{Vor}$, not necessarily to $\mathcal{H}_{Vor}^{\Delta}$.
@@ -75,7 +75,7 @@ The separation is unconditional. It uses symmetric $0/1$ loss, so the parallel-s
         \arg\min_{j \in \mathcal{Y}} \, \|\mathbf{e}_k - \boldsymbol{\mu}_j\|_2 = \{k\} \qquad \text{for every } k \in \mathcal{Y},
         \label{eq:thm_vertex_consistency}
     \end{equation}
-    so that the Voronoi decoder agrees with argmax decoding at every simplex vertex. (This is the Dominant Label Constraint formalized in Definition~\ref{def:dlc}.) There exist data distributions $\mathbb{P}$ and cost matrices $\mathbf{C}$ such that $\inf_{\delta \in \mathcal{H}_{Vor}^{\mathrm{DLC}}} R(\delta) < \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$.
+    so that the Voronoi decoder agrees with argmax decoding at every simplex vertex. (This is the dominant label constraint (DLC) formalized in Definition~\ref{def:dlc}.) There exist data distributions $\mathbb{P}$ and cost matrices $\mathbf{C}$ such that $\inf_{\delta \in \mathcal{H}_{Vor}^{\mathrm{DLC}}} R(\delta) < \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$.
 \end{theorem}
 
 \begin{proof}
@@ -107,10 +107,10 @@ In the experiments in following sections, the optimizer searches an even smaller
 The objective is piecewise constant in $\mathcal{M}$: gradients are zero almost everywhere and switch discontinuously at boundary crossings. First-order methods therefore do not apply without a relaxation, and we instead use a constrained stochastic local search that proposes candidate configurations from a distribution concentrated near the simplex vertices and accepts those that improve the validation score. The search is deliberately confined to the simplex, $\boldsymbol{\mu}_k \in \Delta^{K-1}$, i.e.\ the class $\mathcal{H}_{Vor}^{\Delta}$, which Section~\ref{sec:voronoi_dlc} further narrows to the DLC subclass $\mathcal{H}_{Vor}^{\mathrm{DLC}}$. The unconstrained alternative $\boldsymbol{\mu}_k \in \mathbb{R}^K$, the class $\mathcal{H}_{Vor}$ on which the containment result of Proposition~\ref{prop:ps_in_vor} relies, is not searched.
 
 \subsection{The dominant label constraint}\label{sec:voronoi_dlc}
-Without constraints, the Voronoi cell of $\boldsymbol{\mu}_i$ under $\mathcal{M}$ may contain the simplex vertex $\mathbf{e}_j$ for some $j \neq i$; the decoder~\eqref{eq:voronoi_rule} then maps a pure-class $j$ input to class $i$, permuting the decision logic (\textit{Label Swapping}). To rule this out, the configuration must place $\mathbf{e}_k$ in the interior of the Voronoi cell of $\boldsymbol{\mu}_k$ for every $k$.
+Without constraints, the Voronoi cell of $\boldsymbol{\mu}_i$ under $\mathcal{M}$ may contain the simplex vertex $\mathbf{e}_j$ for some $j \neq i$; the decoder~\eqref{eq:voronoi_rule} then maps a pure-class $j$ input to class $i$, permuting the decision logic (\textit{label swapping}). To rule this out, the configuration must place $\mathbf{e}_k$ in the interior of the Voronoi cell of $\boldsymbol{\mu}_k$ for every $k$.
 
 \begin{definition}[Dominant label constraint]\label{def:dlc}
-A configuration $\mathcal{M} = (\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1}) \in (\Delta^{K-1})^K$ satisfies the \emph{Dominant Label Constraint} (DLC) if
+A configuration $\mathcal{M} = (\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1}) \in (\Delta^{K-1})^K$ satisfies the \emph{dominant label constraint} (DLC) if
 \begin{equation}
     \arg\min_{j \in \mathcal{Y}} \, \|\mathbf{e}_k - \boldsymbol{\mu}_j\|_2 \;=\; \{k\} \qquad \text{for every } k \in \mathcal{Y}.
     \label{eq:dlc}
@@ -121,7 +121,7 @@ In particular, $\delta_{\mathcal{M}}(\mathbf{e}_k) = k$ for every $k$: on pure-c
 
 \section{Sampling DLC-preserving prototype configurations}\label{sec:voronoi_samplers}\label{sec:voronoi_comparison}
 
-The Dominant Label Constraint~\eqref{eq:dlc} defines the search space but leaves the sampling distribution underspecified. A usable sampler has three desiderata: (i) every emitted configuration satisfies~\eqref{eq:dlc}; (ii) the configurations it emits cover a useful range of the DLC-preserving set, so that the local search has room to improve on the argmax baseline; (iii) sampling remains efficient at the values of $K$ the benchmarks require. We survey five alternatives that fail at least one desideratum, then present the sampler used in the experiments.
+The dominant label constraint~\eqref{eq:dlc} defines the search space but leaves the sampling distribution underspecified. A usable sampler has three desiderata: (i) every emitted configuration satisfies~\eqref{eq:dlc}; (ii) the configurations it emits cover a useful range of the DLC-preserving set, so that the local search has room to improve on the argmax baseline; (iii) sampling remains efficient at the values of $K$ the benchmarks require. We survey five alternatives that fail at least one desideratum, then present the sampler used in the experiments.
 
 Alongside the Voronoi samplers, the empirical comparison later in this section also plots three non-Voronoi baselines: MultidimensionalThreshold ($\mathcal{H}_{PS}$), ThresholdRatio ($\mathcal{H}_{Sc}$), and FullMatrixPartitioning ($\mathcal{H}_{Full}$). Their decoders, $\arg\max_{k \in \mathcal{Y}} (p_k - b_k)$, $\arg\max_{k \in \mathcal{Y}} (p_k / \tau_k)$, and $\arg\min_{i \in \mathcal{Y}} (\mathbf{A}\mathbf{p})_i$, are well-defined for any parameter vector, so the DLC problem is specific to the Voronoi family: these strategies enter the comparison as external baselines rather than fellow Voronoi samplers.
 
@@ -206,7 +206,7 @@ A broader observation cuts against the Voronoi family as a whole: the two vector
 With sequential $d^2$ as the chosen sampler, Algorithm~\ref{alg:voronoi_tuning} wraps it in an outer random-search loop: initialize at the argmax prototypes, propose a new configuration each iteration, and keep it when it improves the validation score.
 
 \begin{algorithm}[H]
-\caption{Voronoi Tuning via Sequential $d^2$ Sampling}\label{alg:voronoi_tuning}
+\caption{VoronoiTuning via sequential $d^2$ sampling}\label{alg:voronoi_tuning}
 \begin{algorithmic}[1]
 \State \textbf{Input:} Validation set $\mathcal{V}=\{(x_i, y_i)\}_{i=1}^m$ with pre-computed scores $\hat{\mathbf{p}}(x_i)$, optimization objective, iterations $T$, retry budget $M$.
 \State \textbf{Initialize:} $\mathcal{M}^* \leftarrow \{\mathbf{e}_0, \dots, \mathbf{e}_{K-1}\}$ (standard argmax prototypes).
@@ -395,13 +395,13 @@ The pseudo-dimension analysis from the binary case (Section~\ref{sec:calibration
 \begin{proposition}[Multiclass calibration complexity]\label{rem:multiclass_calibration}
     For $K > 2$ classes, the three parametric calibrators have the following parameter counts $W$ and per-class pseudo-dimension bounds:
     \begin{enumerate}
-        \item Temperature Scaling. A single shared parameter ($W = 1$) regardless of $K$. Writing $\beta = 1/T$, the per-class pre-softmax score $\beta\, z_k(x)$ lies in a one-dimensional linear class, so $d_P \leq 1$ per class by \citet[Theorem~11.4]{anthony1999neural}.
-        \item Platt Scaling (One-vs-Rest). $K$ independent sigmoid calibrators, each with $W = 2$ parameters, with per-class $d_P \leq 2$ by Proposition~\ref{prop:calibrator_complexity}. The per-class fits are independent, and the bound applies to each sigmoid before renormalization to $\Delta^{K-1}$, not to the renormalized coordinates. Total parameter count: $W = 2K$.
-        \item Dirichlet Calibration. The native multiclass parameterization uses $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$, totaling $W = K^2 + K$ free parameters. The pre-softmax score for class $k$ is $\mathbf{w}_k^\top \log\mathbf{p} + b_k$, affine in the $K+1$ parameters $(\mathbf{w}_k, b_k)$, so $d_P \leq K + 1$ per class by \citet[Theorem~11.4]{anthony1999neural}.
+        \item Temperature scaling. A single shared parameter ($W = 1$) regardless of $K$. Writing $\beta = 1/T$, the per-class pre-softmax score $\beta\, z_k(x)$ lies in a one-dimensional linear class, so $d_P \leq 1$ per class by \citet[Theorem~11.4]{anthony1999neural}.
+        \item Platt scaling (one-vs-rest). $K$ independent sigmoid calibrators, each with $W = 2$ parameters, with per-class $d_P \leq 2$ by Proposition~\ref{prop:calibrator_complexity}. The per-class fits are independent, and the bound applies to each sigmoid before renormalization to $\Delta^{K-1}$, not to the renormalized coordinates. Total parameter count: $W = 2K$.
+        \item Dirichlet calibration. The native multiclass parameterization uses $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$, totaling $W = K^2 + K$ free parameters. The pre-softmax score for class $k$ is $\mathbf{w}_k^\top \log\mathbf{p} + b_k$, affine in the $K+1$ parameters $(\mathbf{w}_k, b_k)$, so $d_P \leq K + 1$ per class by \citet[Theorem~11.4]{anthony1999neural}.
     \end{enumerate}
 \end{proposition}
 
-With a single parameter, Temperature Scaling is the preferred calibrator when the validation budget is limited. Isotonic regression (one-vs-rest) sits outside this framework: its per-class pseudo-dimension is unbounded, so the parametric $W$ ordering does not apply; control results in other measures are available in the literature \citep{meyer2000degrees}.
+With a single parameter, temperature scaling is the preferred calibrator when the validation budget is limited. Isotonic regression (one-vs-rest) sits outside this framework: its per-class pseudo-dimension is unbounded, so the parametric $W$ ordering does not apply; control results in other measures are available in the literature \citep{meyer2000degrees}.
 
 Table~\ref{tab:calibrator_vs_decision_complexity} compares the calibration and decision hypothesis classes side by side.
 

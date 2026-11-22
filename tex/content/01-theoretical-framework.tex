@@ -16,12 +16,12 @@ A \emph{classifier} (or \emph{hypothesis}) is defined as a measurable function $
 
 Throughout this work we further assume the cost matrix $\mathbf{C}$ is fixed and independent of the input $x$.
 
-The objective is to minimize the Expected Risk $R(h)$, defined as the expected cost with respect to the measure $\mathbb{P}$,
+The objective is to minimize the expected risk $R(h)$, defined as the expected cost with respect to the measure $\mathbb{P}$,
 \begin{equation}\label{eq:expected_risk}
     R(h) := \mathbb{E}_{\mathbb{P}} [C_{Y, h(X)}] = \int_{\mathcal{X} \times \mathcal{Y}} C_{y, h(x)} \, d\mathbb{P}(x, y).
 \end{equation}
 
-The Bayes Risk ($R^*$), determined solely by the aleatoric uncertainty of $\mathbb{P}$, is the infimum of the risk over all measurable functions,
+The Bayes risk ($R^*$), determined solely by the aleatoric uncertainty of $\mathbb{P}$, is the infimum of the risk over all measurable functions,
 \begin{equation}\label{eq:bayes_risk_def}
     R^* := \inf_{h \in \mathcal{H}_{all}} R(h).
 \end{equation}
@@ -35,11 +35,11 @@ Direct minimization of Eq.~(\ref{eq:expected_risk}) is intractable. The distribu
 \end{figure}
 
 \begin{enumerate}
-    \item Inference Stage: An estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$ maps the input to the $(K-1)$-probability simplex, approximating the conditional distribution of $Y$ given $X$.
-    \item Decision Stage: A decision rule $\delta: \Delta^{K-1} \to \mathcal{Y}$ maps the estimated probability vector to a discrete class label to satisfy a risk-minimization objective.
+    \item Inference stage: An estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$ maps the input to the $(K-1)$-probability simplex, approximating the conditional distribution of $Y$ given $X$.
+    \item Decision stage: A decision rule $\delta: \Delta^{K-1} \to \mathcal{Y}$ maps the estimated probability vector to a discrete class label to satisfy a risk-minimization objective.
 \end{enumerate}
 
-The decomposition is sound when $\hat{\mathbf{p}}$ converges to the true conditional class probabilities. In finite-sample regimes or under model misspecification, $\hat{\mathbf{p}}$ deviates from $\boldsymbol{\eta}$ and the standard decision rules become suboptimal. The resulting excess risk (the gap between the decomposed classifier's risk and the Bayes Risk) is analyzed in Section~\ref{sec:excess_risk_miscalibration}.
+The decomposition is sound when $\hat{\mathbf{p}}$ converges to the true conditional class probabilities. In finite-sample regimes or under model misspecification, $\hat{\mathbf{p}}$ deviates from $\boldsymbol{\eta}$ and the standard decision rules become suboptimal. The resulting excess risk (the gap between the decomposed classifier's risk and the Bayes risk) is analyzed in Section~\ref{sec:excess_risk_miscalibration}.
 
 \section{Inference: conditional probability estimation}\label{sec:inference}
 
@@ -49,11 +49,11 @@ Let $\Delta^{K-1} = \{ \mathbf{p} \in \mathbb{R}^K \mid \mathbf{p} \geq 0, \math
 \end{equation}
 The inference stage uses the sample $\mathcal{S}$ to construct a measurable estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$ that approximates $\boldsymbol{\eta}$.
 
-Since $\mathcal{S}$ contains only realized labels $y_i$ and not their generating probabilities $\boldsymbol{\eta}(x_i)$, $\hat{\mathbf{p}}$ is fit by minimizing a surrogate loss whose population minimizer recovers $\boldsymbol{\eta}$. The standard choices are the Logarithmic Loss (negative log-likelihood, equivalent to the Kullback-Leibler (KL) divergence between the empirical distribution and the model) and the Brier Score (squared error on the simplex); both belong to the family of \textit{strictly proper scoring rules}, whose population minimizer is $\boldsymbol{\eta}$ itself \citep{gneiting2007strictly}. Under standard conditions, namely realizability ($\boldsymbol{\eta} \in \mathcal{F}$, where $\mathcal{F}$ is the hypothesis class containing $\hat{\mathbf{p}}$) together with uniform convergence of the empirical risk over $\mathcal{F}$, the excess risk of the empirical minimizer tends to zero in probability as $N \to \infty$. For both scoring rules this excess risk controls the expected squared distance between $\hat{\mathbf{p}}(X)$ and $\boldsymbol{\eta}(X)$ (directly for the Brier Score, through Pinsker's inequality for the Logarithmic Loss), so $\hat{\mathbf{p}}$ converges to $\boldsymbol{\eta}$ in that distance, in probability.
+Since $\mathcal{S}$ contains only realized labels $y_i$ and not their generating probabilities $\boldsymbol{\eta}(x_i)$, $\hat{\mathbf{p}}$ is fit by minimizing a surrogate loss whose population minimizer recovers $\boldsymbol{\eta}$. The standard choices are the logarithmic loss (negative log-likelihood, equivalent to the Kullback-Leibler (KL) divergence between the empirical distribution and the model) and the Brier score (squared error on the simplex); both belong to the family of \textit{strictly proper scoring rules}, whose population minimizer is $\boldsymbol{\eta}$ itself \citep{gneiting2007strictly}. Under standard conditions, namely realizability ($\boldsymbol{\eta} \in \mathcal{F}$, where $\mathcal{F}$ is the hypothesis class containing $\hat{\mathbf{p}}$) together with uniform convergence of the empirical risk over $\mathcal{F}$, the excess risk of the empirical minimizer tends to zero in probability as $N \to \infty$. For both scoring rules this excess risk controls the expected squared distance between $\hat{\mathbf{p}}(X)$ and $\boldsymbol{\eta}(X)$ (directly for the Brier score, through Pinsker's inequality for the logarithmic loss), so $\hat{\mathbf{p}}$ converges to $\boldsymbol{\eta}$ in that distance, in probability.
 
 \section{Decision: risk minimization}
 
-Given the true conditional class probability vector $\boldsymbol{\eta}(x)$, the decision stage requires a mapping $\delta: \Delta^{K-1} \to \mathcal{Y}$ that selects a discrete action to minimize the expected loss. We define the \textit{Conditional Risk} $\mathcal{R}(\hat{y} \mid x)$ as the expected loss of taking a specific action $\hat{y} \in \mathcal{Y}$ with respect to the aleatoric uncertainty in $Y$,
+Given the true conditional class probability vector $\boldsymbol{\eta}(x)$, the decision stage requires a mapping $\delta: \Delta^{K-1} \to \mathcal{Y}$ that selects a discrete action to minimize the expected loss. We define the \textit{conditional risk} $\mathcal{R}(\hat{y} \mid x)$ as the expected loss of taking a specific action $\hat{y} \in \mathcal{Y}$ with respect to the aleatoric uncertainty in $Y$,
 \begin{equation}
     \mathcal{R}(\hat{y} \mid x) := \mathbb{E}_{Y \sim \boldsymbol{\eta}(x)} [C_{Y, \hat{y}}] = \sum_{k=0}^{K-1} C_{k, \hat{y}} \eta_k(x).
 \end{equation}
@@ -63,18 +63,18 @@ In vectorized form, let $\mathbf{r}(x) \in \mathbb{R}_{\geq 0}^K$ denote the vec
     \mathbf{r}(x) = \left[ \mathcal{R}(0 \mid x), \dots, \mathcal{R}(K-1 \mid x) \right]^\top = \mathbf{C}^\top \boldsymbol{\eta}(x).
 \end{equation}
 
-The Bayes Optimal Decision Rule $h^*$ is the policy that selects the action minimizing this conditional risk
+The Bayes-optimal decision rule $h^*$ is the policy that selects the action minimizing this conditional risk
 \begin{equation}\label{eq:bayes_optimal}
     h^*(x) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, \mathcal{R}(\hat{y} \mid x),
 \end{equation}
-where ties are broken by selecting the smallest index. The corresponding Bayes Optimal Decision Rule on the simplex side of the decomposition $h = \delta \circ \hat{\mathbf{p}}$ is $\delta^*: \Delta^{K-1} \to \mathcal{Y}$,
+where ties are broken by selecting the smallest index. The corresponding Bayes-optimal decision rule on the simplex side of the decomposition $h = \delta \circ \hat{\mathbf{p}}$ is $\delta^*: \Delta^{K-1} \to \mathcal{Y}$,
 \begin{equation}\label{eq:bayes_optimal_delta}
     \delta^*(\mathbf{p}) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, [\mathbf{C}^\top \mathbf{p}]_{\hat{y}},
 \end{equation}
-so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes Risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
+so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
 
 \begin{proposition}[Bayes risk identity]\label{prop:bayes_risk_identity}
-For the Bayes Optimal Decision Rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}),
+For the Bayes-optimal decision rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}),
 \begin{equation}\label{eq:bayes_risk_identity}
     R(h^*) = \mathbb{E}_X \left[ \min_{\hat{y} \in \mathcal{Y}} \mathcal{R}(\hat{y} \mid X) \right] = \min_{h \in \mathcal{H}_{all}} \mathbb{E}_X \left[ \mathcal{R}(h(X) \mid X) \right] = R^*.
 \end{equation}
@@ -100,14 +100,14 @@ Since $\boldsymbol{\eta}(x)$ is unknown in practice, we rely on the plug-in prin
 The excess risk of the plug-in classifier can be bounded by the quality of the probability estimator.
 
 \begin{proposition}[Bound on excess risk]\label{prop:excess_risk_bound}
-Let $C_{max} = \max_{i,j} C_{ij}$ be the maximum entry in the cost matrix. The excess risk of the plug-in classifier $\hat{h}$ relative to the Bayes Optimal classifier $h^*$ is bounded by the $L_1$ estimation error
+Let $C_{max} = \max_{i,j} C_{ij}$ be the maximum entry in the cost matrix. The excess risk of the plug-in classifier $\hat{h}$ relative to the Bayes-optimal classifier $h^*$ is bounded by the $L_1$ estimation error
 \begin{equation}
     R(\hat{h}) - R(h^*) \leq C_{max} \cdot \mathbb{E}_X \left[ \|\hat{\mathbf{p}}(X) - \boldsymbol{\eta}(X)\|_1 \right].
 \end{equation}
 \end{proposition}
 
 \begin{proof}
-Let $x$ be an arbitrary fixed input. Let $k^* = h^*(x)$ be the Bayes optimal action and $\hat{k} = \hat{h}(x)$ be the plug-in decision.
+Let $x$ be an arbitrary fixed input. Let $k^* = h^*(x)$ be the Bayes-optimal action and $\hat{k} = \hat{h}(x)$ be the plug-in decision.
 The \emph{conditional regret} is defined as the difference in true conditional risk between the selected action and the optimal action,
 \begin{equation}
     \Delta \mathcal{R}(x) = \mathcal{R}(\hat{k} \mid x) - \mathcal{R}(k^* \mid x) = \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}(x) - \mathbf{c}_{k^*}^\top \boldsymbol{\eta}(x).
@@ -133,7 +133,7 @@ The bound is linear in the $L_1$ estimation error with proportionality constant 
 
 \section{Excess risk under probability miscalibration}\label{sec:excess_risk_miscalibration}
 
-The excess risk incurred by the plug-in classifier relative to the Bayes optimal classifier is
+The excess risk incurred by the plug-in classifier relative to the Bayes-optimal classifier is
 \begin{equation}
     R(\hat{h}) - R(h^*) = \mathbb{E}_{X} \left[ \mathcal{R}(\hat{h}(X) \mid X) - \mathcal{R}(h^*(X) \mid X) \right].
 \end{equation}
@@ -154,7 +154,7 @@ This viewpoint makes statistical learning theory applicable to the decision laye
 
 \subsection{Generalization guarantees for decision optimization}
 
-The capacity of the decision-stage hypothesis class, or an integer upper bound on it, is denoted by $d_{dec}$. In the binary case, this capacity is measured by the VC dimension (Definition~\ref{def:vc_dimension}); in the multiclass setting, the corresponding capacity notion is introduced in the later multiclass chapters.
+The capacity of the decision-stage hypothesis class, or an integer upper bound on it, is denoted by $d_{dec}$. In the binary case, this capacity is measured by the Vapnik--Chervonenkis (VC) dimension (Definition~\ref{def:vc_dimension}); in the multiclass setting, the corresponding capacity notion is introduced in the later multiclass chapters.
 
 \begin{definition}[VC dimension]\label{def:vc_dimension}
     Let $\mathcal{H} \subseteq \{0,1\}^{\mathcal{X}}$.

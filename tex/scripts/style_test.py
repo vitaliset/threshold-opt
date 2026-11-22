@@ -3,6 +3,8 @@
 - Run-in paragraph headings (``\\paragraph{...}``) end with a period.
 - Panel labels in captions, such as ``(a)~``, are bold: ``\\textbf{(a)}~``.
 - Every definition environment emphasizes the term it defines (``\\emph``).
+- Common terms are lowercase: the capitalized forms in LOWERCASE_TERMS do
+  not appear outside figures.
 """
 
 from __future__ import annotations
@@ -18,6 +20,26 @@ CAPTION_RE = re.compile(r"\\caption(?:\[[^\]]*\])?\{")
 PANEL_RE = re.compile(r"\(([a-h])\)~")
 DEFINITION_RE = re.compile(
     r"\\begin\{definition\}(?:\[[^\]]*\])?(.*?)\\end\{definition\}", re.S
+)
+TIKZ_RE = re.compile(r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}", re.S)
+# Capitalized forms of common terms that the text writes in lowercase
+# (proper names such as Bayes, Platt and Dirichlet keep their capital).
+LOWERCASE_TERMS = (
+    "Bayes Optimal",
+    "Bayes Risk",
+    "Conditional Risk",
+    "Expected Risk",
+    "Cost Matrix",
+    "Dominant Label Constraint",
+    "Probability Ratio Thresholding",
+    "Parallel Shift",
+    "Temperature Scaling",
+    "Platt Scaling",
+    "Isotonic Regression",
+    "Dirichlet Calibration",
+    "Expected Calibration Error",
+    "Logarithmic Loss",
+    "Brier Score",
 )
 
 
@@ -59,11 +81,30 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
                 f"{where(match.start())}: definition does not emphasize "
                 "the term it defines"
             )
+    prose = TIKZ_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+    for term in LOWERCASE_TERMS:
+        for match in re.finditer(rf"\b{re.escape(term)}\b", prose):
+            problems.append(
+                f"{where(match.start())}: write '{term}' in lowercase "
+                "(proper names keep their capital)"
+            )
     return problems
 
 
 def _stream(*lines: str) -> list[StreamLine]:
     return [StreamLine(Path("ch.tex"), i, t) for i, t in enumerate(lines, 1)]
+
+
+def test_flags_capitalized_common_terms_outside_figures():
+    stream = _stream(
+        r"The Bayes Optimal rule and the Bayes-optimal rule.",
+        r"\begin{tikzpicture}\node {Cost Matrix};\end{tikzpicture}",
+        r"Temperature scaling and Platt scaling.",
+    )
+    assert style_problems(stream) == [
+        "ch.tex:1: write 'Bayes Optimal' in lowercase (proper names keep "
+        "their capital)"
+    ]
 
 
 def test_flags_definitions_without_an_emphasized_term():
