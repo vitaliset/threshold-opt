@@ -20,7 +20,7 @@ The misspecified rule applies the Bayes-optimal decision $\delta^*$ from~\eqref{
 \begin{figure}[H]
     \centering
     \input{figures/scaling_setup_geometry.tex}
-    \caption{Variance-scaling perturbation at $K = 5$ in $\mathbb{R}^2$. The class means $\mathbf{m}_k$ sit at the vertices of a regular $K$-gon of radius $2$. Solid blue rings show the $\mathbb{P}_1$ contours at $\sigma = 1$; faded red rings show $\mathbb{P}_\lambda$ contours at $\sigma = \sqrt{\lambda}$ for an example $\lambda > 1$ (here $\lambda \approx 3$). The misspecified rule is built for the inner geometry and applied to data sampled from the outer one.}%
+    \caption{Variance-scaling perturbation at $K = 5$ in $\mathbb{R}^2$. The class means $\mathbf{m}_k$ sit at the vertices of a regular $K$-gon of radius $2$. Solid blue rings show the $\mathbb{P}_1$ contours at $\sigma = 1$; faded red rings show $\mathbb{P}_\lambda$ contours at $\sigma = \sqrt{\lambda}$ for an example $\lambda > 1$ (here $\lambda \approx 3$).}%
     \label{fig:misspec-sensitivity-setup-geometry}
 \end{figure}
 
@@ -174,7 +174,7 @@ For each $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$, perturbation radius $r$, and cos
 \begin{figure}[H]
     \centering
     \input{figures/lemma_test_setup.tex}
-    \caption{Geometry of the synthetic Lemma verification at $K = 3$. The simplex $\Delta^{K-1}$ is the triangle with vertices $\mathbf{e}_0, \mathbf{e}_1, \mathbf{e}_2$. A reference probability vector $\mathbf{p}$ is drawn from $\mathrm{Dir}(a\mathbf{1})$ ($a = 2$) in the interior; perturbations $\boldsymbol{\epsilon}$ are then drawn uniformly on the radius-$r$ sphere of $V$, which at $K = 3$ is the circle of radius $r$ around $\mathbf{p}$ in the simplex tangent plane (dotted). Four sample $\boldsymbol{\epsilon}$ realisations are shown.}%
+    \caption{Geometry of the synthetic Lemma verification at $K = 3$. The simplex $\Delta^{K-1}$ is the triangle with vertices $\mathbf{e}_0, \mathbf{e}_1, \mathbf{e}_2$. Around a reference probability vector $\mathbf{p}$ in the interior, the radius-$r$ sphere of $V$ on which the perturbations $\boldsymbol{\epsilon}$ are drawn is the dotted circle in the simplex tangent plane; four sample realisations of $\boldsymbol{\epsilon}$ are shown.}%
     \label{fig:lemma-test-setup}
 \end{figure}
 
@@ -182,12 +182,12 @@ Lemma~\ref{lem:dimensional_dilution}'s linearised content is the projection iden
 \begin{equation}\label{eq:lemma_test_prediction}
     \frac{\mathbb{E}_\mathbf{p}\!\left[\mathbb{E}_{\boldsymbol{\epsilon}}\!\bigl[(\mathbf{g}(\mathbf{p})^\top \boldsymbol{\epsilon})^2\bigr]\right]}{\mathbb{E}_\mathbf{p}[\|\mathbf{g}(\mathbf{p})\|^2]} = \frac{r^2}{K-1}.
 \end{equation}
-This is the Lemma's leading-order claim, exact at any $r$ within the smoothness radius $\rho$ of Assumption~\ref{ass:smoothness}; the higher-order remainder of the lemma's expansion would enter only through nonlinearities of $\phi_\delta$, which are absent for the cost-sensitive functional on the interior of each decision region. Regressing $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ against $\log(K-1)$ at each $r$ recovers the empirical K-decay exponent $\widehat{\gamma}$, which Eq.~\eqref{eq:lemma_test_prediction} predicts to equal $1$ uniformly across cost matrices.
+This is the Lemma's leading-order claim, exact at any $r$ within the smoothness radius $\rho$ of Assumption~\ref{ass:smoothness}; the higher-order remainder of the lemma's expansion would enter only through nonlinearities of $\phi_\delta$, which are absent for the cost-sensitive functional on the interior of each decision region. Regressing the logarithm of the left-hand side of Eq.~\eqref{eq:lemma_test_prediction} against $\log(K-1)$ at each $r$ recovers the empirical K-decay exponent $\widehat{\gamma}$, which Eq.~\eqref{eq:lemma_test_prediction} predicts to equal $1$ uniformly across cost matrices.
 
 \begin{table}[H]
     \centering
     \input{tables/lemma_test.tex}
-    \caption{Fitted K-decay exponent $\widehat{\gamma}$ for the four cost configurations at the smallest and largest swept perturbation radii. At each $r$, $\widehat{\gamma}$ is the negative ordinary-least-squares (OLS) slope of $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ regressed against $\log(K-1)$ across $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; bracketed intervals are normal-approximation $95\%$ CIs from the OLS slope standard error. Equation~\eqref{eq:lemma_test_prediction} predicts $\widehat{\gamma} = 1$ uniformly across cost matrices and $r$.}%
+    \caption{Fitted K-decay exponent $\widehat{\gamma}$ for the four cost configurations at the smallest and largest swept perturbation radii. At each $r$, $\widehat{\gamma}$ is the negative ordinary-least-squares (OLS) slope of $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ regressed against $\log(K-1)$ across $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; bracketed intervals are normal-approximation $95\%$ CIs from the OLS slope standard error.}%
     \label{tab:lemma-test}
 \end{table}
 
