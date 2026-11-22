@@ -69,23 +69,32 @@
 \captionsetup{font+={stretch=1.1}}
 
 % Theorem environments (imegoodies loads amsthm/thmtools but defines none).
+% Results in italics; definitions, examples, assumptions and remarks
+% upright with a bold head (amsthm's definition style).
 \theoremstyle{plain}
-\newtheorem{definition}{Definition}
 \newtheorem{theorem}{Theorem}[section]
+% Results outside any section (the appendices have none) are numbered by
+% chapter, C.1 rather than C.0.1. Redefined here, before the environments
+% that share the counter copy \thetheorem.
+\renewcommand{\thetheorem}{%
+  \ifnum\value{section}=0 \thechapter\else\thesection\fi.\arabic{theorem}}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
 \newtheorem{example}[theorem]{Example}
-\newtheorem{remark}[theorem]{Remark}
 \newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{remark}[theorem]{Remark}
 
 % The shared `theorem` counter resets every section, but the auto-generated
 % \theH<env> hidden counters that hyperref uses for PDF anchors omit the
 % chapter and section. Anchors like proposition.1 then recur across sections,
 % pdfTeX drops the duplicates ("destination with the same identifier ...
 % duplicate ignored"), and those links misjump. Pin every theorem-like \theH
-% to the globally unique printed number: \thetheorem (chapter.section.n) for
-% the shared counter, \thedefinition for definition's own global counter.
+% to the globally unique printed number: \thetheorem (chapter.section.n, or
+% chapter.n outside sections) for the shared counter, \thedefinition for
+% definition's own global counter.
 \def\theHtheorem{\thetheorem}
 \def\theHlemma{\thetheorem}
 \def\theHproposition{\thetheorem}

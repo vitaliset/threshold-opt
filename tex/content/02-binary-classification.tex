@@ -1,5 +1,6 @@
 %!TeX root=../carlo_master.tex
 \chapter{Binary classification ($K=2$)}\label{sec:binary}
+\chaptermark{Binary classification}
 
 This chapter specializes the framework of Chapter~\ref{sec:theory} to $K=2$: we derive the classical Elkan threshold \citep{elkan2001foundations}, analyze its fragility under probability miscalibration, and develop empirical threshold optimization as an alternative.
 
@@ -61,12 +62,12 @@ The analytical threshold (Eq.~\ref{eq:elkan_threshold}) is optimal when $\hat{p}
 
 \section{Post-hoc probability calibration}\label{sec:calibration}
 
-The core issue of the plug-in rule is that $\hat{p}(x)$ does not faithfully represent $\eta(x)$. A natural fix is to \textit{recalibrate} the estimator's outputs before applying the analytical rule. We formalize calibration, present the standard diagnostic, and describe four post-hoc methods evaluated in our experiments.
+The core issue of the plug-in rule is that $\hat{p}(x)$ does not faithfully represent $\eta(x)$. A natural fix is to recalibrate the estimator's outputs before applying the analytical rule. We formalize calibration, present the standard diagnostic, and describe four post-hoc methods evaluated in our experiments.
 
 \subsection{Defining and measuring calibration}
 
 \begin{definition}[Perfect calibration]\label{def:calibration}
-An estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ is perfectly calibrated with respect to $\mathbb{P}$ if
+An estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ is \emph{perfectly calibrated} with respect to $\mathbb{P}$ if
 \begin{equation}\label{eq:perfect_calibration}
     \mathbb{P}(Y = 1 \mid \hat{p}(X) = q) = q, \quad \text{for } \mathbb{P}_{\hat{p}(X)}\text{-almost every } q \in [0,1].
 \end{equation}
@@ -127,7 +128,7 @@ In practice, perfect calibration is unattainable: the residual error after post-
 
 An alternative is empirical threshold optimization, following foundational work on cost-sensitive thresholding \citep{sheng2006thresholding} and widely used in applied machine learning. Rather than deriving the decision boundary from the cost matrix and probability estimates, which may be flawed, $\tau$ becomes a learnable parameter of $\delta_\tau$, optimized directly against the operational objective on real data.
 
-Let $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ be a held-out validation set drawn i.i.d.\ from $\mathbb{P}$. We define the empirical risk objective $\hat{R}(\tau)$ for a candidate threshold $\tau$ as the average realized cost over the sample,
+Let $\mathcal{V} = \{(x_i, y_i)\}_{i=1}^m$ be a held-out validation set drawn i.i.d.\ from $\mathbb{P}$. We define the \emph{empirical risk objective} $\hat{R}(\tau)$ for a candidate threshold $\tau$ as the average realized cost over the sample,
 \begin{equation}\label{eq:empirical_risk_obj}
     \hat{R}(\tau) = \frac{1}{m} \sum_{i=1}^m \left[ \mathbb{I}(\hat{p}(x_i) \ge \tau) C_{y_i, 1} + \mathbb{I}(\hat{p}(x_i) < \tau) C_{y_i, 0} \right],
 \end{equation}
@@ -175,14 +176,14 @@ with probability at least $1-\nu$, where $c = c_{bin}(m,\nu)$ is the logarithmic
 
 \subsection{Calibrator complexity}
 
-Since calibrators are real-valued functions ($g: [0,1] \to [0,1]$), the relevant complexity measure is the \textit{pseudo-dimension} \citep{pollard1984convergence,haussler1992decision}, a generalization of VC dimension to real-valued function classes.
+Since calibrators are real-valued functions ($g: [0,1] \to [0,1]$), the relevant complexity measure is the pseudo-dimension \citep{pollard1984convergence,haussler1992decision}, a generalization of VC dimension to real-valued function classes.
 
 \begin{definition}[Pseudo-dimension]\label{def:pseudo_dimension}
-    Following \citet[Definition~11.2]{anthony1999neural}, let $\mathcal{G} \subseteq \mathbb{R}^{\mathcal{X}}$ be a class of real-valued functions on $\mathcal{X}$. A set of points $\{x_1, \ldots, x_m\} \subset \mathcal{X}$ is pseudo-shattered by $\mathcal{G}$ if there exist witnesses $r_1, \ldots, r_m \in \mathbb{R}$ such that for every binary labeling $(b_1, \ldots, b_m) \in \{0,1\}^m$, there exists $g \in \mathcal{G}$ satisfying
+    Following \citet[Definition~11.2]{anthony1999neural}, let $\mathcal{G} \subseteq \mathbb{R}^{\mathcal{X}}$ be a class of real-valued functions on $\mathcal{X}$. A set of points $\{x_1, \ldots, x_m\} \subset \mathcal{X}$ is \emph{pseudo-shattered} by $\mathcal{G}$ if there exist witnesses $r_1, \ldots, r_m \in \mathbb{R}$ such that for every binary labeling $(b_1, \ldots, b_m) \in \{0,1\}^m$, there exists $g \in \mathcal{G}$ satisfying
     \begin{equation}
         g(x_i) \geq r_i \iff b_i = 1, \quad \text{for all } i = 1, \ldots, m.
     \end{equation}
-    The pseudo-dimension $d_P(\mathcal{G})$ is the cardinality of the largest set that can be pseudo-shattered by $\mathcal{G}$.
+    The \emph{pseudo-dimension} $d_P(\mathcal{G})$ is the cardinality of the largest set that can be pseudo-shattered by $\mathcal{G}$.
 \end{definition}
 
 When $\mathcal{G}$ is binary-valued, pseudo-dimension coincides with VC dimension, and a validation set of size proportional to $d_P/\epsilon^2$ (that is, $m \geq c\, d_P/\epsilon^2$) controls the empirical loss \citep[Chapter~11]{anthony1999neural}.

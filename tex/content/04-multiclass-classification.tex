@@ -1,5 +1,6 @@
 %!TeX root=../carlo_master.tex
 \chapter{Multiclass classification ($K > 2$)}\label{sec:multiclass}
+\chaptermark{Multiclass classification}
 
 This chapter extends the framework from binary ($K=2$) to the multiclass setting ($K > 2$). The binary case reduces to a scalar threshold on $[0, 1]$; the multiclass problem requires partitioning the probability simplex $\Delta^{K-1}$ into $K$ decision regions with no natural scalar parameterization. We recast the decision stage as a search for a partition of $\Delta^{K-1}$ and show that the standard cost-sensitive rule imposes rigid constraints on the boundary geometry, constraints that can be suboptimal under realistic miscalibration of the estimator.
 
@@ -30,7 +31,7 @@ We assume a lexicographic tie-breaking rule for the $\mathrm{argmin}$ in~\eqref{
 For the cost-sensitive multiclass problem to be well-posed, every class must be optimal for at least one probability vector. A class that is dominated everywhere on the simplex is redundant: no decision rule should ever predict it, and removing it leaves an equivalent problem over the remaining $K-1$ classes. We formalize this through a non-degeneracy condition on $\mathbf{C}$ that generalizes the two-class reasonableness conditions of~\cite{elkan2001foundations}; the element-wise multiclass form of this restriction, in the same simplex-partition setting, appears in~\cite{obrien2008costsensitive}.
 
 \begin{definition}[Admissible cost matrix]\label{def:admissibility}
-    A cost matrix $\mathbf{C}$ is admissible if every class $i \in \mathcal{Y}$ is the unique risk-minimizer for at least one valid probability distribution. Formally, for every class $i$, there exists a vector $\mathbf{p} \in \Delta^{K-1}$ such that
+    A cost matrix $\mathbf{C}$ is \emph{admissible} if every class $i \in \mathcal{Y}$ is the unique risk-minimizer for at least one valid probability distribution. Formally, for every class $i$, there exists a vector $\mathbf{p} \in \Delta^{K-1}$ such that
     \begin{equation}
         \mathbf{c}_i^\top \mathbf{p} < \mathbf{c}_k^\top \mathbf{p}, \quad \forall k \neq i.
     \end{equation}
@@ -52,7 +53,7 @@ For the cost-sensitive multiclass problem to be well-posed, every class must be 
 The applied cost-sensitive literature commonly works instead with a condition stated directly on the entries of $\mathbf{C}$.
 
 \begin{definition}[Element-wise reasonable cost matrix]\label{def:elementwise}
-    A cost matrix $\mathbf{C}$ is element-wise reasonable if, for every true class $j$, a correct prediction costs strictly less than any misprediction,
+    A cost matrix $\mathbf{C}$ is \emph{element-wise reasonable} if, for every true class $j$, a correct prediction costs strictly less than any misprediction,
     \begin{equation}
         C_{jj} < C_{ji}, \quad \forall\, i \neq j.
     \end{equation}
