@@ -42,7 +42,7 @@ This K-monotone ordering of relative excess risk is the empirical phenomenon pre
 \begin{figure}[H]
     \centering
     \input{figures/scaling_variance.tex}
-    \caption{Relative excess risk of the Bayes-optimal classifier designed for $\mathbb{P}_1$ when the data is drawn from $\mathbb{P}_\lambda$, as a function of the variance multiplier $\lambda$. Each curve covers $17$ log-spaced values of $\lambda \in [1, 16]$ for a fixed number of classes $K$. The cost matrix is Asymmetric $10\times$. Points are averages over $10$ replicate seeds; shaded bands are normal-approx $95\%$ CIs ($\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across seeds), and lines are linear interpolation between the per-$\lambda$ seed means.}%
+    \caption{Relative excess risk of the Bayes-optimal classifier designed for $\mathbb{P}_1$ when the data is drawn from $\mathbb{P}_\lambda$, as a function of the variance multiplier $\lambda$. Each curve covers $17$ log-spaced values of $\lambda \in [1, 16]$ for a fixed number of classes $K$. The cost matrix is Asymmetric $10\times$. Points are averages over $10$ replicate seeds; shaded bands are normal-approximation $95\%$ confidence intervals (CIs), $\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across seeds, and lines are linear interpolation between the per-$\lambda$ seed means.}%
     \label{fig:misspec-sensitivity-variance}
 \end{figure}
 
@@ -82,7 +82,7 @@ The cost matrix is again the Asymmetric $10\times$ family, and we also report th
 \begin{figure}[H]
     \centering
     \input{figures/scaling_meanshift.tex}
-    \caption{Relative excess risk under the random per-class mean-shift perturbation of Equation~\eqref{eq:meanshift}, as a function of the per-class Euclidean shift magnitude $\xi/\sigma$. The class means are at $K$ mutually equidistant points in $\mathbb{R}^{K-1}$ with $K$-dependent circumradius $R_{\mathrm{circ}}(K) = 2\sigma\sqrt{2(K-1)/K}$ chosen so the pairwise inter-class distance is the same for every $K$; each class's mean is shifted by an independent random unit direction scaled to magnitude $\xi$. Left column: Symmetric $0/1$ cost. Right column: Asymmetric $10\times$ cost. Shaded bands are normal-approx $95\%$ CIs ($\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across $10$ replicate seeds).}%
+    \caption{Relative excess risk under the random per-class mean-shift perturbation of Equation~\eqref{eq:meanshift}, as a function of the per-class Euclidean shift magnitude $\xi/\sigma$. The class means are at $K$ mutually equidistant points in $\mathbb{R}^{K-1}$ with $K$-dependent circumradius $R_{\mathrm{circ}}(K) = 2\sigma\sqrt{2(K-1)/K}$ chosen so the pairwise inter-class distance is the same for every $K$; each class's mean is shifted by an independent random unit direction scaled to magnitude $\xi$. Left column: Symmetric $0/1$ cost. Right column: Asymmetric $10\times$ cost. Shaded bands are normal-approximation $95\%$ CIs ($\mathrm{mean} \pm 1.96 \cdot \mathrm{SE}$ across $10$ replicate seeds).}%
     \label{fig:misspec-sensitivity-meanshift}
 \end{figure}
 
@@ -187,7 +187,7 @@ This is the Lemma's leading-order claim, exact at any $r$ within the smoothness 
 \begin{table}[H]
     \centering
     \input{tables/lemma_test.tex}
-    \caption{Fitted K-decay exponent $\widehat{\gamma}$ for the four cost configurations at the smallest and largest swept perturbation radii. At each $r$, $\widehat{\gamma}$ is the negative ordinary-least-squares (OLS) slope of $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ regressed against $\log(K-1)$ across $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; bracketed intervals are normal-approx $95\%$ CIs from the OLS slope standard error. Equation~\eqref{eq:lemma_test_prediction} predicts $\widehat{\gamma} = 1$ uniformly across cost matrices and $r$.}%
+    \caption{Fitted K-decay exponent $\widehat{\gamma}$ for the four cost configurations at the smallest and largest swept perturbation radii. At each $r$, $\widehat{\gamma}$ is the negative ordinary-least-squares (OLS) slope of $\log(\mathbb{E}_\mathbf{p}\,\mathbb{E}_{\boldsymbol{\epsilon}}[(\mathbf{g}^\top \boldsymbol{\epsilon})^2] / \mathbb{E}_\mathbf{p}[\|\mathbf{g}\|^2])$ regressed against $\log(K-1)$ across $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; bracketed intervals are normal-approximation $95\%$ CIs from the OLS slope standard error. Equation~\eqref{eq:lemma_test_prediction} predicts $\widehat{\gamma} = 1$ uniformly across cost matrices and $r$.}%
     \label{tab:lemma-test}
 \end{table}
 

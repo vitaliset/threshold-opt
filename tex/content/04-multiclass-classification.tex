@@ -10,9 +10,9 @@ The decision stage operates on the standard $(K-1)$-simplex
 \begin{equation}
     \Delta^{K-1} = \left\{ \mathbf{p} \in \mathbb{R}^K \mid p_i \geq 0 \,\,\, \forall\, i, \, \|\mathbf{p}\|_1 = 1 \right\},
 \end{equation}
-embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ for the closed Bayes Optimal decision regions of Chapter~\ref{sec:theory}, which differ from the assigned regions $\mathcal{P}_i^{\delta^*}$ only on ties.
+embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ for the closed Bayes-optimal decision regions of Chapter~\ref{sec:theory}, which differ from the assigned regions $\mathcal{P}_i^{\delta^*}$ only on ties.
 
-\section{Bayes optimal polyhedral partitions}
+\section{Bayes-optimal polyhedral partitions}
 
 Consider a cost matrix $\mathbf{C} \in \mathbb{R}_{\ge 0}^{K \times K}$. We denote the $i$-th column of $\mathbf{C}$ as the risk vector $\mathbf{c}_i \in \mathbb{R}^K$, the costs of predicting class $i$ across all possible truth labels. Following the convention announced in Section~\ref{sec:theory}, the entry $C_{ij}$ represents the cost incurred by predicting class $j$ when the true class is $i$. The conditional risk of taking action $i$ given a class probability vector $\mathbf{p}$ is the linear functional,
 \begin{equation}
@@ -20,7 +20,7 @@ Consider a cost matrix $\mathbf{C} \in \mathbb{R}_{\ge 0}^{K \times K}$. We deno
 \end{equation}
 The functional $\mathcal{L}_i$ takes a generic simplex point as argument and coincides with the conditional risk $\mathcal{R}(i \mid x)$ of Section~\ref{sec:theory} when evaluated at $\mathbf{p} = \boldsymbol{\eta}(x)$.
 
-The Bayes Optimal decision rule $\delta^*$ selects the action minimizing this risk
+The Bayes-optimal decision rule $\delta^*$ selects the action minimizing this risk
 \begin{equation}\label{eq:multiclass_bayes}
     \delta^*(\mathbf{p}) = \underset{i \in \mathcal{Y}}{\mathrm{argmin}} \,\, \mathbf{c}_i^\top \mathbf{p}.
 \end{equation}
@@ -93,7 +93,7 @@ Our theoretical results are stated under admissibility, the weaker of the two co
 Under admissibility, the minimization in Eq.~(\ref{eq:multiclass_bayes}) induces a polyhedral partition of the simplex whose boundary normals are determined entirely by the cost matrix.
 
 \begin{theorem}[Rigid polyhedral partition]\label{thm:rigid_partition}
-    Given an admissible cost matrix $\mathbf{C}$, the closed Bayes Optimal decision regions are convex polyhedra that cover $\Delta^{K-1}$. They can overlap where conditional risks tie; assigning each tie to its smallest-index minimizer gives a partition. The boundary separating any two adjacent regions $\mathcal{P}_i$ and $\mathcal{P}_j$ lies on the hyperplane $\mathcal{B}_{ij}$ defined by
+    Given an admissible cost matrix $\mathbf{C}$, the closed Bayes-optimal decision regions are convex polyhedra that cover $\Delta^{K-1}$. They can overlap where conditional risks tie; assigning each tie to its smallest-index minimizer gives a partition. The boundary separating any two adjacent regions $\mathcal{P}_i$ and $\mathcal{P}_j$ lies on the hyperplane $\mathcal{B}_{ij}$ defined by
     \begin{equation}
         \mathcal{B}_{ij} = \{ \mathbf{p} \in \mathbb{R}^K \mid (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} = 0 \}.
     \end{equation}
@@ -127,7 +127,7 @@ The same partition admits a three-dimensional reading. Graphing each conditional
 
 \section{Limitations of the plug-in rule in the multiclass setting}\label{sec:analytical_fragility}
 
-As in the binary case, the standard approach applies the Bayes Optimal projection (Eq.~\ref{eq:multiclass_bayes}) directly to the estimated probabilities,
+As in the binary case, the standard approach applies the Bayes-optimal projection (Eq.~\ref{eq:multiclass_bayes}) directly to the estimated probabilities,
 \begin{equation}
     \hat{h}(x) = \underset{i \in \mathcal{Y}}{\mathrm{argmin}} \,\, \mathbf{c}_i^\top \hat{\mathbf{p}}(x).
 \end{equation}
@@ -180,4 +180,4 @@ g_{\mathbf{W},\mathbf{b}}(\hat{\mathbf{p}}) = \mathrm{softmax}(\mathbf{W} \log \
 
 The parametric calibrators can be ordered by flexibility. Temperature scaling uses a single parameter and preserves the class ranking, so it can correct global overconfidence but not class-specific distortions. One-vs-rest Platt scaling introduces $2K$ parameters and can correct per-class miscalibration, but because each class is calibrated against the rest independently, it does not model cross-class interactions. Dirichlet calibration is the most expressive of the three: with $K^2+K$ parameters, it applies a log-linear transformation to the full probability vector and can represent interactions among classes. Isotonic regression occupies a separate position in the comparison, since its non-parametric monotone complexity depends on the calibration-set size rather than on a fixed parameter count in $K$.
 
-Each calibrator can be composed with either the cost-blind argmax rule or the analytical cost-sensitive rule in Eq.~\ref{eq:multiclass_bayes}, yielding a \textit{calibrate-then-decide} strategy. As in the binary case, the argument of Proposition~\ref{prop:calibrate_then_decide} extends: recovering the true posterior vector, $g(\hat{\mathbf{p}}(x)) = \boldsymbol{\eta}(x)$ almost everywhere, makes the analytical rule applied to $g(\hat{\mathbf{p}}(x))$ attain the Bayes risk. Perfect multiclass calibration alone does not imply this posterior-recovery condition. In practice, calibration is only approximate, and the remaining distortion motivates the direct partition-optimization strategies of Chapter~\ref{sec:partition_optimization}.
+Each calibrator can be composed with either the cost-blind argmax rule or the analytical cost-sensitive rule in Eq.~\ref{eq:multiclass_bayes}, yielding a calibrate-then-decide strategy. As in the binary case, the argument of Proposition~\ref{prop:calibrate_then_decide} extends: recovering the true posterior vector, $g(\hat{\mathbf{p}}(x)) = \boldsymbol{\eta}(x)$ almost everywhere, makes the analytical rule applied to $g(\hat{\mathbf{p}}(x))$ attain the Bayes risk. Perfect multiclass calibration alone does not imply this posterior-recovery condition. In practice, calibration is only approximate, and the remaining distortion motivates the direct partition-optimization strategies of Chapter~\ref{sec:partition_optimization}.

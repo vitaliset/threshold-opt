@@ -27,7 +27,7 @@ with $\mathbf{a}_k$ ranging over all of $\mathbb{R}^{K}$.
 
 \section{Geometric regularization strategies}
 
-The four constraints below sit on a spectrum of how aggressively they reduce $\mathcal{H}_{Full}$. All can be fit by empirical optimization on a validation set, so the learning objective need not be tied to a specified cost matrix: the same search can target cost-sensitive risk, macro $F_1$, macro G-Mean, or any other task utility. What distinguishes the methods below is not the optimization criterion but the geometry of the partitions they can express.
+The four constraints below sit on a spectrum of how aggressively they reduce $\mathcal{H}_{Full}$. All can be fit by empirical optimization on a validation set, so the learning objective need not be tied to a specified cost matrix: the same search can target cost-sensitive risk, macro (class-averaged) $F_1$, macro G-Mean, or any other task utility. What distinguishes the methods below is not the optimization criterion but the geometry of the partitions they can express.
 
 The first two (parallel shift and linear scaling) come from \citet{obrien2008costsensitive}; the third is the per-class probability rescaling of \citet{lachiche2003improving}, recast here in cost-agnostic form; the fourth, due to \citet{legnaro2025multiclass}, parameterizes the decision rule directly on the simplex and, as we show below, is mathematically equivalent to the parallel shift under $0/1$ loss.
 
@@ -97,14 +97,14 @@ Figure~\ref{fig:obrien_vs_column_scaling} contrasts the linear scaling with the 
 
 \subsection{Probability ratio thresholding}\label{sec:prob_ratio_thresholding}
 
-An alternative to linear scaling that avoids direct manipulation of the cost matrix is \textit{Probability Ratio Thresholding}, the per-class probability reweighting of \citet{lachiche2003improving}, stated here as a decision rule rather than a probability correction. Rather than modifying the risk computation, this method rescales the estimated probabilities directly,
+An alternative to linear scaling that avoids direct manipulation of the cost matrix is \textit{probability ratio thresholding}, the per-class probability reweighting of \citet{lachiche2003improving}, stated here as a decision rule rather than a probability correction. Rather than modifying the risk computation, this method rescales the estimated probabilities directly,
 \begin{equation}\label{eq:threshold_ratio}
     \delta_{\boldsymbol{\tau}}(\mathbf{p}) = \underset{k \in \mathcal{Y}}{\mathrm{argmax}} \; \frac{p_k}{\tau_k},
 \end{equation}
 where $\boldsymbol{\tau} \in \mathbb{R}_{>0}^K$ is a per-class threshold vector. To remove scale invariance, we fix $\tau_0 = 1$, yielding $K-1$ free parameters.
 
 \begin{proposition}[Equivalence to linear scaling under 0/1 loss]\label{prop:ratio_equivalence}
-    Under the 0/1 loss matrix ($C_{ij} = 1 - \delta_{ij}$), Probability Ratio Thresholding with parameter $\boldsymbol{\tau}$ is equivalent to linear scaling with $\beta_k = 1/\tau_k$.
+    Under the 0/1 loss matrix ($C_{ij} = 1 - \delta_{ij}$), probability ratio thresholding with parameter $\boldsymbol{\tau}$ is equivalent to linear scaling with $\beta_k = 1/\tau_k$.
 \end{proposition}
 
 \begin{proof}

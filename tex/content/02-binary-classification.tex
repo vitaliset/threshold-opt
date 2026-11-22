@@ -21,7 +21,7 @@ Optimizing $\delta$ thus reduces to finding the threshold $\tau^*$ that minimize
 
 \section{Analytical threshold derivation}\label{sec:analytical_threshold}
 
-The $2 \times 2$ Cost Matrix $\mathbf{C}$ has entry $C_{ij}$ for the penalty of predicting class $j$ when the true class is $i$, covering True Negatives ($C_{00}$), False Positives ($C_{01}$), False Negatives ($C_{10}$), and True Positives ($C_{11}$), as laid out in Table~\ref{tab:binary_cost_matrix}.
+The $2 \times 2$ cost matrix $\mathbf{C}$ has entry $C_{ij}$ for the penalty of predicting class $j$ when the true class is $i$, covering true negatives ($C_{00}$), false positives ($C_{01}$), false negatives ($C_{10}$), and true positives ($C_{11}$), as laid out in Table~\ref{tab:binary_cost_matrix}.
 
 \input{tables/cost_matrix.tex}
 
@@ -34,7 +34,7 @@ If exactly one of these conditions is violated, one action weakly dominates the 
 We first show that under these conditions, the risk-minimizing policy is always a threshold function, justifying the parameterization $\delta_\tau$ introduced in Eq.~\ref{eq:threshold_rule}.
 
 \begin{lemma}[Optimality of threshold policies]\label{lem:threshold_optimality}
-If the cost matrix satisfies the reasonableness conditions (Eq.~\ref{eq:reasonableness}), the Bayes Optimal decision rule $h^*(x)$ is equivalent to a threshold function $\delta_\tau(\eta(x)) = \mathbb{I}(\eta(x) \geq \tau)$ for a unique scalar $\tau \in [0, 1]$.
+If the cost matrix satisfies the reasonableness conditions (Eq.~\ref{eq:reasonableness}), the Bayes-optimal decision rule $h^*(x)$ is equivalent to a threshold function $\delta_\tau(\eta(x)) = \mathbb{I}(\eta(x) \geq \tau)$ for a unique scalar $\tau \in [0, 1]$.
 \end{lemma}
 
 \begin{proof}
@@ -49,7 +49,7 @@ This yields a linear function $g(\eta) = m\eta - c$. The reasonableness conditio
 It remains to verify that $\tau \in (0, 1)$. Since $c > 0$ and $m > 0$, we have $\tau > 0$. Moreover, $m = c + (C_{10} - C_{11})$ with $(C_{10} - C_{11}) > 0$, so $m > c$, which gives $\tau = c/m < 1$. Thus $\tau \in (0, 1)$ and $g(\eta) \geq 0$ if, and only if, $\eta \geq \tau$. Hence $\mathbb{I}(\eta \geq \tau)$ attains the minimum conditional risk at every $\eta$ and is Bayes-optimal; it may differ from the smallest-index selection of Eq.~(\ref{eq:bayes_optimal}) only on the tie set $\{\eta = \tau\}$, where both actions are risk-minimizers, so both rules attain the Bayes risk $R^*$.
 \end{proof}
 
-The Theoretical Optimal Threshold $p^*$ is the decision boundary where risks are equal ($g(\eta)=0$),
+The theoretical optimal threshold $p^*$ is the decision boundary where risks are equal ($g(\eta)=0$),
 \begin{equation}\label{eq:elkan_threshold}
     p^* = \frac{C_{01} - C_{00}}{(C_{01} - C_{00}) + (C_{10} - C_{11})}.
 \end{equation}
@@ -75,7 +75,7 @@ An estimator $\hat{p} \colon \mathcal{X} \to [0,1]$ is \emph{perfectly calibrate
 
 Perfect calibration means that among all instances assigned predicted probability $q$, the true conditional proportion of positives equals $q$ exactly. This is a \textit{marginal} property: it constrains the distribution of $Y$ given the \textit{scalar output} $\hat{p}(X)$, not the full input $X$. It is strictly weaker than pointwise consistency ($\hat{p}(x) = \eta(x)$ almost everywhere) and independent of discriminative power: the trivial estimator $\hat{p}(x) = \bar{y}$ (marginal class frequency) is perfectly calibrated yet carries no information about individual instances \citep{degroot1983comparison}.
 
-The standard finite-sample diagnostic is the Expected Calibration Error (ECE). Given $B$ bins $\{I_b\}_{b=1}^B$ partitioning $[0,1]$,
+The standard finite-sample diagnostic is the expected calibration error (ECE). Given $B$ bins $\{I_b\}_{b=1}^B$ partitioning $[0,1]$,
 \begin{equation}\label{eq:ece}
     \widehat{\mathrm{ECE}} = \sum_{b=1}^{B} \frac{|I_b|}{n} \left| \bar{y}_b - \bar{p}_b \right|,
 \end{equation}
@@ -113,7 +113,7 @@ where $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$
 
 \subsection{The calibrate-then-decide framework}
 
-The calibration methods above can be composed with the analytical threshold to form a two-stage decision pipeline: (1)~fit a calibrator $g$ on held-out data, then (2)~apply the cost-derived threshold $p^*$ from Equation~(\ref{eq:elkan_threshold}) to the recalibrated scores $g(\hat{p}(x))$.
+The calibration methods above can be composed with the analytical threshold to form a two-stage decision pipeline, \emph{calibrate-then-decide}: (1)~fit a calibrator $g$ on held-out data, then (2)~apply the cost-derived threshold $p^*$ from Equation~(\ref{eq:elkan_threshold}) to the recalibrated scores $g(\hat{p}(x))$.
 
 \begin{proposition}[Optimality of calibrate-then-decide]\label{prop:calibrate_then_decide}
 Assume the reasonableness conditions (Eq.~\ref{eq:reasonableness}), let $g: [0,1] \to [0,1]$ be a measurable post-hoc calibrator, and define the composite decision rule $\delta_g(x) = \mathbb{I}(g(\hat{p}(x)) \geq p^*)$. If $g(\hat{p}(x)) = \eta(x)$ for $\mathbb{P}_X$-almost every $x$, a condition that implies perfect calibration, then $\delta_g$ attains the Bayes risk, $R(\delta_g) = R^*$, and agrees with the Bayes-optimal decision rule $h^*$ (Eq.~\ref{eq:bayes_optimal}) almost everywhere off the tie set $\{x : \eta(x) = p^*\}$.
