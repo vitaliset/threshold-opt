@@ -59,25 +59,25 @@
     \node[font=\scriptsize, color=gray!55!black, anchor=west]
         at ($(\pX,\pY)+(0.18,-0.16)$) {$r$};
 
-    % Legend, laid out as a 2x2 grid so it fits under the simplex
-    % rather than running past the right edge of the figure.
-    \begin{scope}[shift={(-1.40, -1.35)}, font=\footnotesize]
-        % Row 1.
-        \draw[gray!70, thick] (0, 0) -- (0.22, 0);
-        \node[anchor=west] at (0.27, 0)
-            {simplex $\Delta^{K-1}$};
-        \fill[black] (1.55, 0) circle (0.018);
-        \node[anchor=west] at (1.60, 0)
-            {reference probability vector $\mathbf{p}$};
-        % Row 2.
-        \draw[gray!55, dotted, thick] (0.11, -0.30) circle (0.06);
-        \node[anchor=west] at (0.27, -0.30)
-            {radius-$r$ sphere in $V$};
-        \draw[->, gray!60!black, thick, >=Stealth]
-            (1.38, -0.30) -- (1.55, -0.30);
-        \node[anchor=west] at (1.60, -0.30)
-            {sample perturbation $\boldsymbol{\epsilon}\sim\mathrm{Unif}(\partial B_r)$};
-    \end{scope}
+    % Legend: a table centred under the simplex, so the drawing stays
+    % centred and the entries cannot overlap. The inline symbols use
+    % scale=1 so they do not inherit the picture's scale.
+    \node[anchor=north, font=\footnotesize, inner sep=0pt]
+        at (0, \byc-0.22) {%
+        \begin{tabular}{@{}c@{\hspace{0.5em}}l@{\hspace{1.6em}}c@{\hspace{0.5em}}l@{}}
+            \tikz[baseline=-0.6ex, scale=1]
+                \draw[gray!70, thick] (0, 0) -- (0.45, 0);
+            & simplex $\Delta^{K-1}$
+            & \tikz[baseline=-0.6ex, scale=1]
+                \fill[black] (0, 0) circle (1.2pt);
+            & reference probability vector $\mathbf{p}$ \\[2pt]
+            \tikz[baseline=-0.6ex, scale=1]
+                \draw[gray!55, dotted, thick] (0, 0) circle (4pt);
+            & radius-$r$ sphere in $V$
+            & \tikz[baseline=-0.6ex, scale=1]
+                \draw[->, gray!60!black, thick, >=Stealth] (0, 0) -- (0.45, 0);
+            & sample perturbation $\boldsymbol{\epsilon}\sim\mathrm{Unif}(\partial B_r)$
+        \end{tabular}};
 
 \end{tikzpicture}
 \end{document}

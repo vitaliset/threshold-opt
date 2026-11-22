@@ -1,8 +1,9 @@
 """Generate the variance-experiment figure from the latest runner parquet.
 
 Emits ``tex/figures/scaling_variance.tex`` as a two-panel pgfplots
-figure showing the variance-scaling relative excess risk in both
-log-log and linear scales for the Asymmetric 10x cost matrix. Each
+figure showing the variance-scaling relative excess risk on a log and
+a linear vertical axis (log horizontal axis in both) for the
+Asymmetric 10x cost matrix. Each
 per-K seed mean is drawn with a normal-approx 95% confidence band
 (``mean +/- 1.96 * std / sqrt(n_seeds)``), matching the repo's
 standard SE-based interval idiom.
@@ -13,6 +14,7 @@ Usage:
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -219,10 +221,12 @@ def build() -> Path:
         raise KeyError(f"Parquet {parquet} is missing columns: {missing}")
     agg_by_K = _aggregate(df)
     cost_name = str(np.atleast_1d(df["cost_name"].unique())[0])
+    # "Asymmetric 10x" -> "Asymmetric $10\times$", as in the mean-shift figure.
+    cost_label = re.sub(r"(\d+)x\b", r"$\1\\times$", cost_name)
 
     log_panel = _panel_block(
         agg_by_K,
-        title=f"{cost_name} cost",
+        title=f"{cost_label} cost, log $y$-axis",
         log_scale=True,
         tag="log",
         show_legend=False,
@@ -230,7 +234,7 @@ def build() -> Path:
     )
     lin_panel = _panel_block(
         agg_by_K,
-        title=f"{cost_name} cost",
+        title=f"{cost_label} cost, linear $y$-axis",
         log_scale=False,
         tag="lin",
         show_legend=True,
@@ -244,7 +248,7 @@ def build() -> Path:
         f"% Cost: {cost_name}. Uniform variance perturbation across"
         " classes, lambda >= 1.\n"
         "% Horizontal axis is the variance multiplier lambda.\n"
-        "% Left log-log, right linear; bands are normal-approx 95%"
+        "% Left log-log, right linear y (log x); bands are normal-approx 95%"
         " CIs (mean +/- 1.96 * SE).\n"
     )
     tex = (

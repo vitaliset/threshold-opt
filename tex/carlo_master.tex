@@ -26,6 +26,11 @@
 %                            the Latin Modern fonts loaded by imegoodies
 \usepackage[thesis,bibstyle=numeric-comp,noraggedbib,nofonts]{imelooks}
 
+% imelooks sets \flushbottom, which stretches the vertical space on pages
+% that end before a [H] float that does not fit; its own comment suggests
+% \raggedbottom as the alternative (imelooks.sty, IMEspacing block).
+\raggedbottom
+
 % imelooks uses "Thesis" generically in English for both master's and
 % doctoral works (imelooks.sty:2529-2532). Restore the Brazilian/UK split
 % where the master's-level work is a "Dissertation" and only the doctoral
