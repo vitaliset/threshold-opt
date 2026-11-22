@@ -139,7 +139,7 @@ Let $\Psi: \Delta^{K-1} \to \Delta^{K-1}$ denote the systematic distortion induc
 $\hat{\mathbf{p}}(x) \approx \Psi(\boldsymbol{\eta}(x))$. Two common distortion regimes are especially relevant.
 
 \paragraph{Oversmoothing.}
-Strong regularization shrinks estimated probabilities toward the barycenter
+Strong regularization shrinks estimated probabilities toward the class prior, which for balanced classes is the barycenter
 $\mathbf{u} = (1/K,\ldots,1/K)^\top$. As a result, estimates may never reach the parts of the simplex where a high-penalty or minority class is Bayes-optimal. The plug-in classifier can then fail to predict that class at all, even when the estimator preserves the correct ranking among class probabilities.
 
 \paragraph{Undersmoothing.}
