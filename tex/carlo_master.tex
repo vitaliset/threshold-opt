@@ -22,8 +22,8 @@
 % [thesis] activates the cover/title-page machinery and loads biblatex.
 %   bibstyle=numeric-comp -> numeric compressed citation labels
 %   noraggedbib           -> justified (not ragged) reference list
-%   nofonts               -> skip imelooks' Libertinus/SourceCodePro and use
-%                            the default Computer Modern
+%   nofonts               -> skip imelooks' Libertinus/SourceCodePro and keep
+%                            the Latin Modern fonts loaded by imegoodies
 \usepackage[thesis,bibstyle=numeric-comp,noraggedbib,nofonts]{imelooks}
 
 % imelooks uses "Thesis" generically in English for both master's and
@@ -112,7 +112,7 @@
 % (here English, since \documentclass lists ...,brazilian,english) and
 % \translatedtitle is the OTHER language (Portuguese). It drives the cover,
 % the abstract self-reference and the PDF metadata. The Portuguese title is
-% mandatory for the IME deposit and is still TODO.
+% mandatory for the IME deposit.
 
 \title{Argmax is not enough: empirical threshold and partition optimization for binary and multiclass classification}
 \translatedtitle{O argmax não é suficiente: otimização empírica de limiar e partição para classificação binária e multiclasse}
@@ -129,18 +129,18 @@
 % artigo 88 e artigo 89 paragrafo 4): tres examinadores com doutorado. O
 % orientador e um deles e preside. A maioria deve ser externa ao Programa,
 % ou seja os outros dois sao externos ao Programa de Probabilidade e
-% Estatistica, e pelo menos um deve ser externo ao IME-USP. Nao definida
-% ainda (versao para defesa); confirme a composicao com a CPG do Programa.
+% Estatistica, e pelo menos um deve ser externo ao IME-USP. Printed only in
+% the final version (definitiva).
 \banca{
-  TODO preencher orientador (presidente), IME-USP,
-  TODO preencher examinador externo ao Programa,
-  TODO preencher examinador externo ao Programa e ao IME-USP,
+  Prof.\ Dr.\ Renato Vicente (advisor) -- IME-USP,
+  Prof.\ Dr.\ Tiago Mendonça dos Santos -- Insper,
+  Prof.\ Dr.\ Rafael Izbicki -- UFSCar,
 }
 
-% Pre-defense version: the "definitiva"/"quali" flags stay commented out.
+% Final (corrected) version, after the defense.
 \tipotese{
   mestrado,
-  % definitiva, % final (corrected) version, after the defense
+  definitiva,
   % quali,       % qualification text
   programa={Probabilidade e Estatística},
 }
@@ -148,9 +148,8 @@
 \defesa{
   local={São Paulo},
   % chktex 8: imelooks requires the ISO date AAAA-MM-DD; the W8 (hyphen
-  % between digits) is a false positive. The day is a placeholder until
-  % the defense is scheduled (only May 2026 is meaningful for now).
-  data=2026-05-01, % chktex 8
+  % between digits) is a false positive. Date of the defense.
+  data=2026-10-19, % chktex 8
 }
 
 % USP digital deposit expects a license; CC-BY is the IME default and the
@@ -249,20 +248,18 @@ Maria Lúcia Ribeiro CRB-8/2766; Stela do Nascimento Madruga CRB 8/7534.
 
 \mainmatter
 
-\pagestyle{mainmatter}
-
 % Slightly more leading than single spacing for readability (well below the
 % 1.5 of the front matter). Tune the factor: 1.05 = very subtle, 1.15 = a
 % touch more.
 \setstretch{1.1}
 
-% Notation table, before Chapter 1 (\chapter*, not counted/numbered).
+% Notation table, before Chapter 1: unnumbered but listed in the table of
+% contents, so its running heads carry the name without a number.
+\pagestyle{unnumberedchapter}
 \input{content/notation}
 
-% The introduction has no chapter number, so the running heads have none either.
-\pagestyle{unnumberedchapter}
-\input{content/00-introduction}
 \pagestyle{mainmatter}
+\input{content/00-introduction}
 
 \input{content/01-theoretical-framework}
 \input{content/02-binary-classification}
