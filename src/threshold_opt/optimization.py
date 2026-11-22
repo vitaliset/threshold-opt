@@ -255,11 +255,11 @@ def solve_obrien_changepoints(
                     # in the open interval is a global minimizer of the
                     # 1D coordinate update), so picking 0 keeps the
                     # analytical baseline as a fixed point of the
-                    # algorithm. The tradeoff is documented in §6.3 of the
-                    # dissertation: when many coordinates' admissible intervals
-                    # straddle zero, the algorithm's output is biased
-                    # toward the analytical baseline rather than the
-                    # arithmetic midpoint of the changepoint interval.
+                    # algorithm. The tradeoff: when many coordinates'
+                    # admissible intervals straddle zero, the algorithm's
+                    # output is biased toward the analytical baseline
+                    # rather than the arithmetic midpoint of the
+                    # changepoint interval.
                     best_alpha_i = 0.0
             else:
                 best_alpha_i = sorted_changepoints[-1] + 1.0

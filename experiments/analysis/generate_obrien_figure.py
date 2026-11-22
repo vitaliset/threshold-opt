@@ -108,11 +108,11 @@ def build_figure_b() -> str:
             r"(a) $\mathbf{A} = \mathbf{C}$",
             (
                 r"(b) $\mathbf{A} = \mathbf{C} + "
-                r"\boldsymbol{\alpha}\mathbf{1}^\top$"
+                r"\mathbf{1}\boldsymbol{\alpha}^\top$"
             ),
             (
-                r"(c) $\mathbf{A} = \mathbf{C}\,"
-                r"\mathrm{diag}(\boldsymbol{\beta})$"
+                r"(c) $\mathbf{A} = \mathrm{diag}(\boldsymbol{\beta})"
+                r"\,\mathbf{C}$"
             ),
         ],
     )

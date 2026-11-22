@@ -35,7 +35,7 @@ which normalises out the baseline difficulty of the cost matrix and is identical
 
 Expectations are estimated by stratified Monte Carlo. Each task draws $n_{\mathrm{MC}} = 100{,}000$ samples from $\mathbb{P}_\lambda$, evaluates both classifiers on the same samples (shared-sample evaluation cancels most of the Monte Carlo variance in the difference, since the two classifiers agree at every $x$ that is not near a decision boundary), and records both risk estimates. The replicate seed vector is drawn deterministically from a master seed and persisted alongside the run, matching the protocol used by the mean-shift sweep of Section~\ref{sec:misspec_sensitivity_meanshift}. The sweep covers $K \in \{2, 3, 4, 5, 7, 10, 15, 20\}$; the lower endpoint $K = 2$ recovers the binary problem and serves as the bridge to Section~\ref{sec:binary_experiments}.
 
-Figure~\ref{fig:misspec-sensitivity-variance} overlays the eight per-$K$ curves on a single panel. All curves anchor near zero and grow with $\lambda$. The ordering is monotone in $K$ across the bulk of the sweep: at every fixed $\lambda$ above the Monte Carlo floor the $K = 2$ curve sits highest, $K = 3$ next, and so on down to $K = 20$ at the bottom. Between $K = 2$ and $K = 20$ the relative excess risk differs by a factor of roughly seven to eight across $\lambda \in [1, 16]$.
+Figure~\ref{fig:misspec-sensitivity-variance} shows the eight per-$K$ curves in log-log (left) and linear (right) panels. All curves anchor near zero and grow with $\lambda$. The ordering is monotone in $K$ across the bulk of the sweep: at every fixed $\lambda$ above the Monte Carlo floor the $K = 2$ curve sits highest, $K = 3$ next, and so on down to $K = 20$ at the bottom. Between $K = 2$ and $K = 20$ the relative excess risk differs by a factor of roughly seven to eight for $\lambda \in [2, 16]$.
 
 This K-monotone ordering of relative excess risk is the empirical phenomenon predicted qualitatively by the second reading of the section's opening; Section~\ref{sec:misspec_sensitivity_mechanism} proposes a candidate geometric mechanism for it.
 
@@ -86,7 +86,7 @@ The cost matrix is again the Asymmetric $10\times$ family, and we also report th
     \label{fig:misspec-sensitivity-meanshift}
 \end{figure}
 
-Figure~\ref{fig:misspec-sensitivity-meanshift} shows the relative excess risk under both cost matrices. At every fixed $\xi/\sigma$ above the Monte Carlo floor the $K = 2$ curve sits above $K = 3$, $K = 3$ above $K = 4$, and so on down to $K = 20$, in both panels. The $K=2$-to-$K=20$ spread at the right edge of the linear panels is roughly four- to six-fold.
+Figure~\ref{fig:misspec-sensitivity-meanshift} shows the relative excess risk under both cost matrices. For $\xi/\sigma \ge 0.2$ the curves are ordered in $K$, from $K = 2$ at the top to $K = 20$ at the bottom, in both panels; at smaller shifts some neighbouring curves cross. The $K=2$-to-$K=20$ spread at the right edge of the linear panels is roughly four- to six-fold.
 
 The K-monotone ordering and the position of $K = 2$ at the top both reproduce under symmetric $0/1$ cost, dispatching the cost-coupling caveat raised at the end of Section~\ref{sec:misspec_sensitivity_variance}: the decrease in relative excess risk does not require the asymmetric cost coupling of the variance construction.
 

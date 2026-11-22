@@ -67,8 +67,8 @@ Classes~$0$ and~$1$ form a costly confusable pair: predicting one when the other
 
     Take $\boldsymbol{\mu}_0 = \mathbf{e}_0$, $\boldsymbol{\mu}_1 = (0.4, 0.5, 0.1)^\top$, $\boldsymbol{\mu}_2 = (0.1, 0.4, 0.5)^\top$. Direct computation shows~\eqref{eq:thm_vertex_consistency} holds for every $k$ (e.g., for $k = 1$, $\|\mathbf{e}_1 - \boldsymbol{\mu}_1\|_2^2 = 0.42 < 0.62 = \|\mathbf{e}_1 - \boldsymbol{\mu}_2\|_2^2 < 2 = \|\mathbf{e}_1 - \boldsymbol{\mu}_0\|_2^2$), so $\mathcal{M} \in \mathcal{H}_{Vor}^{\mathrm{DLC}}$. The squared distances at the two ambiguous points are
     \[
-        d^2(\mathbf{p}_A, \boldsymbol{\mu}_1) = 0.08 < 0.14 = d^2(\mathbf{p}_A, \boldsymbol{\mu}_2), \qquad
-        d^2(\mathbf{p}_B, \boldsymbol{\mu}_2) = 0.02 < 0.32 = d^2(\mathbf{p}_B, \boldsymbol{\mu}_1),
+        d^2(\mathbf{p}_A, \boldsymbol{\mu}_1) = 0.08 < 0.14 = d^2(\mathbf{p}_A, \boldsymbol{\mu}_2) < 0.54 = d^2(\mathbf{p}_A, \boldsymbol{\mu}_0), \qquad
+        d^2(\mathbf{p}_B, \boldsymbol{\mu}_2) = 0.02 < 0.32 = d^2(\mathbf{p}_B, \boldsymbol{\mu}_1) < 1.5 = d^2(\mathbf{p}_B, \boldsymbol{\mu}_0),
     \]
     so $\mathbf{p}_A \in \mathcal{P}_1^{\mathcal{M}}$ and $\mathbf{p}_B \in \mathcal{P}_2^{\mathcal{M}}$. At the third point $d^2(\mathbf{p}_C, \boldsymbol{\mu}_0) = 0.06 < 0.32 = d^2(\mathbf{p}_C, \boldsymbol{\mu}_1)$ and $< 0.74 = d^2(\mathbf{p}_C, \boldsymbol{\mu}_2)$, so $\mathbf{p}_C \in \mathcal{P}_0^{\mathcal{M}}$. All three points are thus classified to their true labels, so $R = 0$; since $\inf_{\delta \in \mathcal{H}_{PS}} R(\delta) \ge 1/3$, the strict separation $\inf_{\delta \in \mathcal{H}_{Vor}^{\mathrm{DLC}}} R(\delta) < \inf_{\delta \in \mathcal{H}_{PS}} R(\delta)$ follows. The Voronoi rule achieves this by placing prototypes at distinct altitudes, exploiting the $p_0$ direction that the parallel-shift score~\eqref{eq:vertical_stack_invariance} cannot see.
 \end{proof}
