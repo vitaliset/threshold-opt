@@ -343,7 +343,7 @@ def _bootstrap_lo_hi(
     n_boot: int,
     quantiles: tuple[float, float] = (0.025, 0.975),
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Cluster bootstrap over rows of ``W`` / ``A``.
+    """Bootstrap over cell rows of ``W`` / ``A``.
 
     Returns ``(lo, hi)`` per-strategy arrays of shape ``(n_strats,)``
     holding the requested percentiles of the bootstrap rate distribution.
@@ -373,7 +373,7 @@ def bootstrap_breakdown_cis(
     n_boot: int = 1000,
     seed: int = 0,
 ) -> dict[str, tuple[pd.DataFrame, pd.DataFrame]]:
-    """Cluster-bootstrap 95\\% CIs for every (strategy, slice) win rate.
+    """Cell-resampling bootstrap 95\\% CIs for (strategy, slice) win rates.
 
     Resamples ``(dataset, model, objective)`` cells with replacement
     *within each slice* (so the per-classifier CI for LGBM is conditional
@@ -666,8 +666,7 @@ def render_win_count_figure(
             " (dataset, model, objective) cells in the slice where the"
             " strategy won or tied the per-row best under the $\\pm 1$ SE"
             " overlap rule, and $H$ is the half-width of a 95\\%"
-            " cluster-bootstrap confidence interval for $r$ (percentage"
-            " points)."
+            " bootstrap interval over cells for $r$ (percentage points)."
         )
     else:
         cell_caption = (
@@ -712,7 +711,7 @@ def write_win_count_figures(
         Optional pre-built metadata. If absent, computed from the union
         of dataset names across both scopes via ``compute_dataset_metadata``.
     bootstrap
-        When True (default), compute cluster bootstrap 95\\% CIs for
+        When True (default), compute cell-resampling bootstrap 95\\% CIs for
         every (strategy, slice) win rate and append the half-width to
         each cell. Set to False to suppress (faster generation, sparser
         figure).

@@ -175,7 +175,7 @@ The rule has $K$ free parameters, one threshold per class, compared with $K-1$ f
 \begin{figure}[H]
     \centering
     \input{figures/sequential_selection.tex}
-    \caption{Decision regions induced by sequential selection with priority order $\mathrm{ord} = (2, 1, 0)$ and thresholds $\tau_2 = 0.30$, $\tau_1 = 0.40$ on the 3-class probability simplex. Class~2 is evaluated first: any point with $p_2 \ge \tau_2$ is claimed by class~2 regardless of other probabilities, creating the red region. Class~1 is evaluated next in the complement, and class~0 receives the fallback.}\label{fig:sequential_selection}
+    \caption{Decision regions induced by sequential selection with priority order $\mathrm{ord} = (2, 1, 0)$ and thresholds $\tau_2 = 0.30$, $\tau_1 = 0.40$, $\tau_0 = 1$ on the 3-class probability simplex. Class~2 is evaluated first: any point with $p_2 \ge \tau_2$ is claimed by class~2 regardless of other probabilities, creating the red region. Class~1 is evaluated next in the complement. If no threshold is met, the argmax fallback selects class~0 or class~1, as shown.}\label{fig:sequential_selection}
 \end{figure}
 
 \section{Limitations of parallel-shift partitions}

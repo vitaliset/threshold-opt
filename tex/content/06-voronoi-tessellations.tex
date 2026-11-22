@@ -173,7 +173,7 @@ Figure~\ref{fig:sampler_partition_overlay} renders sampler-level classification 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{figures/sampler_partition_overlay.png}
-    \caption{Classification disagreement across $300$ sampled configurations per panel at $K=3$. Shade at each grid point is $1 - H(\mathbf{f})$, where $\mathbf{f}$ is the empirical class-fraction vector across samples and $H$ is the Shannon entropy normalised to $[0, 1]$: white marks unanimous agreement on a single class and black marks the uniform distribution over three classes. Rejection and Dir$(1/K)$+Hungarian exhibit dark vertex regions, indicating that the pure-class corners are not consistently decoded to their own class; Shrink keeps the vertex regions white and the interior near-white, reflecting its limited exploration range; Sequential $d^2$ keeps the vertex regions white while producing interior disagreement comparable to Hungarian.}\label{fig:sampler_partition_overlay}
+    \caption{Classification disagreement across $300$ sampled configurations per panel at $K=3$. Shade at each grid point is $1 - H(\mathbf{f})$, where $\mathbf{f}$ is the empirical class-fraction vector across samples and $H$ is the Shannon entropy normalised to $[0, 1]$: white marks unanimous agreement on a single class and black marks the uniform distribution over three classes. Dir$(1/K)$+Hungarian exhibits grey vertex regions, indicating that the pure-class corners are not consistently decoded to their own class; Rejection keeps the vertices white, since every accepted draw satisfies~\eqref{eq:dlc}, but its disagreement region reaches close to them; Shrink keeps the vertex regions white and the interior near-white, reflecting its limited exploration range; Sequential $d^2$ keeps the vertex regions white while producing interior disagreement comparable to Hungarian.}\label{fig:sampler_partition_overlay}
 \end{figure}
 
 The rejection baseline and sequential $d^2$ are the two retry-based samplers; Figure~\ref{fig:sampler_rejection_rate} reports their exhaustion rate as a function of $K$ for $M \in \{10, 100, 500\}$. The rejection baseline asymptotes at one for every $M$, confirming that its failure mode is structural in $K$ rather than budget-bounded. Sequential $d^2$ exhausts at zero for $M \geq 100$ across the entire sweep, because the joint acceptance condition~\eqref{eq:seqd2_accept} concentrates the sampler on configurations satisfying the invariant rather than filtering from an uninformative prior.
@@ -237,7 +237,7 @@ The production implementation sets the retry budget to $M = 500$ as headroom, we
 
 \section{A boundary-rotation scenario}\label{sec:boundary_rotation_experiment}
 
-Proposition~\ref{prop:ps_in_vor} states an expressivity inclusion: the best rule in $\mathcal{H}_{Vor}$ has population risk no higher than the best rule in $\mathcal{H}_{PS}$. It does not say when the gap is strict, how large it is, or what survives finite-sample tuning. This section exhibits one regime where the population gap is strict and recoverable.
+Proposition~\ref{prop:ps_in_vor} states an expressivity inclusion: the best rule in $\mathcal{H}_{Vor}$ has population risk no higher than the best rule in $\mathcal{H}_{PS}$. It does not say when the gap is strict, how large it is, or what survives finite-sample tuning. This section exhibits one regime where the gap appears in held-out risk and tuning recovers it.
 
 The mechanism. When the true class-conditional covariances $\Sigma_k$ differ across classes but the probability estimator does not model per-class second-order structure, the Bayes-optimal boundary between classes $i$ and $j$ picks up a quadratic term $\propto \mathbf{x}^\top (\Sigma_i^{-1} - \Sigma_j^{-1})\, \mathbf{x}$ that rotates the pairwise boundary in a direction that depends on $(i, j)$. Parallel shifts ($\mathcal{H}_{PS}$) cannot rotate boundaries at all. Column scaling ($\mathcal{H}_{Sc}$) does rotate the pairwise normals (Proposition~\ref{prop:column_rotation}), but with only $K-1$ free parameters its rotations are coupled across all $\binom{K}{2}$ pairs and need not match the per-pair quadratic. The simplex-restricted Voronoi class has $K(K-1)$ parameters and places each pairwise normal as $\boldsymbol{\mu}_j - \boldsymbol{\mu}_i$, the full-matrix class has $K^2$ parameters; both can match the per-pair rotation that $(\Sigma_i^{-1} - \Sigma_j^{-1})$ induces.
 
@@ -245,7 +245,7 @@ The construction. Three Gaussian classes live in $\mathbb{R}^3$ with means
 \begin{equation*}
     \boldsymbol{\mu}_0 = (0, 0, 0), \quad \boldsymbol{\mu}_1 = (2, 0, 0), \quad \boldsymbol{\mu}_2 = (1, 2, 0)
 \end{equation*}
-placed close enough to overlap, and priors $\boldsymbol{\pi} \approx (10, 2, 1)/13$. Every class has unit per-feature variances, but the off-diagonal correlation $\rho = 0.8$ sits in a different coordinate plane in each class:
+placed close enough to overlap, and priors $\boldsymbol{\pi} \approx (10, 2, 1)/13$. Every class has unit per-feature variances. Classes 0 and 1 have correlations $+0.8$ and $-0.8$ in the $(x_1, x_2)$ plane, and class 2 has correlation $+0.8$ in the $(x_1, x_3)$ plane:
 \begin{equation*}
     \Sigma_0 = \begin{pmatrix} 1 & 0.8 & 0 \\ 0.8 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \quad
     \Sigma_1 = \begin{pmatrix} 1 & -0.8 & 0 \\ -0.8 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}, \quad
