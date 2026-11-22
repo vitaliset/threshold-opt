@@ -14,7 +14,7 @@ Nothing in this construction forces the reference points to sit at the vertices.
 Let $\mathcal{M} = (\boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \dots, \boldsymbol{\mu}_{K-1})$ be a configuration of $K$ prototypes, not necessarily distinct, where $\boldsymbol{\mu}_k \in \mathbb{R}^K$ is the learnable anchor for class $k$.
 
 \begin{definition}[Voronoi decision rule]\label{def:voronoi_rule}
-    The decision rule $\delta_{\mathcal{M}}: \Delta^{K-1} \to \mathcal{Y}$ assigns a probability vector $\mathbf{p}$ to the class of its nearest prototype,
+    The \emph{Voronoi decision rule} $\delta_{\mathcal{M}}: \Delta^{K-1} \to \mathcal{Y}$ assigns a probability vector $\mathbf{p}$ to the class of its nearest prototype,
     \begin{equation}\label{eq:voronoi_rule}
         \delta_{\mathcal{M}}(\mathbf{p}) = \underset{k \in \mathcal{Y}}{\mathrm{argmin}} \, \| \mathbf{p} - \boldsymbol{\mu}_k \|_2.
     \end{equation}
@@ -282,14 +282,14 @@ This section consolidates the sample-complexity bounds for the multiclass decisi
 Empirical optimization of the decision rule, the multiclass instance of the decision-stage empirical risk minimization of Section~\ref{sec:decision_learning}, generalizes only if the underlying hypothesis class is not too rich relative to the validation-set size $|\mathcal{V}| = m$. The relevant capacity measure is the Natarajan dimension \citep{natarajan1989learning}, the multiclass analogue of the VC dimension.
 
 \begin{definition}[Natarajan dimension]\label{def:natarajan_dimension}
-    Let $\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}$ be a hypothesis class of functions $h: \mathcal{X} \to \mathcal{Y}$. A set of points $S = \{x_1, \dots, x_m\} \subset \mathcal{X}$ is said to be shattered by $\mathcal{H}$ if there exist two distinct target labelings $f_0, f_1: S \to \mathcal{Y}$ (with $f_0(x_i) \neq f_1(x_i)$ for all $i$) such that for every subset $B \subseteq S$, there exists a hypothesis $h \in \mathcal{H}$ satisfying
+    Let $\mathcal{H} \subseteq \mathcal{Y}^{\mathcal{X}}$ be a hypothesis class of functions $h: \mathcal{X} \to \mathcal{Y}$. A set of points $S = \{x_1, \dots, x_m\} \subset \mathcal{X}$ is said to be \emph{N-shattered} by $\mathcal{H}$ if there exist two distinct target labelings $f_0, f_1: S \to \mathcal{Y}$ (with $f_0(x_i) \neq f_1(x_i)$ for all $i$) such that for every subset $B \subseteq S$, there exists a hypothesis $h \in \mathcal{H}$ satisfying
     \begin{equation}
         h(x_i) = \begin{cases}
             f_1(x_i) & \text{if } x_i \in B \\
             f_0(x_i) & \text{if } x_i \in S \setminus B
         \end{cases}.
     \end{equation}
-    The Natarajan dimension $d_{Nat}(\mathcal{H})$ is the maximum cardinality of a set $S$ that can be shattered by $\mathcal{H}$.
+    The \emph{Natarajan dimension} $d_{Nat}(\mathcal{H})$ is the maximum cardinality of a set $S$ that can be N-shattered by $\mathcal{H}$.
 \end{definition}
 
 \begin{proposition}[Generalization bound]\label{rem:natarajan_gen_bound}

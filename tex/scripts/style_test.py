@@ -2,6 +2,7 @@
 
 - Run-in paragraph headings (``\\paragraph{...}``) end with a period.
 - Panel labels in captions, such as ``(a)~``, are bold: ``\\textbf{(a)}~``.
+- Every definition environment emphasizes the term it defines (``\\emph``).
 """
 
 from __future__ import annotations
@@ -15,6 +16,9 @@ from texstream import StreamLine, read_stream, rel
 PARAGRAPH_RE = re.compile(r"\\paragraph\*?\{((?:[^{}]|\{[^{}]*\})*)\}")
 CAPTION_RE = re.compile(r"\\caption(?:\[[^\]]*\])?\{")
 PANEL_RE = re.compile(r"\(([a-h])\)~")
+DEFINITION_RE = re.compile(
+    r"\\begin\{definition\}(?:\[[^\]]*\])?(.*?)\\end\{definition\}", re.S
+)
 
 
 def style_problems(stream: list[StreamLine]) -> list[str]:
@@ -49,11 +53,29 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
                     f"{where(match.end() + panel.start())}: panel label "
                     f"({panel.group(1)}) in a caption is not bold"
                 )
+    for match in DEFINITION_RE.finditer(text):
+        if "\\emph{" not in match.group(1):
+            problems.append(
+                f"{where(match.start())}: definition does not emphasize "
+                "the term it defines"
+            )
     return problems
 
 
 def _stream(*lines: str) -> list[StreamLine]:
     return [StreamLine(Path("ch.tex"), i, t) for i, t in enumerate(lines, 1)]
+
+
+def test_flags_definitions_without_an_emphasized_term():
+    stream = _stream(
+        r"\begin{definition}[A]A set is \emph{open} if it is.\end{definition}",
+        r"\begin{definition}[B]",
+        r"A set is closed if its complement is open.",
+        r"\end{definition}",
+    )
+    assert style_problems(stream) == [
+        "ch.tex:2: definition does not emphasize the term it defines"
+    ]
 
 
 def test_flags_headings_without_period_and_plain_panel_labels():

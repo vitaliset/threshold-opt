@@ -1,7 +1,7 @@
 %!TeX root=../carlo_master.tex
 \chapter{Theoretical framework}\label{sec:theory}
 
-Under the expected-risk framework, classification separates into an \textit{inference} stage, which estimates conditional class probabilities, and a \textit{decision} stage, which selects the action of minimum expected cost. This chapter formalizes the two stages, derives the analytical decision rule for calibrated estimates, and bounds the excess risk incurred when that rule is applied to miscalibrated ones.
+Under the expected-risk framework, classification separates into an inference stage, which estimates conditional class probabilities, and a decision stage, which selects the action of minimum expected cost. This chapter formalizes the two stages, derives the analytical decision rule for calibrated estimates, and bounds the excess risk incurred when that rule is applied to miscalibrated ones.
 
 \section{Problem formulation}
 
@@ -9,7 +9,7 @@ We consider a standard multiclass classification setting. Let $\mathcal{X} \subs
 
 We assume the existence of an unknown data-generating probability measure $\mathbb{P}$ defined on the product space $(\mathcal{X} \times \mathcal{Y}, \Sigma_{\mathcal{X}} \otimes \Sigma_{\mathcal{Y}})$. We denote by $(X, Y)$ a random pair with distribution $\mathbb{P}$, written $(X, Y) \sim \mathbb{P}$, and write $x \in \mathcal{X}$ and $y \in \mathcal{Y}$ for realizations of $X$ and $Y$, respectively.
 
-A classifier (or hypothesis) is defined as a measurable function $h: \mathcal{X} \to \mathcal{Y}$ that maps input vectors to class labels. Let $\mathcal{H}_{all}$ denote the set of all such measurable functions. The performance of a classifier is evaluated via a cost matrix $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$, where the entry $C_{ij}$ represents the non-negative, finite penalty incurred for predicting class $j$ (i.e., $h(x)=j$) when the true state of nature is $i$ (i.e., $y=i$). We assume the cost function is bounded, satisfying
+A \emph{classifier} (or \emph{hypothesis}) is defined as a measurable function $h: \mathcal{X} \to \mathcal{Y}$ that maps input vectors to class labels. Let $\mathcal{H}_{all}$ denote the set of all such measurable functions. The performance of a classifier is evaluated via a cost matrix $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$, where the entry $C_{ij}$ represents the non-negative, finite penalty incurred for predicting class $j$ (i.e., $h(x)=j$) when the true state of nature is $i$ (i.e., $y=i$). We assume the cost function is bounded, satisfying
 \begin{equation}
     0 \leq C_{ij} \leq C_{max} < \infty, \quad \forall i,j \in \mathcal{Y}.
 \end{equation}
@@ -108,7 +108,7 @@ Let $C_{max} = \max_{i,j} C_{ij}$ be the maximum entry in the cost matrix. The e
 
 \begin{proof}
 Let $x$ be an arbitrary fixed input. Let $k^* = h^*(x)$ be the Bayes optimal action and $\hat{k} = \hat{h}(x)$ be the plug-in decision.
-The conditional regret is defined as the difference in true conditional risk between the selected action and the optimal action,
+The \emph{conditional regret} is defined as the difference in true conditional risk between the selected action and the optimal action,
 \begin{equation}
     \Delta \mathcal{R}(x) = \mathcal{R}(\hat{k} \mid x) - \mathcal{R}(k^* \mid x) = \mathbf{c}_{\hat{k}}^\top \boldsymbol{\eta}(x) - \mathbf{c}_{k^*}^\top \boldsymbol{\eta}(x).
 \end{equation}
@@ -158,10 +158,10 @@ The capacity of the decision-stage hypothesis class, or an integer upper bound o
 
 \begin{definition}[VC dimension]\label{def:vc_dimension}
     Let $\mathcal{H} \subseteq \{0,1\}^{\mathcal{X}}$.
-    A set $S = \{x_1, \ldots, x_m\} \subset \mathcal{X}$ is shattered by $\mathcal{H}$
+    A set $S = \{x_1, \ldots, x_m\} \subset \mathcal{X}$ is \emph{shattered} by $\mathcal{H}$
     if for every labeling $(b_1, \ldots, b_m) \in \{0,1\}^m$, there exists $h \in \mathcal{H}$
     with $h(x_i) = b_i$ for all $i$.
-    The VC dimension $d_{VC}(\mathcal{H})$ is the cardinality of the largest
+    The \emph{VC dimension} $d_{VC}(\mathcal{H})$ is the cardinality of the largest
     shattered set.
 \end{definition}
 
