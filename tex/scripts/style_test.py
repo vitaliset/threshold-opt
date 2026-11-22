@@ -5,6 +5,10 @@
 - Every definition environment emphasizes the term it defines (``\\emph``).
 - Common terms are lowercase: the capitalized forms in LOWERCASE_TERMS do
   not appear outside figures.
+- Displayed equations are part of the sentence: no colon right before one,
+  a period at its end when the sentence ends there (new paragraph, end of a
+  statement or proof, or a capitalized word next), and a comma before a
+  following "where".
 """
 
 from __future__ import annotations
@@ -22,6 +26,22 @@ DEFINITION_RE = re.compile(
     r"\\begin\{definition\}(?:\[[^\]]*\])?(.*?)\\end\{definition\}", re.S
 )
 TIKZ_RE = re.compile(r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}", re.S)
+COLON_DISPLAY_RE = re.compile(
+    r":\s*(?:\\label\{[^}]*\}\s*)?"
+    r"(?:\\begin\{(?:equation|align|gather|multline)\*?\}|\\\[|\$\$)"
+)
+DISPLAY_RE = re.compile(
+    r"\\begin\{(equation|align|gather|multline)(\*?)\}(.*?)\\end\{\1\2\}"
+    r"|\\\[(.*?)\\\]",
+    re.S,
+)
+# Text after a display that ends the sentence: a blank line, the end of a
+# statement, proof or list, or a new structural command.
+SENTENCE_END_RE = re.compile(
+    r"[ \t]*\n[ \t]*\n|\s*\\(?:end\{(?:definition|theorem|lemma|proposition"
+    r"|corollary|example|assumption|remark|proof|enumerate|itemize)\}"
+    r"|item\b|(?:sub)*section\b|paragraph\b|begin\{(?:figure|table)\})"
+)
 # Capitalized forms of common terms that the text writes in lowercase
 # (proper names such as Bayes, Platt and Dirichlet keep their capital).
 LOWERCASE_TERMS = (
@@ -81,6 +101,37 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
                 f"{where(match.start())}: definition does not emphasize "
                 "the term it defines"
             )
+    for match in COLON_DISPLAY_RE.finditer(text):
+        problems.append(
+            f"{where(match.start())}: colon right before a displayed equation"
+        )
+    for match in DISPLAY_RE.finditer(text):
+        math = match.group(3) if match.group(3) is not None else match.group(4)
+        math = re.sub(r"\\label\{[^}]*\}|\\nonumber|\\notag", "", math)
+        math = re.sub(r"(\\\\|\\[,;!]|\\q?quad|\s)+$", "", math)
+        # The final mark may sit inside \text{...}, before closing braces or
+        # before the end of an inner environment such as cases or split.
+        last = re.sub(r"(\\end\{[a-z]+\*?\}|\\\\|[\s}])+$", "", math)[-1:]
+        after = text[match.end() : match.end() + 200]
+        word = re.match(r"\s*([A-Za-z]+)", after)
+        ends = SENTENCE_END_RE.match(after) is not None or (
+            word is not None and word.group(1)[0].isupper()
+        )
+        if ends and last != ".":
+            problems.append(
+                f"{where(match.start())}: displayed equation ends a sentence "
+                "without a period"
+            )
+        elif not ends and word and word.group(1) == "where" and last != ",":
+            problems.append(
+                f"{where(match.start())}: displayed equation needs a comma "
+                "before 'where'"
+            )
+        elif not ends and last == ".":
+            problems.append(
+                f"{where(match.start())}: displayed equation ends with a "
+                "period but the sentence continues"
+            )
     prose = TIKZ_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
     for term in LOWERCASE_TERMS:
         for match in re.finditer(rf"\b{re.escape(term)}\b", prose):
@@ -93,6 +144,38 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
 
 def _stream(*lines: str) -> list[StreamLine]:
     return [StreamLine(Path("ch.tex"), i, t) for i, t in enumerate(lines, 1)]
+
+
+def test_flags_colons_before_displayed_equations():
+    stream = _stream(
+        r"The risk is:",
+        r"\begin{equation}R = 1\end{equation}",
+        r"and the bound reads, with probability $1-\nu$,",
+        r"\[ R \le 2 \]",
+    )
+    assert style_problems(stream) == [
+        "ch.tex:1: colon right before a displayed equation"
+    ]
+
+
+def test_flags_displayed_equations_punctuated_unlike_text():
+    stream = _stream(
+        r"The risk is",
+        r"\begin{equation}R = 1\end{equation}",
+        r"The next sentence starts here, and the loss is",
+        r"\[ L = 0, \]",
+        r"where $L$ is the loss. The cases read",
+        r"\[ f = \begin{cases} 1 & \text{otherwise}. \end{cases} \]",
+        r"",
+        r"Then the bound is \[ B = 2. \] for all $m$, and also \[ C = 3 \]",
+        r"where $C$ is constant.",
+    )
+    assert style_problems(stream) == [
+        "ch.tex:2: displayed equation ends a sentence without a period",
+        "ch.tex:8: displayed equation ends with a period but the sentence "
+        "continues",
+        "ch.tex:8: displayed equation needs a comma before 'where'",
+    ]
 
 
 def test_flags_capitalized_common_terms_outside_figures():
