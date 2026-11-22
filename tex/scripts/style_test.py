@@ -9,6 +9,10 @@
   a period at its end when the sentence ends there (new paragraph, end of a
   statement or proof, or a capitalized word next), and a comma before a
   following "where".
+- The text speaks in the first person plural ("we", "nós" in the resumo).
+  The singular ("I", "my", "me", "eu", "meu") appears only in the personal
+  statement of SINGULAR_FILES; the reader is never addressed as "you", and
+  the author never refers to themself as "the author".
 """
 
 from __future__ import annotations
@@ -60,6 +64,23 @@ LOWERCASE_TERMS = (
     "Expected Calibration Error",
     "Logarithmic Loss",
     "Brier Score",
+)
+# The appendix on how AI was used is a personal statement, in the singular.
+SINGULAR_FILES = ("appendix-f-ai-disclosure.tex",)
+SINGULAR_RE = re.compile(
+    r"(?<![\\A-Za-zÀ-ÿ])(I|[Mm]y|[Mm]e|[Mm]ine|[Mm]yself"
+    r"|[Ee]u|[Mm]eus?|[Mm]inhas?|[Mm]im)(?![A-Za-zÀ-ÿ])"
+)
+# Never allowed: addressing the reader, or the author in the third person.
+OTHER_PERSON_RE = re.compile(
+    r"(?<![\\A-Za-zÀ-ÿ])([Yy]ou|[Yy]our|[Yy]ours|[Yy]ourself|[Yy]ourselves"
+    r"|[Vv]ocês?|[Tt]he author|[Tt]his author|[Tt]he present author"
+    r"|[Tt]he writer|[Oo] autor|[Aa] autora)(?![A-Za-zÀ-ÿ])"
+)
+MATH_RE = re.compile(
+    r"\$\$.*?\$\$|\$[^$]*\$|\\\[.*?\\\]"
+    r"|\\begin\{(equation|align|gather|multline)\*?\}.*?\\end\{\1\*?\}",
+    re.S,
 )
 
 
@@ -132,6 +153,19 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
                 f"{where(match.start())}: displayed equation ends with a "
                 "period but the sentence continues"
             )
+    no_math = MATH_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
+    no_math = TIKZ_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), no_math)
+    for match in SINGULAR_RE.finditer(no_math):
+        line = stream[bisect.bisect_right(starts, match.start()) - 1]
+        if line.file.name not in SINGULAR_FILES:
+            problems.append(
+                f"{where(match.start())}: first person singular "
+                f"'{match.group(1)}'; the text uses 'we'"
+            )
+    for match in OTHER_PERSON_RE.finditer(no_math):
+        problems.append(
+            f"{where(match.start())}: '{match.group(1)}'; the text uses 'we'"
+        )
     prose = TIKZ_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), text)
     for term in LOWERCASE_TERMS:
         for match in re.finditer(rf"\b{re.escape(term)}\b", prose):
@@ -144,6 +178,28 @@ def style_problems(stream: list[StreamLine]) -> list[str]:
 
 def _stream(*lines: str) -> list[StreamLine]:
     return [StreamLine(Path("ch.tex"), i, t) for i, t in enumerate(lines, 1)]
+
+
+def test_flags_first_person_singular_outside_the_personal_statement():
+    stream = [
+        StreamLine(Path("ch.tex"), 1, r"We derive the rule; I checked it."),
+        StreamLine(
+            Path("ch.tex"), 2, r"Let $\mathbb{I}$ and $\mathbf{I}$ be."
+        ),
+        StreamLine(Path("appendix-f-ai-disclosure.tex"), 1, r"My reading."),
+        StreamLine(Path("ch.tex"), 3, r"As you can see, the author agrees."),
+        StreamLine(Path("ch.tex"), 4, r"Nesta dissertação eu mostro o meu."),
+        StreamLine(
+            Path("ch.tex"), 5, r"The authors of [3] agree with Youden."
+        ),
+    ]
+    assert style_problems(stream) == [
+        "ch.tex:1: first person singular 'I'; the text uses 'we'",
+        "ch.tex:4: first person singular 'eu'; the text uses 'we'",
+        "ch.tex:4: first person singular 'meu'; the text uses 'we'",
+        "ch.tex:3: 'you'; the text uses 'we'",
+        "ch.tex:3: 'the author'; the text uses 'we'",
+    ]
 
 
 def test_flags_colons_before_displayed_equations():
@@ -218,5 +274,11 @@ def test_flags_headings_without_period_and_plain_panel_labels():
 
 
 def test_dissertation_follows_the_typographic_conventions():
-    problems = style_problems(read_stream())
+    stream = read_stream()
+    # Start at the abstracts: the title pages and the catalog record before
+    # them are template material (the record numbers its entries I, II).
+    first = next(
+        i for i, line in enumerate(stream) if line.file.name == "abstract.tex"
+    )
+    problems = style_problems(stream[first:])
     assert not problems, "\n".join(problems)
