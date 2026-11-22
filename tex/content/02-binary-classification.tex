@@ -4,7 +4,7 @@
 
 This chapter specializes the framework of Chapter~\ref{sec:theory} to $K=2$: we derive the classical Elkan threshold \citep{elkan2001foundations}, analyze its fragility under probability miscalibration, and develop empirical threshold optimization as an alternative.
 
-\section{Problem setup and notation}
+\section{Problem setup and notation}\label{sec:binary_setup}
 
 Let $\mathcal{Y} = \{0, 1\}$, with class $0$ as ``Negative'' and class $1$ as ``Positive''. Following the decomposition $h(x) = \delta(\hat{\mathbf{p}}(x))$, the inference stage learns $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^1$.
 
@@ -124,7 +124,7 @@ Immediate from the premise, which gives $\delta_g(x) = \mathbb{I}(\eta(x) \geq p
 
 In practice, perfect calibration is unattainable: the residual error after post-hoc correction, combined with the calibrator's own finite-sample variance, leaves the analytical threshold on recalibrated scores an approximation. The next subsection bypasses calibration entirely and optimizes the threshold against the operational objective.
 
-\section{Empirical threshold optimization}
+\section{Empirical threshold optimization}\label{sec:empirical_threshold}
 
 An alternative is empirical threshold optimization, following foundational work on cost-sensitive thresholding \citep{sheng2006thresholding} and widely used in applied machine learning. Rather than deriving the decision boundary from the cost matrix and probability estimates, which may be flawed, $\tau$ becomes a learnable parameter of $\delta_\tau$, optimized directly against the operational objective on real data.
 
@@ -192,4 +192,4 @@ When $\mathcal{G}$ is binary-valued, pseudo-dimension coincides with VC dimensio
 Let $\mathcal{H}_{temp}$, $\mathcal{H}_{platt}$, and $\mathcal{H}_{dir}$ denote the temperature, Platt, and binary Dirichlet calibrator families defined in Eqs.~\eqref{eq:temperature_scaling},~\eqref{eq:platt_scaling}, and~\eqref{eq:dirichlet_calibration}, with $W = 1$, $2$, and $3$ free parameters respectively. Each is a fixed strictly increasing transform (the sigmoid, or the softmax in the binary reduction) of a score that is affine in its $W$ parameters; pseudo-dimension is invariant under such a transform and is at most the dimension of the affine score family, so by \citet[Theorem~11.4]{anthony1999neural}, $d_P(\mathcal{H}_{temp}) \leq 1$, $d_P(\mathcal{H}_{platt}) \leq 2$, and $d_P(\mathcal{H}_{dir}) \leq 3$.
 \end{proposition}
 
-Isotonic regression over $\mathcal{M}_\uparrow$ is non-parametric and has unbounded pseudo-dimension, so its complexity is not captured by the framework above; control results in other measures are available in the literature \citep{meyer2000degrees, zhang2002risk}.
+Isotonic regression over the class of monotone non-decreasing maps $[0,1] \to [0,1]$ is non-parametric and has unbounded pseudo-dimension, so its complexity is not captured by the framework above; control results in other measures are available in the literature \citep{meyer2000degrees, zhang2002risk}.

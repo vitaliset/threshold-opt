@@ -9,7 +9,7 @@ The standard cost-blind argmax rule is already a nearest-prototype rule on the s
 
 Nothing in this construction forces the reference points to sit at the vertices. The vertices are the natural anchors only because argmax treats class $k$ as fully described by $\mathbf{e}_k$; once the estimator's outputs are distorted (Section~\ref{sec:analytical_fragility}), that choice need no longer be the one that minimizes risk. Letting the $K$ prototypes move freely inside the simplex gives a strictly richer family of partitions, parameterized by the prototype locations rather than by hyperplane coefficients. The rest of this section makes that family precise and studies its expressivity and sample complexity.
 
-\section{The Voronoi decision rule}
+\section{The Voronoi decision rule}\label{sec:voronoi_rule}
 
 Let $\mathcal{M} = (\boldsymbol{\mu}_0, \boldsymbol{\mu}_1, \dots, \boldsymbol{\mu}_{K-1})$ be a configuration of $K$ prototypes, not necessarily distinct, where $\boldsymbol{\mu}_k \in \mathbb{R}^K$ is the learnable anchor for class $k$.
 
@@ -132,7 +132,7 @@ Throughout this subsection we use the identity
 \end{equation}
 which follows from $\|\mathbf{e}_k\|_2^2 = 1$ and $\mathbf{e}_k^\top \mathbf{p} = p_k$.
 
-The samplers below draw centroids from a Dirichlet $\mathrm{Dir}(\boldsymbol{\alpha})$ with concentration vector $\boldsymbol{\alpha} \in \mathbb{R}^K_{>0}$, written here with the full vector throughout. A symmetric $\boldsymbol{\alpha} = \alpha\,\mathbf{1}_K$ places mass near the simplex vertices when $\alpha < 1$, is uniform on the simplex when $\alpha = 1$, and concentrates toward the barycentre when $\alpha > 1$; an asymmetric $\boldsymbol{\alpha}$ biases the mean toward its larger coordinates.
+The samplers below draw centroids from a Dirichlet $\mathrm{Dir}(\boldsymbol{\alpha})$ with concentration vector $\boldsymbol{\alpha} \in \mathbb{R}^K_{>0}$, written here with the full vector throughout. A symmetric $\boldsymbol{\alpha} = \alpha\,\mathbf{1}_K$ places mass near the simplex vertices when $\alpha < 1$, is uniform on the simplex when $\alpha = 1$, and concentrates toward the barycenter when $\alpha > 1$; an asymmetric $\boldsymbol{\alpha}$ biases the mean toward its larger coordinates.
 
 \paragraph{Rejection.} Draw $\boldsymbol{\mu}_0,\ldots,\boldsymbol{\mu}_{K-1} \overset{\mathrm{iid}}{\sim} \mathrm{Dir}(\tfrac{1}{K}\mathbf{1}_K)$, accept if $k \mapsto \arg\min_{j \in \mathcal{Y}} d^2(\mathbf{e}_k,\boldsymbol{\mu}_j)$ is a permutation of $\{0,\ldots,K-1\}$, and relabel the centroids accordingly; on rejection, retry up to a budget $M$ and otherwise raise. This concentration sits below one, so the draws cluster near the vertices and independent centroids increasingly share a nearest vertex as $K$ grows, making the permutation test fail with probability approaching one.
 
@@ -142,7 +142,7 @@ The samplers below draw centroids from a Dirichlet $\mathrm{Dir}(\boldsymbol{\al
 
 \paragraph{Concentrated Dirichlet.} Draw $\boldsymbol{\mu}_i \sim \mathrm{Dir}(\boldsymbol{\alpha}^{(i)})$ with $\alpha^{(i)}_i = \beta > 1$ and $\alpha^{(i)}_j = 1$ otherwise. The marginal mean of the $i$-th centroid biases toward $\mathbf{e}_i$, but the sampler imposes no joint condition across the $K$ centroids, so satisfaction of~\eqref{eq:dlc} depends on how the $K$ independent draws interact and degrades as $K$ grows for the same reason as Hungarian.
 
-\paragraph{Swap-max.} For each $i$, draw $\mathbf{p} \sim \mathrm{Dir}(\tfrac{1}{K}\mathbf{1}_K)$, permute its coordinates so that $\arg\max_{j \in \mathcal{Y}} p_j = i$, and set $\boldsymbol{\mu}_i = \mathbf{p}$. This enforces $\boldsymbol{\mu}_i[i] > \boldsymbol{\mu}_i[j]$ for $j \neq i$, the per-centroid diagonal-dominance part of~\eqref{eq:dlc} but not its joint condition across centroids (analyzed below).
+\paragraph{Swap-max.} For each $i$, draw $\mathbf{p} \sim \mathrm{Dir}(\tfrac{1}{K}\mathbf{1}_K)$, permute its coordinates so that $\arg\max_{j \in \mathcal{Y}} p_j = i$, and set $\boldsymbol{\mu}_i = \mathbf{p}$. This enforces $\boldsymbol{\mu}_i[i] > \boldsymbol{\mu}_i[j]$ for $j \neq i$ (writing $\boldsymbol{\mu}_i[j]$ for the $j$-th entry of $\boldsymbol{\mu}_i$), the per-centroid diagonal-dominance part of~\eqref{eq:dlc} but not its joint condition across centroids (analyzed below).
 
 \paragraph{Sequential $d^2$.} Centroids are constructed sequentially. Fix a retry budget $M$; for $i = 0, 1, \ldots, K-1$, repeat the following up to $M$ times:
 \begin{enumerate}
@@ -209,7 +209,7 @@ With sequential $d^2$ as the chosen sampler, Algorithm~\ref{alg:voronoi_tuning} 
 \caption{VoronoiTuning via sequential $d^2$ sampling}\label{alg:voronoi_tuning}
 \begin{algorithmic}[1]
 \State \textbf{Input:} Validation set $\mathcal{V}=\{(x_i, y_i)\}_{i=1}^m$ with pre-computed scores $\hat{\mathbf{p}}(x_i)$, optimization objective, iterations $T$, retry budget $M$.
-\State \textbf{Initialize:} $\mathcal{M}^* \leftarrow \{\mathbf{e}_0, \dots, \mathbf{e}_{K-1}\}$ (standard argmax prototypes).
+\State \textbf{Initialize:} $\mathcal{M}^* \leftarrow (\mathbf{e}_0, \dots, \mathbf{e}_{K-1})$ (standard argmax prototypes).
 \State \textbf{Compute baseline score:} $S^* \leftarrow \text{Score}(\mathcal{M}^*, \mathcal{V})$.
 \For{$t = 1$ to $T$}
     \State \textit{Sampling step (sequential $d^2$):}
@@ -224,7 +224,7 @@ With sequential $d^2$ as the chosen sampler, Algorithm~\ref{alg:voronoi_tuning} 
         \EndIf
         \State $\boldsymbol{\mu}_i \leftarrow \mathbf{p}$.
     \EndFor
-    \State Let $\mathcal{M}' = \{\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1}\}$ and compute $\hat{S} \leftarrow \text{Score}(\mathcal{M}', \mathcal{V})$.
+    \State Let $\mathcal{M}' = (\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1})$ and compute $\hat{S} \leftarrow \text{Score}(\mathcal{M}', \mathcal{V})$.
     \If{$\hat{S} > S^*$}
         \State $\mathcal{M}^* \leftarrow \mathcal{M}'$, \quad $S^* \leftarrow \hat{S}$.
     \EndIf
@@ -379,7 +379,7 @@ whose capacity term is about a factor of $\sqrt{K}$ smaller than that of the bou
 \end{theorem}
 
 \begin{proof}
-    Since $\|\mathbf{p}\|_2^2$ is independent of $k$, the rule $\mathrm{argmin}_{k \in \mathcal{Y}} \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2$ equals $\mathrm{argmax}_{k \in \mathcal{Y}} (2\boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2)$. The per-class score is affine in the lifted pair $(\mathbf{w}_k, b_k) = (2\boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$, with the squared-norm bias coupling $b_k$ to $\mathbf{w}_k$ through the prototype $\boldsymbol{\mu}_k$. The prototypes carry $K^2$ free coordinates for $\mathcal{H}_{Vor}$, and $K(K-1)$ for $\mathcal{H}_{Vor}^{\Delta}$ (the simplex constraint $\sum_j [\boldsymbol{\mu}_k]_j = 1$ removes one per prototype). Applying the coupled case of Lemma~\ref{lem:linear_embedding} with Lemma~\ref{lem:nat_monotone} (Appendix~\ref{app:complexity}) gives $d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K$ and $d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2$, the additive $K$ for $\mathcal{H}_{Vor}$ coming from the per-class bias terms (Table~\ref{tab:partition_natarajan}). For $\mathcal{H}_{Vor}$ the bound improves to $K^2$: by Proposition~\ref{prop:voronoi_full_equality}, $\mathcal{H}_{Vor} = \mathcal{H}_{Full}$, so $d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$ by Theorem~\ref{thm:full_complexity}.
+    Since $\|\mathbf{p}\|_2^2$ is independent of $k$, the rule $\mathrm{argmin}_{k \in \mathcal{Y}} \|\mathbf{p} - \boldsymbol{\mu}_k\|_2^2$ equals $\mathrm{argmax}_{k \in \mathcal{Y}} (2\boldsymbol{\mu}_k^\top \mathbf{p} - \|\boldsymbol{\mu}_k\|_2^2)$. The per-class score is affine in the lifted pair $(\mathbf{w}_k, b_k) = (2\boldsymbol{\mu}_k, -\|\boldsymbol{\mu}_k\|_2^2)$, with the squared-norm bias coupling $b_k$ to $\mathbf{w}_k$ through the prototype $\boldsymbol{\mu}_k$. The prototypes carry $K^2$ free coordinates for $\mathcal{H}_{Vor}$, and $K(K-1)$ for $\mathcal{H}_{Vor}^{\Delta}$ (the simplex constraint $\sum_j \boldsymbol{\mu}_k[j] = 1$ removes one per prototype). Applying the coupled case of Lemma~\ref{lem:linear_embedding} with Lemma~\ref{lem:nat_monotone} (Appendix~\ref{app:complexity}) gives $d_{Nat}(\mathcal{H}_{Vor}) \leq K^2 + K$ and $d_{Nat}(\mathcal{H}_{Vor}^{\Delta}) \leq K^2$, the additive $K$ for $\mathcal{H}_{Vor}$ coming from the per-class bias terms (Table~\ref{tab:partition_natarajan}). For $\mathcal{H}_{Vor}$ the bound improves to $K^2$: by Proposition~\ref{prop:voronoi_full_equality}, $\mathcal{H}_{Vor} = \mathcal{H}_{Full}$, so $d_{Nat}(\mathcal{H}_{Vor}) = d_{Nat}(\mathcal{H}_{Full}) \leq K^2$ by Theorem~\ref{thm:full_complexity}.
 \end{proof}
 
 The rational full-matrix approximants used above for Proposition~\ref{rem:natarajan_gen_bound} also approximate every rule of $\mathcal{H}_{Vor}$, $\mathcal{H}_{Vor}^{\Delta}$, and $\mathcal{H}_{Vor}^{\mathrm{DLC}}$, since these are full-matrix rules. For the simplex-restricted class that the optimizer searches, the remark therefore gives, with probability at least $1-\nu$, simultaneously for all $\delta \in \mathcal{H}_{Vor}^{\Delta}$,

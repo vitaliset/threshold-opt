@@ -3,7 +3,7 @@
 
 Under the expected-risk framework, classification separates into an inference stage, which estimates conditional class probabilities, and a decision stage, which selects the action of minimum expected cost. This chapter formalizes the two stages, derives the analytical decision rule for calibrated estimates, and bounds the excess risk incurred when that rule is applied to miscalibrated ones.
 
-\section{Problem formulation}
+\section{Problem formulation}\label{sec:problem_formulation}
 
 We consider a standard multiclass classification setting. Let $\mathcal{X} \subseteq \mathbb{R}^d$ be the input feature space equipped with the Borel $\sigma$-algebra $\Sigma_{\mathcal{X}}$, and let $\mathcal{Y} = \{0, 1, \dots, K-1\}$ be the discrete output space equipped with the discrete $\sigma$-algebra $\Sigma_{\mathcal{Y}}$.
 
@@ -51,10 +51,10 @@ The inference stage uses the sample $\mathcal{S}$ to construct a measurable esti
 
 Since $\mathcal{S}$ contains only realized labels $y_i$ and not their generating probabilities $\boldsymbol{\eta}(x_i)$, $\hat{\mathbf{p}}$ is fit by minimizing a surrogate loss whose population minimizer recovers $\boldsymbol{\eta}$. The standard choices are the logarithmic loss (negative log-likelihood, equivalent to the Kullback-Leibler (KL) divergence between the empirical distribution and the model) and the Brier score (squared error on the simplex); both belong to the family of \textit{strictly proper scoring rules}, whose population minimizer is $\boldsymbol{\eta}$ itself \citep{gneiting2007strictly}. Under standard conditions, namely realizability ($\boldsymbol{\eta} \in \mathcal{F}$, where $\mathcal{F}$ is the hypothesis class containing $\hat{\mathbf{p}}$) together with uniform convergence of the empirical risk over $\mathcal{F}$, the excess risk of the empirical minimizer tends to zero in probability as $N \to \infty$. For both scoring rules this excess risk controls the expected squared distance between $\hat{\mathbf{p}}(X)$ and $\boldsymbol{\eta}(X)$ (directly for the Brier score, through Pinsker's inequality for the logarithmic loss), so $\hat{\mathbf{p}}$ converges to $\boldsymbol{\eta}$ in that distance, in probability.
 
-\section{Decision: risk minimization}
+\section{Decision: risk minimization}\label{sec:decision_risk}
 
 Given the true conditional class probability vector $\boldsymbol{\eta}(x)$, the decision stage requires a mapping $\delta: \Delta^{K-1} \to \mathcal{Y}$ that selects a discrete action to minimize the expected loss. We define the \textit{conditional risk} $\mathcal{R}(\hat{y} \mid x)$ as the expected loss of taking a specific action $\hat{y} \in \mathcal{Y}$ with respect to the aleatoric uncertainty in $Y$,
-\begin{equation}
+\begin{equation}\label{eq:conditional_risk}
     \mathcal{R}(\hat{y} \mid x) := \mathbb{E}_{Y \sim \boldsymbol{\eta}(x)} [C_{Y, \hat{y}}] = \sum_{k=0}^{K-1} C_{k, \hat{y}} \eta_k(x).
 \end{equation}
 
@@ -71,7 +71,7 @@ where ties are broken by selecting the smallest index. The corresponding Bayes-o
 \begin{equation}\label{eq:bayes_optimal_delta}
     \delta^*(\mathbf{p}) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, [\mathbf{C}^\top \mathbf{p}]_{\hat{y}},
 \end{equation}
-so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
+where $[\mathbf{v}]_{\hat{y}}$ denotes the $\hat{y}$-th entry of a vector $\mathbf{v}$, so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
 
 \begin{proposition}[Bayes risk identity]\label{prop:bayes_risk_identity}
 For the Bayes-optimal decision rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}),
@@ -85,7 +85,7 @@ Every $h \in \mathcal{H}_{all}$ satisfies the pointwise bound $\mathcal{R}(h(x) 
 \end{proof}
 
 Geometrically, $\delta^*$ partitions the probability simplex $\Delta^{K-1}$ into the $K$ assigned regions $\{ \mathbf{p} \in \Delta^{K-1} \mid \delta^*(\mathbf{p}) = i \}$. Let $\mathbf{c}_i \in \mathbb{R}_{\geq 0}^K$ denote the $i$-th column of $\mathbf{C}$, i.e., the cost vector for predicting class $i$ across all possible true labels. Since the risk is linear in $\mathbf{p}$ ($\mathcal{R}(i \mid x) = \mathbf{c}_i^\top \boldsymbol{\eta}(x)$ when $\mathbf{p} = \boldsymbol{\eta}(x)$), the closed region $\mathcal{P}_i^*$ on which action $i$ minimizes the conditional risk is a convex polytope defined by the intersection of linear half-spaces
-\begin{equation}
+\begin{equation}\label{eq:bayes_regions}
     \mathcal{P}_i^* = \{ \mathbf{p} \in \Delta^{K-1} \mid (\mathbf{c}_i - \mathbf{c}_j)^\top \mathbf{p} \leq 0, \forall j \neq i \}.
 \end{equation}
 The closed regions $\mathcal{P}_0^*, \dots, \mathcal{P}_{K-1}^*$ cover the simplex and overlap where conditional risks tie; the assigned region of action $i$ is $\mathcal{P}_i^*$ without the points at which a smaller index also minimizes the conditional risk, so the assigned regions form a partition but need not be closed. The boundaries between these regions are hyperplanes defined by the set of probability vectors where the conditional risks of two or more classes are equal. This geometric structure is analyzed in detail for the binary case in Section~\ref{sec:analytical_threshold} and for the multiclass case in Section~\ref{sec:geometry}.
@@ -148,7 +148,7 @@ The decision stage can be seen as a supervised learning problem in its own right
 \begin{equation}\label{eq:decision_erm}
     \hat{R}(\delta) = \frac{1}{m} \sum_{i=1}^m C_{y_i, \delta(z_i)},
 \end{equation}
-whose population counterpart is the expected risk $R(\delta \circ \hat{\mathbf{p}}) = \mathbb{E}[C_{Y, \delta(Z)}]$ of Eq.~(\ref{eq:expected_risk}). Selecting $\delta$ by minimizing Eq.~(\ref{eq:decision_erm}) over $\mathcal{H}_{dec}$ is therefore empirical risk minimization (ERM), with input space $\Delta^{K-1}$, label space $\mathcal{Y}$, and the cost $C_{y, \hat{y}}$ as the loss. The name ``validation set'' is relative to the inference learner; for the decision learner, $\mathcal{V}$ is the training sample.
+whose population counterpart is the expected risk $R(\delta \circ \hat{\mathbf{p}}) = \mathbb{E}[C_{Y, \delta(Z)}]$ of Eq.~(\ref{eq:expected_risk}), written $R(\delta)$ when $\hat{\mathbf{p}}$ is fixed. Selecting $\delta$ by minimizing Eq.~(\ref{eq:decision_erm}) over $\mathcal{H}_{dec}$ is therefore empirical risk minimization (ERM), with input space $\Delta^{K-1}$, label space $\mathcal{Y}$, and the cost $C_{y, \hat{y}}$ as the loss. The name ``validation set'' is relative to the inference learner; for the decision learner, $\mathcal{V}$ is the training sample.
 
 This viewpoint makes statistical learning theory applicable to the decision layer. When $\mathcal{V}$ is independent of the sample used to fit $\hat{\mathbf{p}}$, one may condition on the estimator and bound the generalization gap $R(\delta)-\hat{R}(\delta)$ in terms of the capacity of $\mathcal{H}_{dec}$ alone. This is the role of the capacity bounds below: the inference model may be highly complex and miscalibrated, but the learned decision rule can still generalize from a relatively small validation sample because it is chosen from a low-complexity class.
 

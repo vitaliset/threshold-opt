@@ -10,12 +10,12 @@ The decision stage operates on the standard $(K-1)$-simplex
 \begin{equation}
     \Delta^{K-1} = \left\{ \mathbf{p} \in \mathbb{R}^K \mid p_i \geq 0 \,\,\, \forall\, i, \, \|\mathbf{p}\|_1 = 1 \right\},
 \end{equation}
-embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ for the closed Bayes-optimal decision regions of Chapter~\ref{sec:theory}, which differ from the assigned regions $\mathcal{P}_i^{\delta^*}$ only on ties.
+embedded in $\mathbb{R}^K$. With label space $\mathcal{Y} = \{0, 1, \ldots, K-1\}$, the inference stage produces an estimator $\hat{\mathbf{p}}: \mathcal{X} \to \Delta^{K-1}$, and a decision rule is a measurable map $\delta: \Delta^{K-1} \to \mathcal{Y}$ that induces $K$ disjoint decision regions $\mathcal{P}_i^\delta = \delta^{-1}(\{i\})$ partitioning the simplex. We drop the superscript and write $\mathcal{P}_i$ when the decision rule is unambiguous from context, and use $\mathcal{P}_i^*$ for the closed Bayes-optimal decision regions of Chapter~\ref{sec:theory}, which differ from the assigned regions $\mathcal{P}_i^{\delta^*}$ only on ties. We write $\mathbf{e}_k$ for the vertex of $\Delta^{K-1}$ at which class $k$ has probability one.
 
 \section{Bayes-optimal polyhedral partitions}
 
 Consider a cost matrix $\mathbf{C} \in \mathbb{R}_{\ge 0}^{K \times K}$. We denote the $i$-th column of $\mathbf{C}$ as the risk vector $\mathbf{c}_i \in \mathbb{R}^K$, the costs of predicting class $i$ across all possible truth labels. Following the convention announced in Section~\ref{sec:theory}, the entry $C_{ij}$ represents the cost incurred by predicting class $j$ when the true class is $i$. The conditional risk of taking action $i$ given a class probability vector $\mathbf{p}$ is the linear functional,
-\begin{equation}
+\begin{equation}\label{eq:linear_risk}
     \mathcal{L}_i(\mathbf{p}) = \mathbf{c}_i^\top \mathbf{p} = \sum_{j=0}^{K-1} C_{ji} p_j.
 \end{equation}
 The functional $\mathcal{L}_i$ takes a generic simplex point as argument and coincides with the conditional risk $\mathcal{R}(i \mid x)$ of Section~\ref{sec:theory} when evaluated at $\mathbf{p} = \boldsymbol{\eta}(x)$.
@@ -88,7 +88,7 @@ We defer the proof, together with the vertex computations behind Examples~\ref{e
 
 Our theoretical results are stated under admissibility, the weaker of the two conditions. This is a scope choice, not a claim that element-wise reasonableness is deficient: the proofs that invoke admissibility use it only through the non-emptiness of each Bayes region, so the weaker hypothesis is all they require. Example~\ref{ex:inadmissible} shows a matrix that is not even admissible, and Example~\ref{ex:hedge} one that is admissible but not element-wise reasonable. The empirical campaign (Chapters~\ref{sec:binary_experiments} and~\ref{sec:multiclass_experiments}) uses element-wise reasonable cost matrices, following the applied cost-sensitive literature; by Proposition~\ref{prop:elementwise_admissible}(1) these are admissible, so the theory transfers to the experimental setting unchanged.
 
-\subsection{Cost-determined geometry of the Bayes partition}
+\subsection{Cost-determined geometry of the Bayes partition}\label{sec:cost_geometry}
 
 Under admissibility, the minimization in Eq.~(\ref{eq:multiclass_bayes}) induces a polyhedral partition of the simplex whose boundary normals are determined entirely by the cost matrix.
 
