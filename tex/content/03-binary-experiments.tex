@@ -17,8 +17,8 @@ Preprocessing is applied via a \texttt{scikit-learn} \citep{pedregosa2011scikit}
 \subsection{Estimator architectures}
 Ten base classifiers span a range of inductive biases and calibration profiles. The short label in parentheses after each full name is the form used as the column header in the result tables and figures of this chapter and the companion supplement:
 \begin{itemize}
-    \item Logistic Regression (LogReg) \citep[Ch.~4.4]{hastie2009elements}: parametric linear baseline; smooth monotonic probabilities.
-    \item Gaussian Naive Bayes (GaussNB) \citep[Ch.~6.6.3]{hastie2009elements}: generative historical baseline with class-conditional Gaussian features and feature independence.
+    \item Logistic Regression (LogReg) \citep[Sec.~4.4]{hastie2009elements}: parametric linear baseline; smooth monotonic probabilities.
+    \item Gaussian Naive Bayes (GaussNB) \citep[Sec.~6.6.3]{hastie2009elements}: generative historical baseline with class-conditional Gaussian features and feature independence.
     \item LightGBM (LGBM) \citep{ke2017lightgbm}, XGBoost (XGB) \citep{chen2016xgboost}, CatBoost \citep{prokhorenkova2018catboost}: gradient-boosted trees, the standard top-performing family on tabular benchmarks in prediction quality and training and inference speed; typically discriminative but overconfident.
     \item Random Forest (RF) \citep{breiman2001random}, Extra Trees (ET) \citep{geurts2006extratrees}: bagged ensembles; averaging smooths the probability outputs and produces calibration profiles distinct from boosted trees.
     \item TabM \citep{gorishniy2025tabm}: deep tabular architecture; a multilayer perceptron ensemble over shared representations.
