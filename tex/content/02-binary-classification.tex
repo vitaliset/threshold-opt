@@ -79,7 +79,7 @@ The standard finite-sample diagnostic is the expected calibration error (ECE). G
 \begin{equation}\label{eq:ece}
     \widehat{\mathrm{ECE}} = \sum_{b=1}^{B} \frac{|I_b|}{n} \left| \bar{y}_b - \bar{p}_b \right|,
 \end{equation}
-where $\bar{y}_b$ and $\bar{p}_b$ denote the average true label and average predicted probability within bin $I_b$, respectively \citep{naeini2015obtaining}.
+where $n$ is the number of examples on which the error is evaluated, and $\bar{y}_b$ and $\bar{p}_b$ denote the average true label and average predicted probability within bin $I_b$, respectively \citep{naeini2015obtaining}.
 
 \subsection{Post-hoc calibration methods}
 
@@ -109,7 +109,7 @@ where $z_i = m(\hat p(x_{(i)}))$ is the calibrated value assigned to the $i$-th 
 \begin{equation}\label{eq:dirichlet_calibration}
     g_{\mathbf{W}, \mathbf{b}}(\hat{\mathbf{p}}) = \mathrm{softmax}\!\left(\mathbf{W} \log \hat{\mathbf{p}} + \mathbf{b}\right),
 \end{equation}
-where $\mathbf{W} \in \mathbb{R}^{K \times K}$ and $\mathbf{b} \in \mathbb{R}^K$. In the binary case ($K=2$), with $\hat{\mathbf{p}} = (1-\hat p, \hat p)$ and $(z_0, z_1)^\top = \mathbf{W}\log\hat{\mathbf{p}} + \mathbf{b}$, this reduces to three effective parameters after accounting for the softmax normalization, since $z_1 - z_0 = (W_{11} - W_{01}) \log\hat p + (W_{10} - W_{00}) \log(1-\hat p) + (b_1 - b_0)$. Logit-space Platt scaling, $\sigma(a \cdot z(\hat p) + b)$, is therefore recovered when $\mathbf{W}$ is a scalar multiple of the identity (with $b = b_1 - b_0$), and temperature scaling is the further restriction $b_0 = b_1$. The parameters are fitted by minimizing the negative log-likelihood.
+where $\mathbf{W} \in \mathbb{R}^{K \times K}$, $\mathbf{b} \in \mathbb{R}^K$, and $[\mathrm{softmax}(\mathbf{s})]_k = e^{s_k} / \sum_{j} e^{s_j}$ for $\mathbf{s} \in \mathbb{R}^K$. In the binary case ($K=2$), with $\hat{\mathbf{p}} = (1-\hat p, \hat p)$ and $(z_0, z_1)^\top = \mathbf{W}\log\hat{\mathbf{p}} + \mathbf{b}$, this reduces to three effective parameters after accounting for the softmax normalization, since $z_1 - z_0 = (W_{11} - W_{01}) \log\hat p + (W_{10} - W_{00}) \log(1-\hat p) + (b_1 - b_0)$. Logit-space Platt scaling, $\sigma(a \cdot z(\hat p) + b)$, is therefore recovered when $\mathbf{W}$ is a scalar multiple of the identity (with $b = b_1 - b_0$), and temperature scaling is the further restriction $b_0 = b_1$. The parameters are fitted by minimizing the negative log-likelihood.
 
 \subsection{The calibrate-then-decide framework}
 

@@ -1,5 +1,5 @@
 {\small
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.1}
 % Keep each inline formula of the Meaning column on one line, with its
 % natural spacing (the ragged column would otherwise stretch it).
 \relpenalty=10000
@@ -25,13 +25,15 @@
 
 \multicolumn{3}{@{}l}{\textit{General notation and conventions}}\\
 \midrule
-$\mathbf{1}$, $\mathbf{1}_K$; $\mathbf{I}$ & All-ones vector of $\mathbb{R}^K$; identity matrix & Sec.~\ref{sec:inference} \\
-$p_k$, $[\mathbf{v}]_k$, $\boldsymbol{\mu}_j[k]$ & $k$-th entry of a vector: $p_k$ for a named vector $\mathbf{p}$; $[\mathbf{v}]_k$ for an expression such as $\mathbf{C}^\top\mathbf{p}$; $\boldsymbol{\mu}_j[k]$ for a vector whose subscript is a class index & Eq.~\eqref{eq:bayes_optimal_delta} \\
+$\mathbf{1}$, $\mathbf{1}_K$ & All-ones vector of $\mathbb{R}^K$ & Sec.~\ref{sec:inference} \\
+$\mathbf{I}$ & Identity matrix & Sec.~\ref{sec:multiclass_calibration} \\
+$p_k$; $[\,\cdot\,]_k$ & $k$-th entry of a named vector $\mathbf{p}$; $k$-th entry of the vector in brackets, as in $[\mathbf{C}^\top\mathbf{p}]_k$ & Eq.~\eqref{eq:bayes_optimal_delta} \\
+$\boldsymbol{\mu}_j[k]$ & $k$-th entry of a vector whose subscript is a class index & Sec.~\ref{sec:voronoi_samplers} \\
 $\mathbb{I}(\cdot)$ & Indicator function, also written $\mathbb{I}\{\cdot\}$ & Sec.~\ref{sec:decision_learning} \\
-$\arg\min$, $\arg\max$ & Minimizing (maximizing) index, with ties broken toward the smallest index; in Eqs.~\eqref{eq:thm_vertex_consistency}, \eqref{eq:dlc}, and~\eqref{eq:seqd2_invariant}, the set of minimizers & Eq.~\eqref{eq:bayes_optimal} \\
+$\arg\min$, $\arg\max$ & A minimizer (maximizer); over a class index, ties are broken toward the smallest index; in statements of the form $\arg\min \ldots = \{k\}$ (Eqs.~\eqref{eq:thm_vertex_consistency}, \eqref{eq:dlc}, and~\eqref{eq:seqd2_invariant}), the set of minimizers & Eq.~\eqref{eq:bayes_optimal} \\
 $\|\cdot\|_1$, $\|\cdot\|_\infty$, $\|\cdot\|_2$ & $L_1$, $L_\infty$, and Euclidean norms; $\|\cdot\|$ without subscript is Euclidean & Prop.~\ref{prop:excess_risk_bound} \\
 $B^A$ & Set of all functions $A \to B$, as in $\{0,1\}^{\mathcal{X}}$ and $\mathcal{Y}^{\mathcal{X}}$ & Def.~\ref{def:vc_dimension} \\
-$\mathrm{softmax}$ & Map $\mathbf{s} \mapsto \bigl(e^{s_k} / \sum_{j} e^{s_j}\bigr)_{k \in \mathcal{Y}}$ from $\mathbb{R}^K$ onto the interior of $\Delta^{K-1}$ & Eq.~\eqref{eq:dirichlet_calibration} \\
+$\mathrm{softmax}$ & Map $\mathbf{s} \mapsto \bigl(e^{s_k} / \sum_{j} e^{s_j}\bigr)_{k \in \mathcal{Y}}$ from $\mathbb{R}^K$ onto the relative interior of $\Delta^{K-1}$ & Eq.~\eqref{eq:dirichlet_calibration} \\
 $\mathbf{e}_k$ & Vertex of $\Delta^{K-1}$ at which class $k$ has probability one & Sec.~\ref{sec:geometry} \\
 $\mathrm{Dir}(\boldsymbol{\alpha})$ & Dirichlet distribution on $\Delta^{K-1}$ with concentration $\boldsymbol{\alpha} \in \mathbb{R}^K_{>0}$ (not the bias vector $\boldsymbol{\alpha}$ of Sec.~\ref{sec:parallel_shifts}) & Sec.~\ref{sec:voronoi_samplers} \\
 $\mathcal{N}(\mathbf{m}, \Sigma)$ & Gaussian distribution with mean $\mathbf{m}$ and covariance $\Sigma$ & Sec.~\ref{sec:misspec_sensitivity_variance} \\
@@ -62,7 +64,7 @@ $\Psi \colon \Delta^{K-1} \to \Delta^{K-1}$ & Systematic estimator distortion, $
 \multicolumn{3}{@{}l}{\textit{Costs and risk}}\\
 \midrule
 $\mathbf{C} \in \mathbb{R}_{\geq 0}^{K \times K}$ & Cost matrix; $C_{ij}$ is the cost of predicting $j$ when the true class is $i$ & Sec.~\ref{sec:problem_formulation} \\
-$C_{max}$ & Maximum entry of $\mathbf{C}$ & Sec.~\ref{sec:problem_formulation} \\
+$C_{max}$ & Upper bound on the entries of $\mathbf{C}$; the maximum entry in Prop.~\ref{prop:excess_risk_bound} & Sec.~\ref{sec:problem_formulation} \\
 $R(h)$, $R(\delta)$ & Expected risk $\mathbb{E}_{\mathbb{P}}[C_{Y, h(X)}]$ of a classifier $h$; for a decision rule, $R(\delta) = R(\delta \circ \hat{\mathbf{p}})$ (Sec.~\ref{sec:decision_learning}) & Eq.~\eqref{eq:expected_risk} \\
 $R^*$ & Bayes risk, $\inf_{h \in \mathcal{H}_{all}} R(h)$ & Eq.~\eqref{eq:bayes_risk_def} \\
 $\mathcal{R}(\hat y \mid x) = \mathbf{c}_{\hat y}^\top \boldsymbol{\eta}(x)$ & Conditional risk of action $\hat y$ at $x$ & Eq.~\eqref{eq:conditional_risk} \\
@@ -90,13 +92,13 @@ $d_{dec}$ & Capacity of $\mathcal{H}_{dec}$, or an integer upper bound on it: $d
 $d_{VC}$ & Vapnik--Chervonenkis dimension & Def.~\ref{def:vc_dimension} \\ % chktex 8
 $\mathcal{H}_0$ & Countable class of measurable rules that approximates every rule of $\mathcal{H}_{dec}$ pointwise & Prop.~\ref{prop:gen_bound} \\
 $\nu \in (0, 1]$ & Failure probability; the generalization bounds hold with probability at least $1 - \nu$ & Prop.~\ref{prop:gen_bound} \\
-$c_{bin}$, $c_{Nat}$ & Factors of the generalization bounds, which depend on $m$ and $1/\nu$ (and, for $c_{Nat}$, on $K$ and the capacity bound $d$) through logarithms; $c$ in App.~\ref{app:complexity} stands for either & Eq.~\eqref{eq:clean_gen_bound} \\
+$c_{bin}$, $c_{Nat}$ & Factors of the generalization bounds, which depend on $m$ and $1/\nu$ (and, for $c_{Nat}$, on $K$ and the capacity bound $d$) through logarithms; $c$ alone denotes a factor of a uniform-convergence bound (Sec.~\ref{sec:binary_sample_complexity}, App.~\ref{app:complexity}) & Eq.~\eqref{eq:clean_gen_bound} \\
 $\epsilon > 0$ & Target generalization gap in sample-size conditions such as $m \geq c_{bin}^2 C_{max}^2 d_{dec} / \epsilon^2$ & Sec.~\ref{sec:decision_learning} \\
 $d_P$ & Pseudo-dimension (real-valued analogue of $d_{VC}$) & Def.~\ref{def:pseudo_dimension} \\
 $W$ & Number of real-valued parameters of a class (not the Dirichlet matrix $\mathbf{W}$) & Prop.~\ref{prop:calibrator_complexity} \\
 $d_{Nat}$ & Natarajan dimension (multiclass analogue of $d_{VC}$) & Def.~\ref{def:natarajan_dimension} \\
-$s_k(\mathbf{p}; w)$ & Score of class $k$ in a rule $\mathbf{p} \mapsto \arg\min_k s_k(\mathbf{p}; w)$ with parameter $w$ & Thm.~\ref{thm:ps_complexity} \\
-$\Phi_k$, $g_k$ & Fixed feature map and fixed parameter-free offset of a linear score $s_k = w^\top \Phi_k + g_k$ ($g_k$ is not the calibrator $g$) & Lem.~\ref{lem:linear_embedding} \\
+$s_k(\mathbf{p})$, $s_k(\mathbf{p}; w)$ & Score of class $k$ in a rule $\mathbf{p} \mapsto \arg\min_k s_k(\mathbf{p})$; written $s_k(\mathbf{p}; w)$ when the rule has parameter $w$ & Lem.~\ref{lem:linear_embedding} \\
+$\Phi_k$, $g_k$ & Fixed feature map and fixed parameter-free offset of a linear score $s_k = w^\top \Phi_k + g_k$ ($g_k$ is not the calibrator $g$) & Thm.~\ref{thm:sc_complexity} \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Binary thresholds}}\\
 \midrule
@@ -125,10 +127,10 @@ $\delta_{\mathbf{A}}$ & Partition rule, $\delta_{\mathbf{A}}(\mathbf{p}) = \arg\
 $\mathcal{H}_{Full}$ & Partition rules $\delta_{\mathbf{A}}$ with unconstrained $\mathbf{A}$; $K^2$ free parameters & Eq.~\eqref{eq:hfull_def} \\
 $\boldsymbol{\alpha}$ & Parallel-shift bias vector, $A_{ij} = C_{ij} + \alpha_j$ & Sec.~\ref{sec:parallel_shifts} \\
 $\boldsymbol{\beta}$ & Linear-scaling weights, one per true class, $A_{ij} = C_{ij}\beta_i$ & Sec.~\ref{sec:linear_scaling} \\
-$\boldsymbol{\tau}$ & Per-class threshold vector: in $\mathbb{R}^K_{>0}$ with $\tau_0 = 1$ for probability-ratio thresholding, in $\mathbb{R}^K$ for multidimensional thresholding, in $[0,1]^K$ for sequential selection & Eq.~\eqref{eq:threshold_ratio} \\
+$\boldsymbol{\tau}$ & Per-class threshold vector: in $\mathbb{R}^K_{>0}$ with $\tau_0 = 1$ for probability-ratio thresholding, in $\Delta^{K-1}$ for multidimensional thresholding (in $\mathbb{R}^K$ in Prop.~\ref{prop:marchetti_equivalence}), in $[0,1]^K$ for sequential selection & Eq.~\eqref{eq:threshold_ratio} \\
 $\mathcal{H}_{Sc}$ & Linear-scaling partition class, equal under $0/1$ loss to probability-ratio thresholding; $K{-}1$ free parameters & Eq.~\eqref{eq:hsc_def} \\
 $\mathbf{v}$ & Parallel-shift offset vector with $\sum_k v_k = 0$ (the bias $\boldsymbol{\alpha}$ or the threshold $\boldsymbol{\tau}$ in a common gauge) & Eq.~\eqref{eq:hps_def} \\
-$\mathcal{H}_{PS}$ & Parallel-shift partition class, equal under $0/1$ loss to multidimensional thresholding; $K{-}1$ free parameters & Eq.~\eqref{eq:hps_def} \\
+$\mathcal{H}_{PS}$ & Parallel-shift partition class, equal under $0/1$ loss to multidimensional thresholding with $\boldsymbol{\tau} \in \mathbb{R}^K$; $K{-}1$ free parameters & Eq.~\eqref{eq:hps_def} \\
 $\mathrm{ord}$ & Class evaluation order (a permutation of $\mathcal{Y}$) for sequential selection & Sec.~\ref{sec:sequential_selection} \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Voronoi partitions}}\\
@@ -138,17 +140,18 @@ $\mathcal{M} = (\boldsymbol{\mu}_0, \ldots, \boldsymbol{\mu}_{K-1})$ & Prototype
 $\delta_{\mathcal{M}}$ & Voronoi decision rule, $\delta_{\mathcal{M}}(\mathbf{p}) = \arg\min_{k \in \mathcal{Y}} \|\mathbf{p} - \boldsymbol{\mu}_k\|_2$ & Def.~\ref{def:voronoi_rule} \\
 $\mathcal{H}_{Vor}$ & Voronoi rules with prototypes in $\mathbb{R}^K$; $K^2$ free parameters; equal to $\mathcal{H}_{Full}$ (Prop.~\ref{prop:voronoi_full_equality}) & Sec.~\ref{sec:voronoi_rule} \\
 $\mathcal{H}_{Vor}^{\Delta}$ & Voronoi rules with prototypes in $\Delta^{K-1}$; $K(K{-}1)$ free parameters & Sec.~\ref{sec:voronoi_rule} \\
-$\mathcal{H}_{Vor}^{\mathrm{DLC}}$ & Subclass of $\mathcal{H}_{Vor}^{\Delta}$ that satisfies the dominant label constraint & Def.~\ref{def:dlc} \\
+$\mathcal{H}_{Vor}^{\mathrm{DLC}}$ & Voronoi rules whose prototypes decode each vertex $\mathbf{e}_k$ to class $k$, the dominant label constraint (Def.~\ref{def:dlc}) & Thm.~\ref{thm:rotational_dominance} \\
 $d^2(\cdot, \cdot)$ & Squared Euclidean distance; at a vertex, $d^2(\mathbf{e}_k, \mathbf{p}) = 1 - 2p_k + \|\mathbf{p}\|_2^2$ for $\mathbf{p} \in \Delta^{K-1}$ & Eq.~\eqref{eq:dsq_identity} \\
-$M$ & Retry budget of the retry-based samplers ($M = 500$ in the experiments) & Sec.~\ref{sec:voronoi_samplers} \\
+$M$ & Retry budget of the retry-based samplers ($M = 500$ in Sec.~\ref{sec:multiclass_strategies}) & Sec.~\ref{sec:voronoi_samplers} \\
 \addlinespace
 \multicolumn{3}{@{}l}{\textit{Misspecification-sensitivity analysis (Chapter~\ref{sec:misspec_sensitivity_K})}}\\
 \midrule
 $\mathbb{P}_\lambda$, $\mathbb{P}_\xi$ & Members of the variance-scaling ($\lambda \geq 1$) and mean-shift ($\xi \geq 0$) families; the reference members are $\mathbb{P}_1$ and $\mathbb{P}_0$ & Sec.~\ref{sec:misspec_sensitivity_experiments} \\
 $\mathbf{m}_k \in \mathbb{R}^d$ & Class-conditional Gaussian mean in feature space ($d = 2$ for variance scaling, $d = K{-}1$ for mean shifts) & Sec.~\ref{sec:misspec_sensitivity_variance} \\
 $\sigma > 0$ & Class-conditional Gaussian scale (not the logistic sigmoid) & Sec.~\ref{sec:misspec_sensitivity_variance} \\
-$\lambda \geq 1$ & Variance multiplier; $\mathbb{P}_\lambda$ has covariance $\lambda\sigma^2\mathbf{I}$ & Sec.~\ref{sec:misspec_sensitivity_variance} \\
-$R_\lambda$, $h^*_\lambda$; $R_\xi$, $h^*_\xi$ & Expected risk under $\mathbb{P}_\lambda$ (or $\mathbb{P}_\xi$) and its Bayes-optimal classifier; $h^*_1$ (or $h^*_0$) is the misspecified classifier & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$\lambda \geq 1$ & Variance multiplier; under $\mathbb{P}_\lambda$ each class-conditional density has covariance $\lambda\sigma^2\mathbf{I}$ & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$R_\lambda$, $h^*_\lambda$ & Expected risk under $\mathbb{P}_\lambda$ and its Bayes-optimal classifier; $h^*_1$ is the misspecified classifier & Sec.~\ref{sec:misspec_sensitivity_variance} \\
+$R_\xi$, $h^*_\xi$ & Expected risk under $\mathbb{P}_\xi$ and its Bayes-optimal classifier; $h^*_0$ is the misspecified classifier & Sec.~\ref{sec:misspec_sensitivity_meanshift} \\
 $R_{\mathrm{circ}}(K)$ & Circumradius of the equidistant class-mean configuration & Sec.~\ref{sec:misspec_sensitivity_meanshift} \\
 $\xi$ & Per-class Euclidean mean-shift magnitude & Sec.~\ref{sec:misspec_sensitivity_meanshift} \\
 $\phi_\delta(\mathbf{p}) = \mathcal{L}_{\delta(\mathbf{p})}(\mathbf{p})$ & Per-sample expected cost of rule $\delta$ at $\mathbf{p}$ & Eq.~\eqref{eq:per_sample_cost_functional} \\

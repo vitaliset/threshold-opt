@@ -71,7 +71,7 @@ where ties are broken by selecting the smallest index. The corresponding Bayes-o
 \begin{equation}\label{eq:bayes_optimal_delta}
     \delta^*(\mathbf{p}) = \underset{\hat{y} \in \mathcal{Y}}{\mathrm{argmin}} \,\, [\mathbf{C}^\top \mathbf{p}]_{\hat{y}},
 \end{equation}
-where $[\mathbf{v}]_{\hat{y}}$ denotes the $\hat{y}$-th entry of a vector $\mathbf{v}$, so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$. The following identity, which equates the Bayes risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
+so that $h^*(x) = \delta^*(\boldsymbol{\eta}(x))$; here $[\,\cdot\,]_{\hat{y}}$ denotes the $\hat{y}$-th entry of the vector in brackets. The following identity, which equates the Bayes risk with the expectation of the pointwise minimum conditional risk, justifies treating $h^*$ as the optimal policy.
 
 \begin{proposition}[Bayes risk identity]\label{prop:bayes_risk_identity}
 For the Bayes-optimal decision rule $h^*$ defined in Eq.~(\ref{eq:bayes_optimal}),
